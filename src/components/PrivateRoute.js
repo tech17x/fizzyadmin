@@ -1,23 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useContext } from "react";
 import { Navigate, Outlet } from "react-router-dom";
+import AuthContext from "../context/AuthContext";
 import AdminLayout from "../layouts/AdminLayout";
-import { isAuthenticated } from "../auth";
-
+import Loader from "./Loader";
 
 const PrivateRoute = () => {
-    const [auth, setAuth] = useState(null);
+    const { staff, loading } = useContext(AuthContext);
 
-    useEffect(() => {
-        const checkAuth = async () => {
-            const authenticated = await isAuthenticated();
-            setAuth(authenticated);
-        };
-        checkAuth();
-    }, []);
+    if (loading) return (<Loader/>); // Prevent flash of login page
 
-    if (auth === null) return <div>Loading...</div>; // Show loading state
-
-    return auth ? <AdminLayout><Outlet /></AdminLayout> : <Navigate to="/login" />;
+    return staff ? <AdminLayout><Outlet /></AdminLayout> : <Navigate to="/login" />;
 };
 
 export default PrivateRoute;
