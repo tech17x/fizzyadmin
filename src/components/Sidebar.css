@@ -1,0 +1,38 @@
+/* src/components/Sidebar.css */
+
+li {
+  list-style-type: none;
+  margin-bottom: 15px;
+}
+
+a,
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+a>img,
+.dropdown-header>img {
+  width: 1.5rem;
+}
+
+.submenu li{
+  margin-top: 15px;
+}
+
+.submenu a>img {
+  width: 1rem;
+}
+
+.submenu{
+  transform: translateX(10px);
+}
+
+a:hover, .dropdown-header:hover{
+  background-color: #FFE8E1;
+}

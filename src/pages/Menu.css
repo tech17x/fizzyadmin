@@ -1,0 +1,39 @@
+.edit-menu{
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+    background-color: #f0f0f0;
+    overflow-y: scroll;
+}
+
+.row{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+}
+
+.row > div{
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.edit-menu .tables{
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    width: 100%;
+}
+
+
+.edit-menu .action-btns{
+    display: flex;
+    gap: 1rem;
+    position: absolute;
+    right: 1rem;
+    bottom: 1rem;
+}

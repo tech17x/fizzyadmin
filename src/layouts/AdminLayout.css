@@ -1,0 +1,29 @@
+/* src/layouts/AdminLayout.css */
+
+.admin-layout {
+  display: flex;
+  flex-direction: column;
+  height: 125vh;
+  width: 125vw;
+  overflow: hidden;
+}
+
+
+.admin-body {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+.admin-sidebar {
+  background-color: #fff;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.admin-main-content {
+  flex: 1;
+  background-color: #f0f0f0;
+  padding: 20px;
+  overflow-y: scroll;
+}

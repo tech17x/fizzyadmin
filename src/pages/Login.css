@@ -1,0 +1,51 @@
+/* src/pages/Login.css */
+
+
+.login-container{
+    width: 125vw;
+    height: 125vh;
+    background-color: #FFE8E1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+.contact-btn-container{
+    position: absolute;
+    bottom: 5%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.forgot-password{
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    text-decoration: underline;
+    user-select: none;
+    margin-bottom: 2rem;
+    align-self: center;
+}
+
+.login-form{
+    background-color: #ffffff;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+    min-width: 30%;
+}
+
+.login-form-head{
+    border-bottom: 2px solid #FFE8E1;
+    padding: 2rem 2rem 1rem 2rem;
+}
+
+.login-form-body{
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    text-align: center;
+}

@@ -1,0 +1,35 @@
+
+
+.table-container{
+    margin-top: 2rem;
+}
+
+.table-container td, .table-container th{
+    padding: 1rem;
+    text-align: center;
+}
+
+
+/* .center-div{
+} */
+
+
+.table-container .tax-action-btns{
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.table-container button{
+    border: none;
+    background: transparent;
+    cursor: pointer;
+}
+
+.checkbox-container{
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+    padding-left: .5rem;
+    margin-bottom: 1rem;
+}

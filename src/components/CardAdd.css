@@ -1,0 +1,19 @@
+.card-add {
+    background-color: #FFE8E1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem;
+    border-radius: 20px;
+    text-align: center;
+    width: 20rem;
+}
+
+
+.plus-icon {
+    width: 10rem;
+    height: 10rem;
+    filter: drop-shadow(rgba(50, 50, 93, 0.25) 0px 30px 60px -12px inset) drop-shadow(rgba(0, 0, 0, 0.3) 0px 18px 36px -18px inset);
+}
