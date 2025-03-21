@@ -1,8 +1,8 @@
 import React from 'react';
 
-const GradientButton = ({ children }) => {
+const GradientButton = ({ clickAction, children }) => {
     return (
-        <button style={styles.button}>{children}</button>
+        <button onClick={clickAction} style={styles.button}>{children}</button>
     );
 };
 

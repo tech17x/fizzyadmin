@@ -1,9 +1,9 @@
 import React from "react";
 import "./CardAdd.css";
 
-const CardAdd = () => {
+const CardAdd = ({handleAdd}) => {
     return (
-        <div className="card-add">
+        <button className="card-add" onClick={handleAdd}>
             <svg className="plus-icon" viewBox="0 0 24 24">
                 <defs>
                     <linearGradient id="plusGradient" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -13,7 +13,7 @@ const CardAdd = () => {
                 </defs>
                 <path d="M12 5v14M5 12h14" stroke="url(#plusGradient)" strokeWidth="2" strokeLinecap="round" />
             </svg>
-        </div>
+        </button>
     );
 };
 

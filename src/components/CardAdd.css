@@ -9,6 +9,8 @@
     border-radius: 20px;
     text-align: center;
     width: 20rem;
+    border: none;
+    cursor: pointer;
 }
 
 

@@ -13,13 +13,13 @@ const Login = () => {
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState(null);
-    const [loader, setLoader] = useState(false);
+    const [loading, setLoading] = useState(false);
     const { setStaff } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
-        setLoader(true);
+        setLoading(true);
         setMessage(null); // Clear previous messages
 
         try {
@@ -33,10 +33,10 @@ const Login = () => {
                 setStaff(response.data.staff);
                 setMessage({ type: "success", text: "Login successful! Redirecting..." });
 
-                // ✅ Move setLoader(false) inside setTimeout after navigation
+                // ✅ Move setLoading(false) inside setTimeout after navigation
                 setTimeout(() => {
                     navigate("/dashboard");
-                    setLoader(false);
+                    setLoading(false);
                 }, 1000);
             } else {
                 throw new Error("Invalid response from server");
@@ -46,7 +46,7 @@ const Login = () => {
                 type: "error",
                 text: error.response?.data?.message || "Login failed! Please try again."
             });
-            setLoader(false); // ✅ Ensure loader is turned off in case of an error
+            setLoading(false); // ✅ Ensure loader is turned off in case of an error
         }
     };
 
@@ -54,7 +54,7 @@ const Login = () => {
     return (
         <>
             {
-                loader && <Loader />
+                loading && <Loader />
             }
             <div className="login-container">
                 <div className="login-form">

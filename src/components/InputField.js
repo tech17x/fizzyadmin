@@ -4,6 +4,7 @@ import "./InputField.css";
 const InputField = ({
     label,
     type,
+    name,
     value,
     onChange,
     placeholder,
@@ -21,7 +22,8 @@ const InputField = ({
             <div className="input-container">
                 <input
                     type={type === "password" ? (showPassword ? "text" : "password") : type}
-                    value={value}
+                    value={value || ""}
+                    name={name}
                     onChange={onChange}
                     placeholder={placeholder}
                     required={required}

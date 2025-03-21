@@ -1,7 +1,8 @@
 
 .brand-filter{
-    width: 50%;
+    width: 50% !important;
     margin-bottom: 2rem;
+    margin-top: 2rem;
 }
 
 .filter-action-btns{

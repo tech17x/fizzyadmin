@@ -3,9 +3,9 @@
 import React from 'react';
 import GradientText from './GradientText';
 
-const Button = ({ className, children }) => {
+const Button = ({ clickAction, className, children }) => {
     return (
-        <button className={className} style={{
+        <button onClick={clickAction} className={className} style={{
             fontSize: "16px",
             fontWeight: "bold",
             padding: "12px 24px",

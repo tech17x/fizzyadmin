@@ -24,7 +24,7 @@ const Outlet = () => {
             <div className="brand-filter">
                 <SelectInput
                     label="Brand Name"
-                    options={["Option 1"]}
+                    options={["Option 1", "option 2", "option 3"]}
                     placeholder="Seclect Brand"
                     value={selectedValue}
                     onChange={setSelectedValue}
