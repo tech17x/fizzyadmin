@@ -8,7 +8,7 @@ import "./Brand.css";
 import GradientButton from "../components/GradientButton";
 import Button from "../components/Button";
 import useBrands from "../hooks/useBrands";
-import SelectInput from "../components/SelectInput";
+import Checkbox from "../components/Checkbox";
 
 const Brand = () => {
     const { brands, loading, error, updateBrand, createBrand } = useBrands(); // API methods
@@ -29,9 +29,9 @@ const Brand = () => {
         state: "",
         country: "",
         pin_code: "",
+        status: true, // Default to active (checked)
     });
 
-    // Open popup for adding a new brand
     const handleAddNewBrand = () => {
         setIsEditing(false);
         setBrandData({
@@ -47,11 +47,11 @@ const Brand = () => {
             state: "",
             country: "",
             pin_code: "",
+            status: true,
         });
         setShowPopup(true);
     };
 
-    // Open popup for editing a brand with pre-filled data
     const handleEditBrand = (brand) => {
         setIsEditing(true);
         setBrandData({
@@ -64,29 +64,24 @@ const Brand = () => {
             phone: brand.phone || "",
             email: brand.email || "",
             website: brand.website || "",
-            street_city: brand.brand_address
-                ? `${brand.brand_address.street_address}, ${brand.brand_address.city}`
-                : "",
+            street_city: brand.brand_address ? `${brand.brand_address.street_address}, ${brand.brand_address.city}` : "",
             state: brand.brand_address?.state || "",
             country: brand.brand_address?.country || "",
             pin_code: brand.brand_address?.code || "",
-            status: brand.status || "active"
+            status: brand.status === "active", // Convert string status to boolean
         });
         setShowPopup(true);
     };
 
-    // Handle form input changes
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-
-        setBrandData((prev) => {
-            if (prev[name] === value) return prev;
-            return { ...prev, [name]: value };
-        });
+        setBrandData((prev) => ({ ...prev, [name]: value }));
     };
 
+    const handleStatusChange = () => {
+        setBrandData((prev) => ({ ...prev, status: !prev.status }));
+    };
 
-    // Handle save button click
     const handleSave = () => {
         const formattedBrandData = {
             ...brandData,
@@ -97,18 +92,16 @@ const Brand = () => {
                 country: brandData.country,
                 code: brandData.pin_code,
             },
+            status: isEditing ? (brandData.status ? "active" : "inactive") : "active", // Always active for new brand
         };
 
-        console.log(formattedBrandData);
-
         if (isEditing) {
-            updateBrand(brandData._id, formattedBrandData); // Update brand in API
+            updateBrand(brandData._id, formattedBrandData);
         } else {
-            createBrand(formattedBrandData); // Add new brand to API
+            createBrand(formattedBrandData);
         }
         setShowPopup(false);
     };
-
 
     return (
         <>
@@ -253,12 +246,10 @@ const Brand = () => {
                         </div>
                         {isEditing && (
                             <div className="inputs-row" style={{ padding: "10px", flexDirection: "column", gap: "5px" }}>
-                                <SelectInput
-                                    value={brandData.status}
-                                    onChange={handleInputChange}
-                                    options={["active", "inactive"]}
-                                    name={"status"}
-                                    label="Status"
+                                <Checkbox
+                                    label="Active Status"
+                                    checked={brandData.status}
+                                    onChange={handleStatusChange}
                                 />
                             </div>
                         )}

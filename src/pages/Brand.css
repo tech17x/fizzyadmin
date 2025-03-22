@@ -23,7 +23,7 @@
     padding: 10px;
 }
 
-.input-field input{
+.input-field input, .input-field select{
     border-radius: 10px;
 }
 

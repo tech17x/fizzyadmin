@@ -18,7 +18,7 @@
 }
 
 /* Input Styling */
-.input-container input {
+.input-container input, .input-container select {
     width: 100%;
     padding: 10px 35px 10px 10px;
     border: 1px solid #ccc;

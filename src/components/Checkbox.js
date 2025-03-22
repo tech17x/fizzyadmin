@@ -1,14 +1,15 @@
 import React from "react";
 import "./Checkbox.css";
 
-const Checkbox = ({ label, checked, handleChange }) => {
+const Checkbox = ({ label, checked, onChange }) => {
+
     return (
         <div className="checkbox">
             <input
                 type="checkbox"
                 id={label}
                 checked={checked}
-                onChange={handleChange}
+                onChange={onChange}
             />
             <label htmlFor={label}>
                 <span className="custom-checkbox">

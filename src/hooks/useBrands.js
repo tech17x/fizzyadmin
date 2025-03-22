@@ -58,22 +58,22 @@ const useBrands = () => {
                 updatedData,
                 { withCredentials: true }
             );
-    
+
             // Extract updated brand from response
             const updatedBrand = response.data.brand;
-    
+
             setBrands((prevBrands) =>
                 prevBrands.map((brand) =>
                     brand._id === brandId ? updatedBrand : brand
                 )
             );
-    
+
             setError(""); // Clear error on success
         } catch (error) {
             setError(error.response?.data?.message || "Failed to update brand.");
         }
         setLoading(false);
-    };    
+    };
 
     // ✅ Delete a brand
     const deleteBrand = async (brandId) => {
