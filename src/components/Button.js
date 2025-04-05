@@ -3,9 +3,9 @@
 import React from 'react';
 import GradientText from './GradientText';
 
-const Button = ({ clickAction, className, children }) => {
+const Button = ({ disable=false, clickAction, className, children }) => {
     return (
-        <button onClick={clickAction} className={className} style={{
+        <button disabled={disable} onClick={clickAction} className={className} style={{
             fontSize: "16px",
             fontWeight: "bold",
             padding: "12px 24px",
@@ -14,7 +14,7 @@ const Button = ({ clickAction, className, children }) => {
             letterSpacing: "1px",
             color: "white",
             backgroundColor: "transparent",
-            cursor: "pointer",
+            cursor: disable ? "not-allowed" : "pointer",
             position: "relative",
             overflow: "hidden",
             transition: "all 0.3s ease",

@@ -1,7 +1,7 @@
 import React from "react";
 import "./Checkbox.css";
 
-const Checkbox = ({ key, labelId, label, checked, onChange }) => {
+const Checkbox = ({ key, labelId, label, checked, onChange, disable=false }) => {
     return (
         <div className="checkbox" key={key}>
             <input
@@ -9,6 +9,7 @@ const Checkbox = ({ key, labelId, label, checked, onChange }) => {
                 id={labelId || label}
                 checked={checked}
                 onChange={onChange}
+                disabled={disable}
             />
             <label htmlFor={labelId || label}>
                 <span className="custom-checkbox">

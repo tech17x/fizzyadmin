@@ -15,21 +15,26 @@ import Checkbox from '../components/Checkbox';
 import useFetchBrands from '../hooks/useFetchBrands';
 import useFetchOutlets from '../hooks/useFetchOutlets';
 import axios from 'axios';
+import SearchFilterBar from '../components/SearchFilterBar';
+import { toast } from 'react-toastify';
 
 const Staff = () => {
     const { brands } = useFetchBrands();
     const { outlets } = useFetchOutlets();
-    const [selectedBrand, setSelectedBrand] = useState(null);
-    const [selectedOutlet, setSelectedOutlet] = useState(null);
+
+    const [search, setSearch] = useState('');
+    const [status, setStatus] = useState('');
     const [staff, setStaff] = useState([]);
-    const [brandOutlet, setBrandOutlet] = useState(null);
+
     const [isEditing, setIsEditing] = useState(false);
     const [showSecondScreen, setShowSecondScreen] = useState(false);
     const [showSecondScreenSection, setShowSecondScreenSection] = useState("PROFILE") // USER, BRAND, OUTLET
+
     const [roles, setRoles] = useState([]);
     const [permissions, setPermissions] = useState([]);
     const [selectedRole, setSelectedRole] = useState(""); // Store selected role
     const [checkedPermissions, setCheckedPermissions] = useState({});
+
     const [staffInfo, setStaffInfo] = useState({
         _id: null,
         name: "",
@@ -46,24 +51,40 @@ const Staff = () => {
     const [disableBtn, setDisableBtn] = useState(true);
 
     useEffect(() => {
-        setSelectedOutlet(null);
-    }, [selectedBrand])
+        const fetchStaff = async () => {
+            try {
+                const response = await axios.get("http://localhost:5001/api/staff/staff/authorized", {
+                    withCredentials: true,
+                });
+
+                if (response.data.success) {
+                    setStaff(response.data.data);
+                } else {
+                    console.error("Error fetching staff data:", response.data.message);
+                }
+            } catch (error) {
+                console.error("API Error:", error.response?.data || error.message);
+            }
+        };
+
+        fetchStaff();
+    }, []);
 
     useEffect(() => {
         // Required fields excluding password
-        const requiredFields = ["name", "email", "phone", "pos_login_pin"];
-    
+        const requiredFields = ["name", "email", "phone"];
+
         // Check if any required field is empty
         const isMissing = requiredFields.some(field => !staffInfo[field]);
-    
+
         // Ensure permissions, brands, and outlets are not empty
         const hasNoPermissions = Object.values(checkedPermissions).filter(Boolean).length === 0; // Check if any permission is true
         const hasNoBrands = staffInfo.brands.length === 0;
         const hasNoOutlets = staffInfo.outlets.length === 0;
-    
+
         // Check password condition
         const isPasswordMissing = !isEditing && !staffInfo.password;
-    
+
         // Update staffInfo role & permissions if selectedRole is set
         if (selectedRole) {
             setStaffInfo(prev => ({
@@ -72,41 +93,10 @@ const Staff = () => {
                 permissions: Object.keys(checkedPermissions).filter(key => checkedPermissions[key]), // Convert selected permissions to an array
             }));
         }
-    
+
         // Set disableBtn based on conditions
         setDisableBtn(isMissing || isPasswordMissing || hasNoPermissions || hasNoBrands || hasNoOutlets);
     }, [staffInfo, isEditing, selectedRole, checkedPermissions]);
-    
-
-    const getStaffData = async () => {
-        if (!selectedBrand?._id || !selectedOutlet?._id) {
-            return;
-        }
-
-        try {
-            const response = await axios.get("http://localhost:5001/api/staff/staff", {
-                params: {
-                    brand_id: selectedBrand._id,
-                    outlet_id: selectedOutlet._id,
-                },
-                withCredentials: true,
-            });
-
-            if (response.data.success) {
-                setStaff(response.data.data);
-                setBrandOutlet({
-                    brand: selectedBrand,
-                    outlet: selectedOutlet
-                })
-            } else {
-                console.error("Error fetching staff data:", response.data.message);
-                return [];
-            }
-        } catch (error) {
-            console.error("API Error:", error.response?.data || error.message);
-            return [];
-        }
-    };
 
     const handleAddNewStaff = () => {
         setIsEditing(false);
@@ -136,12 +126,12 @@ const Staff = () => {
             email: staff.email,
             phone: staff.phone,
             password: "",
-            pos_login_pin: staff.pos_login_pin,
+            pos_login_pin: "",
             status: staff.status,
-            role: staff.role,
+            role: staff.role._id,
             permissions: staff.permissions,
-            brands: staff.brands,
-            outlets: staff.outlets,
+            brands: staff.brands.map((brand) => brand._id),
+            outlets: staff.outlets.map((outlet) => outlet._id),
         });
     }
 
@@ -160,32 +150,6 @@ const Staff = () => {
         return date.toLocaleString();
     }
 
-    const handleBrandSelection = (brandId) => {
-        setStaffInfo((prevState) => {
-            const isAlreadySelected = prevState.brands.includes(brandId);
-
-            return {
-                ...prevState,
-                brands: isAlreadySelected
-                    ? prevState.brands.filter((id) => id !== brandId) // Remove if already selected
-                    : [...prevState.brands, brandId], // Add if not selected
-            };
-        });
-    };
-
-    const handleOutletSelection = (outletId) => {
-        setStaffInfo((prevState) => {
-            const isAlreadySelected = prevState.outlets.includes(outletId);
-
-            return {
-                ...prevState,
-                outlets: isAlreadySelected
-                    ? prevState.outlets.filter((id) => id !== outletId) // Remove if already selected
-                    : [...prevState.outlets, outletId], // Add if not selected
-            };
-        });
-    };
-
 
     const getRolesAndPermissions = async () => {
         try {
@@ -194,10 +158,9 @@ const Staff = () => {
             });
 
             if (response.data.success) {
-                console.log("Roles & Permissions Data:", response.data.data);
                 setRoles(response.data.data.roles);
                 setPermissions(response.data.data.permissions);
-                const filterRole = response.data.data.roles.find((r) => r.name === staffInfo.role);
+                const filterRole = response.data.data.roles.find((r) => r._id === staffInfo.role);
                 if (filterRole) {
                     setSelectedRole(filterRole);
                     // Set permissions checked based on the selected role
@@ -245,48 +208,99 @@ const Staff = () => {
         }));
     };
 
+
+    const handleBrandSelection = (brandId) => {
+        const isAlreadySelected = staffInfo.brands.includes(brandId);
+
+        if (!isAlreadySelected) {
+            const relatedOutlets = outlets.filter((item) => item.brand_id === brandId);
+            if (relatedOutlets.length === 0) {
+                toast.info("No outlets found for the selected brand.");
+            }
+
+            setStaffInfo((prevState) => ({
+                ...prevState,
+                brands: [...prevState.brands, brandId],
+            }));
+        } else {
+            // Remove any outlets related to this brand
+            setStaffInfo((prevState) => {
+                const updatedOutlets = prevState.outlets.filter((outletId) => {
+                    const outlet = outlets.find(o => o._id === outletId);
+                    return outlet && outlet.brand_id !== brandId;
+                });
+
+                return {
+                    ...prevState,
+                    brands: prevState.brands.filter((id) => id !== brandId),
+                    outlets: updatedOutlets,
+                };
+            });
+        }
+    };
+
+
+    const handleOutletSelection = (outletId) => {
+        setStaffInfo((prevState) => {
+            const isAlreadySelected = prevState.outlets.includes(outletId);
+
+            return {
+                ...prevState,
+                outlets: isAlreadySelected
+                    ? prevState.outlets.filter((id) => id !== outletId) // Remove if already selected
+                    : [...prevState.outlets, outletId], // Add if not selected
+            };
+        });
+    };
+
+    const filteredStaffs = staff.filter((staff) => {
+        const searchLower = search.toLowerCase();
+        const statusLower = status?.toLowerCase();
+
+        // Check if staff name matches
+        const matchesStaffName = staff.name.toLowerCase().includes(searchLower);
+
+        // Check if any brand name or short_name matches
+        const matchesBrand = staff.brands?.some(brand =>
+            brand.name.toLowerCase().includes(searchLower) ||
+            brand.short_name.toLowerCase().includes(searchLower)
+        );
+
+        // Check if any outlet name matches
+        const matchesOutlet = staff.outlets?.some(outlet =>
+            outlet.name.toLowerCase().includes(searchLower)
+        );
+
+        const matchesSearch = matchesStaffName || matchesBrand || matchesOutlet;
+
+        // Check if staff status matches (or if no status filter applied)
+        const matchesStatus = !status || staff.status.toLowerCase() === statusLower;
+
+        return matchesSearch && matchesStatus;
+    });
+
     return (
         <>
             <HeadingText>Staff</HeadingText>
             {
                 !showSecondScreen ?
                     <div className="current-staff-info">
-                        <div className="brand-filter">
-                            <div className="two-col-row">
-                                <SelectInput
-                                    selectedOption={selectedBrand}
-                                    onChange={setSelectedBrand}
-                                    options={brands}
-                                    label="Brand Name"
-                                />
-                                <SelectInput
-                                    disable={!selectedBrand}
-                                    selectedOption={selectedOutlet}
-                                    onChange={setSelectedOutlet}
-                                    options={outlets.filter(outlet => outlet.brand_id === selectedBrand?._id)}
-                                    label="Outlet Name"
-                                />
-                            </div>
-                            <div className="filter-action-btns">
-                                <GradientButton clickAction={getStaffData}>Submit</GradientButton>
-                                <Button clickAction={() => { setSelectedBrand(null); setBrandOutlet(null) }}>Reset</Button>
-                            </div>
-                        </div>
+                        <SearchFilterBar
+                            placeholder="Search Brand, Outlet, Staff..."
+                            searchValue={search}
+                            onSearchChange={setSearch}
+                            statusValue={status}
+                            onStatusChange={setStatus}
+                        />
 
-                        {
-                            brandOutlet &&
-                            <>
-                                <HeadingText>Staff List</HeadingText>
-                                <div className="cards-container">
-                                    {
-                                        staff && staff.map(staff => (
-                                            <EditCard firstLetter={staff.name.charAt(0)} title={staff.name} role={staff.role} location={brandOutlet.brand.short_name + " " + brandOutlet.outlet.name} time={formatDate(staff.createdAt)} status={staff.status} handleEdit={() => handleStaffEdit(staff)} />
-                                        ))
-                                    }
-                                    <CardAdd handleAdd={handleAddNewStaff} />
-                                </div>
-                            </>
-                        }
+                        <div className="cards-container">
+                            {
+                                filteredStaffs.map(staff => (
+                                    <EditCard firstLetter={staff.name.charAt(0)} title={staff.name} role={staff.role.name} time={formatDate(staff.createdAt)} status={staff.status} handleEdit={() => handleStaffEdit(staff)} />
+                                ))
+                            }
+                            <CardAdd handleAdd={handleAddNewStaff} />
+                        </div>
 
                     </div> :
                     <div className="add-new-staff-info">
@@ -320,7 +334,7 @@ const Staff = () => {
                                     showSecondScreenSection === "OUTLET" ?
                                         <GradientButton>Outlet Permissions</GradientButton>
                                         :
-                                        <Button clickAction={() => setShowSecondScreenSection("OUTLET")}>Outlet Permissions</Button>
+                                        <Button disable={(staffInfo.brands.length > 0 && outlets.filter((item) => staffInfo.brands.includes(item.brand_id)).length > 0) ? false : true} clickAction={() => setShowSecondScreenSection("OUTLET")}>Outlet Permissions</Button>
                                 }
                             </div>
                         </div>
@@ -405,6 +419,7 @@ const Staff = () => {
                                                         .filter((p) => p.category === category)
                                                         .map((perm) => (
                                                             <Checkbox
+                                                                disable={selectedRole.name === "Admin"}
                                                                 key={perm._id}
                                                                 label={perm.name}
                                                                 checked={checkedPermissions[perm.name] || false}
@@ -470,7 +485,7 @@ const Staff = () => {
                         }
                         <div className="sections-action-btns-container">
                             <GradientButton disable={disableBtn}>Update</GradientButton>
-                            <Button clickAction={()=>{setShowSecondScreen(false);setShowSecondScreenSection('PROFILE');}}>Close</Button>
+                            <Button clickAction={() => { setShowSecondScreen(false); setShowSecondScreenSection('PROFILE'); }}>Close</Button>
                         </div>
                     </div>
             }

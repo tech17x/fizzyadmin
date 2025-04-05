@@ -163,7 +163,7 @@ const Outlet = () => {
         <>
             <HeadingText>Outlet</HeadingText>
             <SearchFilterBar
-                placeholder="Search Outlets..."
+                placeholder="Search Brand, Outlet..."
                 searchValue={search}
                 onSearchChange={setSearch}
                 statusValue={status}
