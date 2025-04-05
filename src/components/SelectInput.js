@@ -1,92 +1,56 @@
-import React, { useState, useEffect, useRef } from "react";
+import React from "react";
 
-const SelectInput = ({ label, options, selectedOption, onChange }) => {
-
-    const [isOpen, setIsOpen] = useState(false);
-    const dropdownRef = useRef(null);
-
-    // Toggle dropdown
-    const toggleDropdown = () => setIsOpen((prev) => !prev);
-
-    // Close dropdown when clicking outside
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-                setIsOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
-
-    // Handle selection (Single Selection)
-    const handleOptionClick = (option) => {
-        onChange(option); // Set only one selected option
-        setIsOpen(false); // Close dropdown after selection
+const SelectInput = ({ label, options, selectedOption, onChange, disable = false }) => {
+    const handleChange = (event) => {
+        const selectedId = event.target.value;
+        const selected = options.find((opt) => (opt._id === selectedId || opt.value === selectedId));
+        onChange(selected || null);
     };
 
     return (
-        <div style={{ position: "relative", width: "100%" }} ref={dropdownRef}>
-            <label style={{ fontSize: "16px", fontWeight: 500, display: "block", marginBottom: "5px" }}>{label}</label>
-
-            <div
-                style={{
-                    display: "flex",
-                    alignItems: "center",
-                    padding: "10px",
-                    borderRadius: "10px",
-                    border: "1px solid #ccc",
-                    cursor: "pointer",
-                    backgroundColor: "#fff",
-                    fontSize: "16px",
-                    minHeight: "40px",
-                }}
-                onClick={toggleDropdown}
-            >
-                {selectedOption ? (
-                    <span>{selectedOption.short_name}</span>
-                ) : (
-                    <span style={{ color: "#999" }}>Select an option</span>
-                )}
-                <span style={{ marginLeft: "auto" }}>
-                    <svg width="18" height="10" viewBox="0 0 18 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M17.3229 1.53062L9.36297 9.03061C9.28905 9.10035 9.20126 9.15567 9.10462 9.19341C9.00799 9.23115 8.90441 9.25058 8.79981 9.25058C8.6952 9.25058 8.59162 9.23115 8.49499 9.19341C8.39836 9.15567 8.31057 9.10035 8.23664 9.03061L0.276727 1.53062C0.127367 1.38988 0.043457 1.19901 0.043457 0.99999C0.043457 0.800967 0.127367 0.610095 0.276727 0.469364C0.426088 0.328634 0.628664 0.249573 0.839891 0.249573C1.05112 0.249573 1.25369 0.328634 1.40306 0.469364L8.79981 7.43968L16.1966 0.469364C16.2705 0.399682 16.3583 0.344406 16.4549 0.306695C16.5516 0.268983 16.6551 0.249573 16.7597 0.249573C16.8643 0.249573 16.9679 0.268983 17.0645 0.306695C17.1611 0.344406 17.2489 0.399682 17.3229 0.469364C17.3968 0.539047 17.4555 0.621773 17.4955 0.712817C17.5356 0.803862 17.5562 0.901444 17.5562 0.99999C17.5562 1.09854 17.5356 1.19612 17.4955 1.28716C17.4555 1.37821 17.3968 1.46093 17.3229 1.53062Z" fill="black" />
-                    </svg>
-                </span>
-            </div>
-
-            {isOpen && (
-                <div
+        <div className="input-field">
+            {label && (
+                <label
                     style={{
-                        position: "absolute",
-                        top: "100%",
-                        left: 0,
-                        width: "100%",
-                        backgroundColor: "#fff",
-                        border: "1px solid #ccc",
-                        borderRadius: "8px",
-                        boxShadow: "0px 2px 5px rgba(0,0,0,0.2)",
-                        marginTop: "5px",
-                        zIndex: 10,
-                        maxHeight: "200px",
-                        overflowY: "auto",
+                        fontSize: "16px",
+                        fontWeight: 500,
+                        color: disable ? "#aaa" : "#000",
                     }}
                 >
-                    {options.map((option, index) => (
-                        <div
-                            key={index}
-                            onClick={() => handleOptionClick(option)}
-                            style={{
-                                padding: "10px",
-                                cursor: "pointer",
-                                backgroundColor: selectedOption?._id === option._id ? "#f0f0f0" : "#fff",
-                            }}
-                        >
-                            {option.short_name}
-                        </div>
-                    ))}
-                </div>
+                    {label}
+                </label>
             )}
+
+            <div className="input-container">
+                <select
+                    disabled={disable}
+                    value={selectedOption?._id || selectedOption?.value || ""}
+                    onChange={handleChange}
+                    style={{
+                        width: "100%",
+                        padding: "10px 35px 10px 10px", // Matches input padding
+                        border: "1px solid #ccc",
+                        borderRadius: "8px",
+                        fontSize: "16px",
+                        outline: "none",
+                        backgroundColor: disable ? "#f5f5f5" : "#fff",
+                        color: disable ? "#aaa" : "#000",
+                        opacity: disable ? 0.6 : 1,
+                        appearance: "none",
+                        background: `url("data:image/svg+xml;utf8,<svg fill='%23333' viewBox='0 0 24 24' width='16' height='16' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'></path></svg>") no-repeat right 10px center`,
+                        backgroundSize: "14px",
+                    }}
+                >
+                    <option value="" disabled>
+                        Select an option
+                    </option>
+                    {options.map((option) => (
+                        <option key={option._id || option.value} value={option._id || option.value}>
+                            {option.short_name || option.name || option.label}
+                        </option>
+                    ))}
+                </select>
+            </div>
         </div>
     );
 };

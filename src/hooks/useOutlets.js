@@ -10,6 +10,7 @@ const useOutlets = () => {
 
     // ✅ Fetch outlets based on staff.outlets (Array of outlet IDs)
     const fetchOutlets = useCallback(async () => {
+        console.log("Staff inside useOutlets:", staff);
         if (!staff || !staff.outlets.length) {
             setOutlets([]); // Reset if no outlets assigned
             setLoading(false);
@@ -30,6 +31,7 @@ const useOutlets = () => {
     }, [staff]);
 
     useEffect(() => {
+        console.log("Calling fetchOutlets...");
         fetchOutlets();
     }, [fetchOutlets]);
 
@@ -69,7 +71,6 @@ const useOutlets = () => {
     
             setError(""); // Clear error on success
             setLoading(false);
-            return updatedOutlet;
         } catch (error) {
             setError(error.response?.data?.message || "Failed to update outlet.");
             setLoading(false);

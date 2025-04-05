@@ -9,12 +9,15 @@ import GradientButton from "../components/GradientButton";
 import Button from "../components/Button";
 import useBrands from "../hooks/useBrands";
 import Checkbox from "../components/Checkbox";
+import SearchFilterBar from "../components/SearchFilterBar";
 
 const Brand = () => {
     const { brands, loading, error, updateBrand, createBrand } = useBrands(); // API methods
 
     const [showPopup, setShowPopup] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+    const [search, setSearch] = useState('');
+    const [status, setStatus] = useState('');
     const [brandData, setBrandData] = useState({
         _id: "",
         name: "",
@@ -25,16 +28,18 @@ const Brand = () => {
         phone: "",
         email: "",
         website: "",
-        street_city: "",
+        city: "",
         state: "",
         country: "",
-        pin_code: "",
+        postal_code: "",
+        street_address: "",
         status: true, // Default to active (checked)
     });
 
     const handleAddNewBrand = () => {
         setIsEditing(false);
         setBrandData({
+            _id: "",
             name: "",
             short_name: "",
             gst_no: "",
@@ -43,11 +48,12 @@ const Brand = () => {
             phone: "",
             email: "",
             website: "",
-            street_city: "",
+            city: "",
             state: "",
             country: "",
-            pin_code: "",
-            status: true,
+            postal_code: "",
+            street_address: "",
+            status: true, // Default to active (checked)
         });
         setShowPopup(true);
     };
@@ -64,10 +70,11 @@ const Brand = () => {
             phone: brand.phone || "",
             email: brand.email || "",
             website: brand.website || "",
-            street_city: brand.brand_address ? `${brand.brand_address.street_address}, ${brand.brand_address.city}` : "",
-            state: brand.brand_address?.state || "",
-            country: brand.brand_address?.country || "",
-            pin_code: brand.brand_address?.code || "",
+            city: brand.city || "",
+            state: brand.state || "",
+            country: brand.country || "",
+            postal_code: brand.postal_code || "",
+            street_address: brand.street_address || "",
             status: brand.status === "active", // Convert string status to boolean
         });
         setShowPopup(true);
@@ -85,13 +92,6 @@ const Brand = () => {
     const handleSave = () => {
         const formattedBrandData = {
             ...brandData,
-            brand_address: {
-                street_address: brandData.street_city.split(",")[0]?.trim() || "",
-                city: brandData.street_city.split(",")[1]?.trim() || "",
-                state: brandData.state,
-                country: brandData.country,
-                code: brandData.pin_code,
-            },
             status: isEditing ? (brandData.status ? "active" : "inactive") : "active", // Always active for new brand
         };
 
@@ -103,9 +103,26 @@ const Brand = () => {
         setShowPopup(false);
     };
 
+    const filteredBrands = brands.filter((brand) => {
+        const matchesSearch = brand.name.toLowerCase().includes(search.toLowerCase()) ||
+            brand.short_name.toLowerCase().includes(search.toLowerCase());
+
+        const matchesStatus =
+            !status || brand.status.toLowerCase() === status.toLowerCase(); // empty status means all
+
+        return matchesSearch && matchesStatus;
+    });
+
     return (
         <>
             <HeadingText>Brand List</HeadingText>
+            <SearchFilterBar
+                placeholder="Search Brands..."
+                searchValue={search}
+                onSearchChange={setSearch}
+                statusValue={status}
+                onStatusChange={setStatus}
+            />
             <div className="cards-container">
                 {loading ? (
                     <p>Loading brands...</p>
@@ -113,7 +130,7 @@ const Brand = () => {
                     <p style={{ color: "red" }}>{error}</p>
                 ) : (
                     <>
-                        {brands.map((brand) => (
+                        {filteredBrands.map((brand) => (
                             <EditCard
                                 key={brand._id}
                                 firstLetter={brand.short_name.charAt(0)}
@@ -209,13 +226,24 @@ const Brand = () => {
                         </div>
                         <div className="inputs-row">
                             <InputField
-                                label="Street & City"
+                                label="Street Address"
                                 type="text"
-                                name="street_city"
-                                value={brandData.street_city}
+                                name="street_address"
+                                value={brandData.street_address}
                                 onChange={handleInputChange}
                                 required
                             />
+                            <InputField
+                                label="City"
+                                type="text"
+                                name="city"
+                                value={brandData.city}
+                                onChange={handleInputChange}
+                                required
+                            />
+
+                        </div>
+                        <div className="inputs-row">
                             <InputField
                                 label="State"
                                 type="text"
@@ -224,9 +252,6 @@ const Brand = () => {
                                 onChange={handleInputChange}
                                 required
                             />
-
-                        </div>
-                        <div className="inputs-row">
                             <InputField
                                 label="Country"
                                 type="text"
@@ -235,11 +260,13 @@ const Brand = () => {
                                 onChange={handleInputChange}
                                 required
                             />
+                        </div>
+                        <div className="inputs-row">
                             <InputField
-                                label="Pin Code"
+                                label="Postal Code"
                                 type="text"
-                                name="pin_code"
-                                value={brandData.pin_code}
+                                name="postal_code"
+                                value={brandData.postal_code}
                                 onChange={handleInputChange}
                                 required
                             />

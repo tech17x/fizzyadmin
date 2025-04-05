@@ -1,0 +1,209 @@
+{
+    "roles": [
+        {
+            "_id": "67dbc6bd5e7eb83f5d2ed266",
+            "name": "Admin",
+            "default_permissions": [
+                "dashboard_view",
+                "orders_view",
+                "orders_edit",
+                "orders_delete",
+                "sales_view",
+                "sales_create",
+                "sales_edit",
+                "sales_delete",
+                "customers_view",
+                "customers_edit",
+                "customers_delete",
+                "inventory_view",
+                "inventory_edit",
+                "inventory_delete",
+                "settings_manage",
+                "reports_view",
+                "reports_edit",
+                "reports_delete",
+                "staff_manage"
+            ],
+            "createdAt": "2025-03-20T07:41:49.309Z",
+            "updatedAt": "2025-03-20T07:41:49.309Z",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc6bd5e7eb83f5d2ed26a",
+            "name": "Manager",
+            "default_permissions": [
+                "dashboard_view",
+                "orders_view",
+                "orders_edit",
+                "sales_view",
+                "sales_create",
+                "sales_edit",
+                "customers_view",
+                "customers_edit",
+                "inventory_view",
+                "inventory_edit",
+                "reports_view",
+                "reports_edit"
+            ],
+            "createdAt": "2025-03-20T07:41:49.440Z",
+            "updatedAt": "2025-03-20T07:41:49.440Z",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc6bd5e7eb83f5d2ed26d",
+            "name": "Cashier",
+            "default_permissions": [
+                "dashboard_view",
+                "orders_view",
+                "sales_view",
+                "sales_create",
+                "customers_view"
+            ],
+            "createdAt": "2025-03-20T07:41:49.443Z",
+            "updatedAt": "2025-03-20T07:41:49.443Z",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc6bd5e7eb83f5d2ed270",
+            "name": "Inventory Manager",
+            "default_permissions": [
+                "inventory_view",
+                "inventory_edit",
+                "inventory_delete",
+                "reports_view"
+            ],
+            "createdAt": "2025-03-20T07:41:49.445Z",
+            "updatedAt": "2025-03-20T07:41:49.445Z",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc6bd5e7eb83f5d2ed273",
+            "name": "Staff",
+            "default_permissions": [
+                "dashboard_view",
+                "orders_view",
+                "sales_view",
+                "customers_view"
+            ],
+            "createdAt": "2025-03-20T07:41:49.447Z",
+            "updatedAt": "2025-03-20T07:41:49.447Z",
+            "__v": 0
+        }
+    ],
+    "permissions": [
+        {
+            "_id": "67dbc8faa2d15987dc9963ce",
+            "name": "dashboard_view",
+            "category": "Dashboard",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc9963d2",
+            "name": "orders_view",
+            "category": "Orders",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc9963d5",
+            "name": "orders_edit",
+            "category": "Orders",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc9963d8",
+            "name": "orders_delete",
+            "category": "Orders",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc9963db",
+            "name": "sales_view",
+            "category": "Sales",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc9963de",
+            "name": "sales_create",
+            "category": "Sales",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc9963e1",
+            "name": "sales_edit",
+            "category": "Sales",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc9963e4",
+            "name": "sales_delete",
+            "category": "Sales",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc9963e7",
+            "name": "customers_view",
+            "category": "Customers",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc9963ea",
+            "name": "customers_edit",
+            "category": "Customers",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc9963ed",
+            "name": "customers_delete",
+            "category": "Customers",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc9963f0",
+            "name": "inventory_view",
+            "category": "Inventory",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc9963f3",
+            "name": "inventory_edit",
+            "category": "Inventory",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc9963f6",
+            "name": "inventory_delete",
+            "category": "Inventory",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc9963f9",
+            "name": "settings_manage",
+            "category": "Settings",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc9963fc",
+            "name": "reports_view",
+            "category": "Reports",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc9963ff",
+            "name": "reports_edit",
+            "category": "Reports",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc996402",
+            "name": "reports_delete",
+            "category": "Reports",
+            "__v": 0
+        },
+        {
+            "_id": "67dbc8faa2d15987dc996405",
+            "name": "staff_manage",
+            "category": "Staff Management",
+            "__v": 0
+        }
+    ]
+}

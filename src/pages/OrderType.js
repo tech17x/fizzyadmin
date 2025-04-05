@@ -11,12 +11,50 @@ import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
 import Checkbox from '../components/Checkbox';
 import SelectInput from '../components/SelectInput';
+import useFetchBrands from '../hooks/useFetchBrands';
+import useFetchOutlets from '../hooks/useFetchOutlets';
+import axios from 'axios';
 
 const OrderType = () => {
-
+    const { brands } = useFetchBrands();
+    const { outlets } = useFetchOutlets();
+    const [selectedBrand, setSelectedBrand] = useState(null);
+    const [selectedOutlet, setSelectedOutlet] = useState(null);
+    const [brandOutlet, setBrandOutlet] = useState(null);
     const [username, setUsername] = useState("");
     const [selectedValue, setSelectedValue] = useState("");
     const [isChecked, setIsChecked] = useState(false);
+
+
+    // const getStaffData = async () => {
+    //     if (!selectedBrand?._id || !selectedOutlet?._id) {
+    //         return;
+    //     }
+
+    //     try {
+    //         const response = await axios.get("http://localhost:5001/api/staff/staff", {
+    //             params: {
+    //                 brand_id: selectedBrand._id,
+    //                 outlet_id: selectedOutlet._id,
+    //             },
+    //             withCredentials: true,
+    //         });
+
+    //         if (response.data.success) {
+    //             setStaff(response.data.data);
+    //             setBrandOutlet({
+    //                 brand: selectedBrand,
+    //                 outlet: selectedOutlet
+    //             })
+    //         } else {
+    //             console.error("Error fetching staff data:", response.data.message);
+    //             return [];
+    //         }
+    //     } catch (error) {
+    //         console.error("API Error:", error.response?.data || error.message);
+    //         return [];
+    //     }
+    // };
 
     return (
         <>
@@ -24,23 +62,22 @@ const OrderType = () => {
             <div className="brand-filter">
                 <div className="two-col-row">
                     <SelectInput
+                        selectedOption={selectedBrand}
+                        onChange={setSelectedBrand}
+                        options={brands}
                         label="Brand Name"
-                        options={["Option 1"]}
-                        placeholder="Seclect Brand"
-                        value={selectedValue}
-                        onChange={setSelectedValue}
                     />
                     <SelectInput
+                        disable={!selectedBrand}
+                        selectedOption={selectedOutlet}
+                        onChange={setSelectedOutlet}
+                        options={outlets.filter(outlet => outlet.brand_id === selectedBrand?._id)}
                         label="Outlet Name"
-                        options={["Option 1"]}
-                        placeholder="Select Outlet"
-                        value={selectedValue}
-                        onChange={setSelectedValue}
                     />
                 </div>
                 <div className="filter-action-btns">
                     <GradientButton>Submit</GradientButton>
-                    <Button>Reset</Button>
+                    <Button clickAction={() => { setSelectedBrand(null); setBrandOutlet(null) }}>Reset</Button>
                 </div>
             </div>
             <HeadingText>Order Type List</HeadingText>
@@ -71,9 +108,21 @@ const OrderType = () => {
                             value={selectedValue}
                             onChange={setSelectedValue}
                         />
+                        <SelectInput
+                            label="Outlet"
+                            options={["Option 1"]}
+                            placeholder="Seclect Brand"
+                            value={selectedValue}
+                            onChange={setSelectedValue}
+                        />
                         <div className="checkbox-container">
                             <Checkbox
                                 label="Status"
+                                checked={isChecked}
+                                onChange={() => setIsChecked(!isChecked)}
+                            />
+                            <Checkbox
+                                label="Apply on all outlets"
                                 checked={isChecked}
                                 onChange={() => setIsChecked(!isChecked)}
                             />

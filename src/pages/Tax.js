@@ -11,40 +11,34 @@ import Button from '../components/Button';
 import SelectInput from '../components/SelectInput';
 import InputField from '../components/InputField';
 import Popup from '../components/Popup';
+import BrandOutletFilter from "../components/BrandOutletFilter";
 import Checkbox from '../components/Checkbox';
 
 const Tax = () => {
 
-    const [selectedValue, setSelectedValue] = useState("");
     const [username, setUsername] = useState("");
     const [isChecked, setIsChecked] = useState(false);
+
+    const handleFilterSubmit = (brand, outlet) => {
+        console.log("Selected Brand:", brand);
+        console.log("Selected Outlet:", outlet);
+        // Perform actions like fetching filtered data
+    };
+
+    const handleReset = () => {
+        console.log("Filter Reset");
+        // Reset any additional state if required
+    };
+
 
     return (
         <>
             <HeadingText>Tax</HeadingText>
             <div className="current-staff-info">
-                <div className="brand-filter">
-                    <div className="two-col-row">
-                        <SelectInput
-                            label="Brand Name"
-                            options={["Option 1"]}
-                            placeholder="Seclect Brand"
-                            value={selectedValue}
-                            onChange={setSelectedValue}
-                        />
-                        <SelectInput
-                            label="Outlet Name"
-                            options={["Option 1"]}
-                            placeholder="Select Outlet"
-                            value={selectedValue}
-                            onChange={setSelectedValue}
-                        />
-                    </div>
-                    <div className="filter-action-btns">
-                        <GradientButton>Submit</GradientButton>
-                        <Button>Reset</Button>
-                    </div>
-                </div>
+                <BrandOutletFilter
+                    onFilterSubmit={handleFilterSubmit}
+                    onReset={handleReset}
+                />
             </div>
             <div className="add-new-staff-info">
                 <GradientButton>Add Tax</GradientButton>
@@ -143,17 +137,17 @@ const Tax = () => {
                             />
                         </div>
                         <div className="checkbox-container">
-                                <Checkbox
-                                    label="Status"
-                                    checked={isChecked}
-                                    onChange={() => setIsChecked(!isChecked)}
-                                />
-                                <Checkbox
-                                    label="Appy Tax On All Outlets"
-                                    checked={isChecked}
-                                    onChange={() => setIsChecked(!isChecked)}
-                                />
-                            </div>
+                            <Checkbox
+                                label="Status"
+                                checked={isChecked}
+                                onChange={() => setIsChecked(!isChecked)}
+                            />
+                            <Checkbox
+                                label="Appy Tax On All Outlets"
+                                checked={isChecked}
+                                onChange={() => setIsChecked(!isChecked)}
+                            />
+                        </div>
 
                     </div>
 

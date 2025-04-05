@@ -1,17 +1,16 @@
 import React from "react";
 import "./Checkbox.css";
 
-const Checkbox = ({ label, checked, onChange }) => {
-
+const Checkbox = ({ key, labelId, label, checked, onChange }) => {
     return (
-        <div className="checkbox">
+        <div className="checkbox" key={key}>
             <input
                 type="checkbox"
-                id={label}
+                id={labelId || label}
                 checked={checked}
                 onChange={onChange}
             />
-            <label htmlFor={label}>
+            <label htmlFor={labelId || label}>
                 <span className="custom-checkbox">
                     {checked && (
                         <svg

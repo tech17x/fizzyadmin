@@ -27,6 +27,7 @@
     border-radius: 10px;
 }
 
+
 .inputs-row:has(:only-child) {
     justify-content: flex-start;
 }
