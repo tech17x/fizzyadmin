@@ -96,6 +96,12 @@ const Sidebar = () => {
                   </Link>
                 </li>
                 <li>
+                  <Link to={'/floor'}>
+                    <img src={demoIcon} alt="link icon" />
+                    <GradientText>Floor</GradientText>
+                  </Link>
+                </li>
+                <li>
                   <Link to={'/table'}>
                     <img src={demoIcon} alt="link icon" />
                     <GradientText>Table</GradientText>

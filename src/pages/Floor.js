@@ -1,11 +1,12 @@
 // src/pages/Brand.js
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import HeadingText from '../components/HeadingText';
 import './Brand.css';
 import './Outlet.css';
 import './Staff.css';
 import './Tax.css';
+import './Table.css';
 import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
 import SelectInput from '../components/SelectInput';
@@ -16,75 +17,48 @@ import SearchFilterBar from '../components/SearchFilterBar';
 import useFetchBrands from '../hooks/useFetchBrands';
 import useFetchOutlets from '../hooks/useFetchOutlets';
 import { toast } from 'react-toastify';
-import axios from 'axios';
+import useFloors from '../hooks/useFloors';
 
-const Tax = () => {
+const Floor = () => {
 
+    const { floors, loading, createFloor, updateFloor } = useFloors();
     const { brands } = useFetchBrands();
     const { outlets } = useFetchOutlets();
 
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
 
-    const [taxes, setTaxes] = useState([]);
-    const [loading, setLoading] = useState(false);
+    // const [showLoader, setShowLoader] = useState(false);
 
     const [showPopup, setShowPopup] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
 
-    const [taxName, setTaxName] = useState("");
-    const [displayTaxName, setDisplayTaxName] = useState("");
-    const [taxValue, setTaxValue] = useState("");
-    const [taxStatus, setTaxStatus] = useState(true);
     const [selectedBrand, setSelectedBrand] = useState(null);
     const [filteredOutlets, setFilteredOutlets] = useState([]);
     const [selectedOutlet, setSelectedOutlet] = useState(null);
-    const [applyOnAllOutlets, setApplyOnAllOutlets] = useState(false);
-    const [taxId, setTaxId] = useState(null);
+    const [floorName, setFloorName] = useState("");
+    const [floorStatus, setFloorStatus] = useState(true);
+    const [floorId, setFloorId] = useState(null);
 
 
-    useEffect(() => {
-        fetchTaxes();
-    }, []);
-
-    const fetchTaxes = async () => {
-        try {
-            const res = await axios.get("http://localhost:5001/api/taxes/accessible", {
-                withCredentials: true,
-            });
-            setTaxes(res.data.taxes || []);
-        } catch (err) {
-            toast.error(err?.response?.data?.message || "Failed to fetch payment types");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    const handleAddTax = () => {
+    const handleAddFloor = () => {
         setIsEditing(false);
-        setTaxId(null);
-        setTaxName("");
-        setDisplayTaxName("");
-        setTaxValue("");
-        setTaxStatus(true);
-        setApplyOnAllOutlets(false);
         setSelectedOutlet(null);
         setSelectedBrand(null);
+        setFloorName("");
+        setFloorStatus(true);
+        setFloorId(null);
         setShowPopup(true);
         setShowPopup(true);
     }
 
-    const handleEditTax = (tax) => {
+    const handleEditFloor = (floor) => {
         setIsEditing(true);
-        setTaxId(tax._id);
-        setTaxName(tax.tax_name);
-        setDisplayTaxName(tax.display_tax_name);
-        setTaxValue(tax.tax_value);
-        setTaxStatus(tax.status === "active" ? true : false);
-        setApplyOnAllOutlets(tax.apply_tax_on_all_outlets);
-        setShowPopup(true);
-        handleBrandSelection(tax.brand_id);
-        const selectedOutlet = outlets.find(outlet => outlet._id === tax.outlet_id?._id);
+        setFloorName(floor.floor_name);
+        setFloorStatus(floor.status === "active" ? true : false);
+        setFloorId(floor._id);
+        handleBrandSelection(floor.brand_id);
+        const selectedOutlet = outlets.find(outlet => outlet._id === floor.outlet_id?._id);
         if (selectedOutlet) {
             handleOutletSelection({
                 label: selectedOutlet.name,
@@ -93,40 +67,35 @@ const Tax = () => {
         } else {
             handleOutletSelection(null); // In case outlet not found
         }
+        setShowPopup(true);
     }
 
     const handleSave = async () => {
-        if (!selectedBrand || !taxName || !displayTaxName || !taxValue || (!selectedOutlet && !applyOnAllOutlets)) {
+        if (!selectedBrand || !selectedOutlet || !floorName) {
             toast.error("Please fill all required fields.");
             return;
         }
 
         const payload = {
             brand_id: selectedBrand._id,
-            outlet_id: applyOnAllOutlets ? undefined : selectedOutlet?.value,
-            tax_name: taxName,
-            display_tax_name: displayTaxName,
-            tax_value: Number(taxValue),
-            status: taxStatus ? "active" : "inactive",
-            apply_tax_on_all_outlets: applyOnAllOutlets,
+            outlet_id: selectedOutlet?.value,
+            floor_name: floorName,
+            status: floorStatus ? "active" : "inactive",
         };
 
         try {
-            if (isEditing) {
-                // Assuming you're keeping track of the selected tax to edit
-                await axios.put(`http://localhost:5001/api/taxes/update/${taxId}`, payload, { withCredentials: true });
-                toast.success("Tax updated successfully");
+            if (isEditing && floorId) {
+                await updateFloor(floorId, payload);
+                toast.success("Floor updated successfully");
             } else {
-                await axios.post("http://localhost:5001/api/taxes/create", payload, { withCredentials: true });
-                toast.success("Tax added successfully");
+                await createFloor(payload);
+                toast.success("Floor added successfully");
             }
             setShowPopup(false);
-            fetchTaxes(); // refresh list
         } catch (err) {
             toast.error(err?.response?.data?.message || "Something went wrong");
         }
     };
-
 
     const handleBrandSelection = (brand) => {
         setSelectedBrand(brand);
@@ -135,7 +104,6 @@ const Tax = () => {
         setFilteredOutlets(filtered);
         if (filtered.length === 0) {
             toast.error("Selected brand has no outlets.");
-            setApplyOnAllOutlets(false);
         }
     };
 
@@ -143,72 +111,70 @@ const Tax = () => {
         setSelectedOutlet(outlet);
     }
 
-    const filteredTaxes = taxes.filter((tax) => {
+    const filteredFloors = floors.filter((floor) => {
         const searchLower = search.toLowerCase();
         const statusLower = status?.toLowerCase();
 
         // Check if order type name matches
-        const matchesName = tax.tax_name?.toLowerCase().includes(searchLower) || tax.display_tax_name?.toLowerCase().includes(searchLower);
+        const matchesName = floor.floor_name?.toLowerCase().includes(searchLower);
 
         // Check if associated brand name or short_name matches
-        const matchesBrand = tax.brand_id &&
+        const matchesBrand = floor.brand_id &&
             (
-                tax.brand_id.name?.toLowerCase().includes(searchLower) ||
-                tax.brand_id.short_name?.toLowerCase().includes(searchLower)
+                floor.brand_id.name?.toLowerCase().includes(searchLower) ||
+                floor.brand_id.short_name?.toLowerCase().includes(searchLower)
             );
 
         // Check if associated outlet name matches
-        const matchesOutlet = tax.outlet_id &&
-            tax.outlet_id.name?.toLowerCase().includes(searchLower);
+        const matchesOutlet = floor.outlet_id &&
+            floor.outlet_id.name?.toLowerCase().includes(searchLower);
 
         const matchesSearch = matchesName || matchesBrand || matchesOutlet;
 
         // Check if order type status matches (or no status filter applied)
-        const matchesStatus = !status || tax.status?.toLowerCase() === statusLower;
+        const matchesStatus = !status || floor.status?.toLowerCase() === statusLower;
 
         return matchesSearch && matchesStatus;
     });
 
     return (
         <>
-            <HeadingText>Tax</HeadingText>
+            <HeadingText>Floor</HeadingText>
             <SearchFilterBar
-                placeholder="Search Brand, Outlet, Tax..."
+                placeholder="Search Brand, Outlet, Floors..."
                 searchValue={search}
                 onSearchChange={setSearch}
                 statusValue={status}
                 onStatusChange={setStatus}
             />
             <div className="add-new-staff-info">
-                <GradientButton clickAction={handleAddTax}>Add Tax</GradientButton>
+                <GradientButton clickAction={handleAddFloor}>Add Floor</GradientButton>
                 {
                     loading ?
                         <p>Loading...</p> :
-                        taxes.length > 0 ?
+                        floors.length > 0 ?
                             <div className="table-container">
                                 <table>
                                     <thead>
                                         <tr>
                                             <th>Sr No</th>
-                                            <th>Tax Name</th>
-                                            <th>Brand Name</th>
-                                            <th>Tax %</th>
+                                            <th>Floor Name</th>
+                                            <th>Outlet Name</th>
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         {
-                                            filteredTaxes.map((tax, index) => (
+                                            filteredFloors.map((floor, index) => (
                                                 <tr key={index}>
                                                     <td>{index + 1}</td>
-                                                    <td>{tax.display_tax_name}</td>
-                                                    <td>{tax.brand_id.short_name}</td>
-                                                    <td>{tax.tax_value}%</td>
-                                                    <td><div className={`status ${tax.status}`}>{tax.status}</div></td>
+                                                    <td>{floor.floor_name}</td>
+                                                    <td>{floor.outlet_id.name}</td>
+                                                    <td><div className={`status ${floor.status}`}>{floor.status}</div></td>
                                                     <td>
                                                         <div className="tax-action-btns">
-                                                            <button onClick={() => handleEditTax(tax)}>
+                                                            <button onClick={() => handleEditFloor(floor)}>
                                                                 <svg width="19" height="19" viewBox="0 0 19 19" fill="none" xmlns="http://www.w3.org/2000/svg">
                                                                     <path d="M18 10V17.5C18 17.8978 17.842 18.2794 17.5607 18.5607C17.2794 18.842 16.8978 19 16.5 19H1.5C1.10218 19 0.720644 18.842 0.43934 18.5607C0.158035 18.2794 0 17.8978 0 17.5V2.50001C0 2.10219 0.158035 1.72065 0.43934 1.43935C0.720644 1.15805 1.10218 1.00001 1.5 1.00001H9C9.19891 1.00001 9.38968 1.07903 9.53033 1.21968C9.67098 1.36033 9.75 1.5511 9.75 1.75001C9.75 1.94892 9.67098 2.13969 9.53033 2.28034C9.38968 2.42099 9.19891 2.50001 9 2.50001H1.5V17.5H16.5V10C16.5 9.8011 16.579 9.61033 16.7197 9.46968C16.8603 9.32903 17.0511 9.25001 17.25 9.25001C17.4489 9.25001 17.6397 9.32903 17.7803 9.46968C17.921 9.61033 18 9.8011 18 10ZM18.5306 4.53064L9.53063 13.5306C9.46092 13.6003 9.37818 13.6555 9.28714 13.6931C9.19609 13.7308 9.09852 13.7501 9 13.75H6C5.80109 13.75 5.61032 13.671 5.46967 13.5303C5.32902 13.3897 5.25 13.1989 5.25 13V10C5.24992 9.90149 5.26926 9.80392 5.3069 9.71287C5.34454 9.62183 5.39975 9.53909 5.46937 9.46939L14.4694 0.469385C14.539 0.399653 14.6217 0.344333 14.7128 0.30659C14.8038 0.268847 14.9014 0.24942 15 0.24942C15.0986 0.24942 15.1962 0.268847 15.2872 0.30659C15.3783 0.344333 15.461 0.399653 15.5306 0.469385L18.5306 3.46938C18.6004 3.53904 18.6557 3.62176 18.6934 3.71281C18.7312 3.80385 18.7506 3.90145 18.7506 4.00001C18.7506 4.09857 18.7312 4.19617 18.6934 4.28722C18.6557 4.37826 18.6004 4.46098 18.5306 4.53064ZM16.9369 4.00001L15 2.06032L13.8103 3.25001L15.75 5.1897L16.9369 4.00001Z" fill="black" />
                                                                 </svg>
@@ -231,7 +197,7 @@ const Tax = () => {
             {
                 showPopup &&
                 <Popup
-                    title={"Tax Information"}
+                    title={"Floor Information"}
                     closePopup={() => setShowPopup(false)}
                 >
                     <div className="inputs-container">
@@ -249,31 +215,13 @@ const Tax = () => {
                                 options={filteredOutlets.map(o => ({ label: o.name, value: o._id }))}
                             />
                         </div>
-                        <div className="inputs-row">
-                            <InputField
-                                label="Tax Name"
-                                type="text"
-                                value={taxName}
-                                onChange={(e) => setTaxName(e.target.value)}
-                                placeholder="Enter Tax name"
-                                required
-                            />
-                            <InputField
-                                label="Display Tax name"
-                                type="text"
-                                value={displayTaxName}
-                                onChange={(e) => setDisplayTaxName(e.target.value)}
-                                placeholder="Enter display tax name"
-                                required
-                            />
-                        </div>
                         <div className="inputs-row" style={{ width: "50%" }}>
                             <InputField
-                                label="Tax Value"
+                                label="Floor Name"
                                 type="text"
-                                value={taxValue}
-                                onChange={(e) => setTaxValue(e.target.value)}
-                                placeholder="Enter tax value"
+                                value={floorName}
+                                onChange={(e) => setFloorName(e.target.value)}
+                                placeholder="Enter Tax name"
                                 required
                             />
                         </div>
@@ -282,15 +230,10 @@ const Tax = () => {
                                 isEditing ?
                                     <Checkbox
                                         label="Status"
-                                        checked={taxStatus}
-                                        onChange={() => setTaxStatus(!taxStatus)}
+                                        checked={floorStatus}
+                                        onChange={() => setFloorStatus(!floorStatus)}
                                     /> : null
                             }
-                            <Checkbox
-                                label="Appy Tax On All Outlets"
-                                checked={applyOnAllOutlets}
-                                onChange={() => setApplyOnAllOutlets(!applyOnAllOutlets)}
-                            />
                         </div>
 
                     </div>
@@ -305,4 +248,4 @@ const Tax = () => {
     )
 }
 
-export default Tax;
+export default Floor;

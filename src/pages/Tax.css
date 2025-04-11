@@ -28,6 +28,7 @@
 
 .checkbox-container{
     display: flex;
+    flex-wrap: wrap;
     gap: 1rem;
     margin-top: 1rem;
     padding-left: .5rem;

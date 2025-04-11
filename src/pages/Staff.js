@@ -48,91 +48,37 @@ const Staff = () => {
         brands: [],
         outlets: [],
     });
-    const [disableBtn, setDisableBtn] = useState(true);
 
     useEffect(() => {
-        const fetchStaff = async () => {
-            try {
-                const response = await axios.get("http://localhost:5001/api/staff/staff/authorized", {
-                    withCredentials: true,
-                });
-
-                if (response.data.success) {
-                    setStaff(response.data.data);
-                } else {
-                    console.error("Error fetching staff data:", response.data.message);
-                }
-            } catch (error) {
-                console.error("API Error:", error.response?.data || error.message);
-            }
-        };
-
         fetchStaff();
     }, []);
 
-    useEffect(() => {
-        // Required fields excluding password
-        const requiredFields = ["name", "email", "phone"];
+    const fetchStaff = async () => {
+        try {
+            const response = await axios.get("http://localhost:5001/api/staff/staff/authorized", {
+                withCredentials: true,
+            });
 
-        // Check if any required field is empty
-        const isMissing = requiredFields.some(field => !staffInfo[field]);
-
-        // Ensure permissions, brands, and outlets are not empty
-        const hasNoPermissions = Object.values(checkedPermissions).filter(Boolean).length === 0; // Check if any permission is true
-        const hasNoBrands = staffInfo.brands.length === 0;
-        const hasNoOutlets = staffInfo.outlets.length === 0;
-
-        // Check password condition
-        const isPasswordMissing = !isEditing && !staffInfo.password;
-
-        // Update staffInfo role & permissions if selectedRole is set
-        if (selectedRole) {
-            setStaffInfo(prev => ({
-                ...prev,
-                role: selectedRole._id, // Update role
-                permissions: Object.keys(checkedPermissions).filter(key => checkedPermissions[key]), // Convert selected permissions to an array
-            }));
+            if (response.data.success) {
+                setStaff(response.data.data);
+            } else {
+                console.error("Error fetching staff data:", response.data.message);
+            }
+        } catch (error) {
+            console.error("API Error:", error.response?.data || error.message);
         }
-
-        // Set disableBtn based on conditions
-        setDisableBtn(isMissing || isPasswordMissing || hasNoPermissions || hasNoBrands || hasNoOutlets);
-    }, [staffInfo, isEditing, selectedRole, checkedPermissions]);
+    };
 
     const handleAddNewStaff = () => {
         setIsEditing(false);
         getRolesAndPermissions();
         setShowSecondScreen(true);
-        setStaffInfo({
-            _id: null,
-            name: "",
-            email: "",
-            phone: "",
-            password: "",
-            pos_login_pin: "",
-            status: "",
-            role: "",
-            permissions: [],
-            brands: [],
-            outlets: [],
-        });
     }
 
     const handleStaffEdit = (staff) => {
         setIsEditing(true);
+        getRolesAndPermissions(staff);
         setShowSecondScreen(true);
-        setStaffInfo({
-            _id: staff._id,
-            name: staff.name,
-            email: staff.email,
-            phone: staff.phone,
-            password: "",
-            pos_login_pin: "",
-            status: staff.status,
-            role: staff.role._id,
-            permissions: staff.permissions,
-            brands: staff.brands.map((brand) => brand._id),
-            outlets: staff.outlets.map((outlet) => outlet._id),
-        });
     }
 
     const handleInputChange = (e) => {
@@ -151,8 +97,39 @@ const Staff = () => {
     }
 
 
-    const getRolesAndPermissions = async () => {
+    const getRolesAndPermissions = async (staff) => {
         try {
+
+            if (staff) {
+                setStaffInfo({
+                    _id: staff._id,
+                    name: staff.name,
+                    email: staff.email,
+                    phone: staff.phone,
+                    password: "",
+                    pos_login_pin: "",
+                    status: staff.status,
+                    role: staff.role._id,
+                    permissions: staff.permissions,
+                    brands: staff.brands.map((brand) => brand._id),
+                    outlets: staff.outlets.map((outlet) => outlet._id),
+                });
+            } else {
+                setStaffInfo({
+                    _id: null,
+                    name: "",
+                    email: "",
+                    phone: "",
+                    password: "",
+                    pos_login_pin: "",
+                    status: "active",
+                    role: "",
+                    permissions: [],
+                    brands: [],
+                    outlets: [],
+                });
+            }
+
             const response = await axios.get("http://localhost:5001/api/utils/roles-permissions", {
                 withCredentials: true,
             });
@@ -160,19 +137,21 @@ const Staff = () => {
             if (response.data.success) {
                 setRoles(response.data.data.roles);
                 setPermissions(response.data.data.permissions);
-                const filterRole = response.data.data.roles.find((r) => r._id === staffInfo.role);
-                if (filterRole) {
-                    setSelectedRole(filterRole);
-                    // Set permissions checked based on the selected role
-                    // Initialize permissions object
-                    const newCheckedPermissions = {};
+                if (staff) {
+                    const filterRole = response.data.data.roles.find((r) => r._id === staff.role._id);
+                    if (filterRole) {
+                        setSelectedRole(filterRole);
+                        // Set permissions checked based on the selected role
+                        // Initialize permissions object
+                        const newCheckedPermissions = {};
 
-                    // Mark only those permissions that exist in both staff.permissions and role.default_permissions
-                    filterRole.default_permissions.forEach((perm) => {
-                        newCheckedPermissions[perm] = staffInfo.permissions.includes(perm);
-                    });
+                        // Mark only those permissions that exist in both staff.permissions and role.default_permissions
+                        filterRole.default_permissions.forEach((perm) => {
+                            newCheckedPermissions[perm] = staff.permissions.includes(perm);
+                        });
 
-                    setCheckedPermissions(newCheckedPermissions);
+                        setCheckedPermissions(newCheckedPermissions);
+                    }
                 }
             } else {
                 console.error("Error fetching roles & permissions:", response.data.message);
@@ -279,6 +258,88 @@ const Staff = () => {
         return matchesSearch && matchesStatus;
     });
 
+    const handleStatusChange = () => {
+        setStaffInfo((prev) => ({
+            ...prev,
+            status: prev.status === "active" ? "inactive" : "active",
+        }));
+    };
+
+
+    const handleStaffSave = async () => {
+        const errors = [];
+
+        // Validations
+        if (!staffInfo.name?.trim()) errors.push("Name is required.");
+        if (!staffInfo.email?.trim()) errors.push("Email is required.");
+        if (!staffInfo.phone?.trim()) errors.push("Phone is required.");
+        if (!selectedRole?._id) errors.push("Role is required.");
+        if (!Object.keys(checkedPermissions).some(key => checkedPermissions[key])) errors.push("Select at least one permission.");
+        if (!staffInfo.brands?.length) errors.push("Select at least one brand.");
+        if (!staffInfo.outlets?.length) errors.push("Select at least one outlet.");
+
+        if (!isEditing && !staffInfo.password) {
+            errors.push("Password is required for new staff.");
+        } else if (staffInfo.password && staffInfo.password.length < 6) {
+            errors.push("Password must be at least 6 characters.");
+        }
+
+        if (staffInfo.pos_login_pin && !/^\d{4}$/.test(staffInfo.pos_login_pin)) {
+            errors.push("POS login PIN must be a 4-digit number.");
+        }
+
+        if (errors.length > 0) {
+            errors.forEach(err => toast.error(err));
+            return;
+        }
+
+        // Prepare data
+        const formattedStaffData = {
+            name: staffInfo.name,
+            email: staffInfo.email,
+            phone: staffInfo.phone,
+            role: selectedRole._id,
+            permissions: Object.keys(checkedPermissions).filter(key => checkedPermissions[key]),
+            brands: staffInfo.brands,
+            outlets: staffInfo.outlets,
+            status: isEditing ? staffInfo.status : "active",
+        };
+
+        if (staffInfo.password) {
+            formattedStaffData.password = staffInfo.password;
+        }
+
+        if (staffInfo.pos_login_pin) {
+            formattedStaffData.pos_login_pin = staffInfo.pos_login_pin;
+        }
+
+        try {
+            if (isEditing) {
+                await axios.put(
+                    `http://localhost:5001/api/staff/update/${staffInfo._id}`,
+                    formattedStaffData,
+                    { withCredentials: true }
+                );
+                fetchStaff();
+                toast.success("Staff updated successfully!");
+            } else {
+                await axios.post(
+                    "http://localhost:5001/api/staff/create",
+                    formattedStaffData,
+                    { withCredentials: true }
+                );
+                fetchStaff();
+                toast.success("Staff created successfully!");
+            }
+
+            setShowSecondScreen(false);
+        } catch (error) {
+            console.error("Error saving staff:", error.response?.data || error.message);
+            toast.error(error.response?.data?.message || "An error occurred while saving staff.");
+        }
+    };
+
+
     return (
         <>
             <HeadingText>Staff</HeadingText>
@@ -296,7 +357,7 @@ const Staff = () => {
                         <div className="cards-container">
                             {
                                 filteredStaffs.map(staff => (
-                                    <EditCard firstLetter={staff.name.charAt(0)} title={staff.name} role={staff.role.name} time={formatDate(staff.createdAt)} status={staff.status} handleEdit={() => handleStaffEdit(staff)} />
+                                    <EditCard key={staff._id} firstLetter={staff.name.charAt(0)} title={staff.name} role={staff.role.name} time={formatDate(staff.createdAt)} status={staff.status} handleEdit={() => handleStaffEdit(staff)} />
                                 ))
                             }
                             <CardAdd handleAdd={handleAddNewStaff} />
@@ -318,7 +379,7 @@ const Staff = () => {
                                     showSecondScreenSection === "USER" ?
                                         <GradientButton>User Permissions</GradientButton>
                                         :
-                                        <Button clickAction={() => { setShowSecondScreenSection("USER"); getRolesAndPermissions(); }}>User Permissions</Button>
+                                        <Button clickAction={() => setShowSecondScreenSection("USER")}>User Permissions</Button>
                                 }
                             </div>
                             <div className="step-btns">
@@ -386,6 +447,15 @@ const Staff = () => {
                                     placeholder="Enter Pin"
                                     required
                                 />
+                                {isEditing && (
+                                    <div className="inputs-row" style={{ padding: "10px", flexDirection: "column", gap: "5px" }}>
+                                        <Checkbox
+                                            label="Active Status"
+                                            checked={staffInfo.status === "active"}
+                                            onChange={handleStatusChange}
+                                        />
+                                    </div>
+                                )}
                             </div>
                         }
                         {
@@ -484,7 +554,9 @@ const Staff = () => {
                             </div>
                         }
                         <div className="sections-action-btns-container">
-                            <GradientButton disable={disableBtn}>Update</GradientButton>
+                            <GradientButton clickAction={handleStaffSave}>
+                                {isEditing ? "Update" : "Save"}
+                            </GradientButton>
                             <Button clickAction={() => { setShowSecondScreen(false); setShowSecondScreenSection('PROFILE'); }}>Close</Button>
                         </div>
                     </div>

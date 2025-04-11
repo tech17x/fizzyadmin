@@ -8,15 +8,17 @@ import Login from "./pages/Login";
 import Outlet from "./pages/Outlet";
 import Staff from "./pages/Staff";
 import OrderType from "./pages/OrderType";
-import PaymentMode from "./pages/PaymentMode";
 import Tax from "./pages/Tax";
-import Table from "./pages/Table";
+// import Table from "./pages/Table";
 import Discount from "./pages/Discount";
 import BuyXGetY from "./pages/BuyXGetY";
 import Categories from "./pages/Categories";
 import Menu from "./pages/Menu";
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import PaymentType from "./pages/PaymentType";
+import Floor from "./pages/Floor";
+import Table from "./pages/Table";
 
 function App() {
     return (
@@ -33,8 +35,9 @@ function App() {
                             <Route path="/outlet" element={<Outlet />} />
                             <Route path="/staff" element={<Staff />} />
                             <Route path="/order-type" element={<OrderType />} />
-                            <Route path="/payment-mode" element={<PaymentMode />} />
+                            <Route path="/payment-mode" element={<PaymentType />} />
                             <Route path="/tax" element={<Tax />} />
+                            <Route path="/floor" element={<Floor />} />
                             <Route path="/table" element={<Table />} />
                             <Route path="/discount" element={<Discount />} />
                             <Route path="/charge" element={<Discount />} />

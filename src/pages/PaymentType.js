@@ -1,4 +1,4 @@
-// src/pages/OrderType.js
+// src/pages/PaymentType.js
 
 import { useEffect, useState } from 'react';
 import CardAdd from '../components/CardAdd';
@@ -17,52 +17,43 @@ import axios from 'axios';
 import useFetchBrands from '../hooks/useFetchBrands';
 import useFetchOutlets from '../hooks/useFetchOutlets';
 
-const category = [
-    { label: "Pickup", value: "pickup" },
-    { label: "Dine-in", value: "dine-in" },
-    { label: "Quick Service", value: "quick-service" },
-    { label: "Delivery", value: "delivery" },
-    { label: "Third Party", value: "third-party" },
-];
-
-const OrderType = () => {
+const PaymentType = () => {
     const { brands } = useFetchBrands();
     const { outlets } = useFetchOutlets();
 
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
-    const [orderTypes, setOrderTypes] = useState([]);
+    const [paymentTypes, setPaymentTypes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [showPopup, setShowPopup] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
+
     const [selectedBrand, setSelectedBrand] = useState(null);
     const [filteredOutlets, setFilteredOutlets] = useState([]);
     const [selectedOutlet, setSelectedOutlet] = useState(null);
     const [applyOnAllOutlets, setApplyOnAllOutlets] = useState(false);
-    const [selectedCategory, setSelectedCategory] = useState(null);
-    const [orderTypeInfo, setOrderTypeInfo] = useState({
+
+    const [paymentInfo, setPaymentInfo] = useState({
         _id: '',
-        name: '',
-        category: '',
+        payment_name: '',
         status: 'active',
         apply_on_all_outlets: false,
         brand_id: '',
-        outlet_id: '',
+        outlet_id: ''
     });
 
     useEffect(() => {
-        fetchOrderTypes();
+        fetchPaymentTypes();
     }, []);
 
-    const fetchOrderTypes = async () => {
+    const fetchPaymentTypes = async () => {
         try {
-            const response = await axios.get("http://localhost:5001/api/order-type/accessible", {
+            const res = await axios.get("http://localhost:5001/api/payment-type/accessible", {
                 withCredentials: true,
             });
-            setOrderTypes(response.data.orderTypes);
-        } catch (error) {
-            console.error("Error fetching order types:", error);
-            toast.error(error?.response?.data?.message || "Failed to fetch order types");
+            setPaymentTypes(res.data.paymentTypes || []);
+        } catch (err) {
+            toast.error(err?.response?.data?.message || "Failed to fetch payment types");
         } finally {
             setLoading(false);
         }
@@ -70,19 +61,17 @@ const OrderType = () => {
 
     const handleAdd = () => {
         setIsEditing(false);
-        setOrderTypeInfo({
+        setPaymentInfo({
             _id: '',
-            name: '',
-            category: '',
+            payment_name: '',
             status: 'active',
             apply_on_all_outlets: false,
             brand_id: '',
-            outlet_id: '',
+            outlet_id: ''
         });
         setFilteredOutlets([]);
         setSelectedBrand(null);
         setSelectedOutlet(null);
-        setSelectedCategory(null);
         setApplyOnAllOutlets(false);
         setShowPopup(true);
     };
@@ -92,27 +81,25 @@ const OrderType = () => {
         const brand = brands.find(b => b._id === type.brand_id?._id);
         const outletOptions = outlets.filter(outlet => outlet.brand_id === brand?._id);
         const outlet = outlets.find(outlet => outlet._id === type.outlet_id?._id);
-        const categoryOption = category.find(cat => cat.value === type.category);
 
-        setOrderTypeInfo({
+        setPaymentInfo({
             _id: type._id,
-            name: type.name,
+            payment_name: type.payment_name,
             status: type.status,
             apply_on_all_outlets: type.apply_on_all_outlets,
             brand_id: type.brand_id?._id || '',
-            outlet_id: type.outlet_id?._id || '',
+            outlet_id: type.outlet_id?._id || ''
         });
         setSelectedBrand(brand);
         setFilteredOutlets(outletOptions);
         setSelectedOutlet(outlet ? { label: outlet.name, value: outlet._id } : null);
-        setSelectedCategory(categoryOption);
         setApplyOnAllOutlets(type.apply_on_all_outlets);
         setShowPopup(true);
     };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setOrderTypeInfo(prev => ({ ...prev, [name]: value }));
+        setPaymentInfo(prev => ({ ...prev, [name]: value }));
     };
 
     const handleBrandSelection = (brand) => {
@@ -127,69 +114,51 @@ const OrderType = () => {
 
     const handleSave = async () => {
         const payload = {
-            name: orderTypeInfo.name,
-            category: selectedCategory?.value || '',
-            status: orderTypeInfo.status,
+            payment_name: paymentInfo.payment_name,
+            status: paymentInfo.status,
             apply_on_all_outlets: applyOnAllOutlets,
             brand_id: selectedBrand?._id || '',
-            outlet_id: (selectedOutlet && !applyOnAllOutlets) ? selectedOutlet.value : null,
+            outlet_id: (selectedOutlet && !applyOnAllOutlets) ? selectedOutlet.value : null
         };
 
         try {
             if (isEditing) {
-                await axios.put(`http://localhost:5001/api/order-type/update/${orderTypeInfo._id}`, payload, {
+                await axios.put(`http://localhost:5001/api/payment-type/update/${paymentInfo._id}`, payload, {
                     withCredentials: true,
                 });
-                toast.success("Order type updated successfully!");
+                toast.success("Payment type updated successfully!");
             } else {
-                await axios.post("http://localhost:5001/api/order-type/create", payload, {
+                await axios.post("http://localhost:5001/api/payment-type/create", payload, {
                     withCredentials: true,
                 });
-                toast.success("Order type created successfully!");
+                toast.success("Payment type created successfully!");
             }
-            fetchOrderTypes();
+            fetchPaymentTypes();
             setShowPopup(false);
         } catch (error) {
-            console.error("Error saving order type:", error);
-            toast.error(error?.response?.data?.message || "Failed to save order type");
+            toast.error(error?.response?.data?.message || "Failed to save payment type");
         }
     };
 
-    const filteredOrderTypes = orderTypes.filter((orderType) => {
+    const filteredPaymentTypes = paymentTypes.filter((type) => {
         const searchLower = search.toLowerCase();
-        const statusLower = status?.toLowerCase();
-
-        // Check if order type name matches
-        const matchesName = orderType.name?.toLowerCase().includes(searchLower);
-
-        // Check if order type category matches
-        const matchesCategory = orderType.category?.toLowerCase().includes(searchLower);
-
-        // Check if associated brand name or short_name matches
-        const matchesBrand = orderType.brand_id &&
-            (
-                orderType.brand_id.name?.toLowerCase().includes(searchLower) ||
-                orderType.brand_id.short_name?.toLowerCase().includes(searchLower)
-            );
-
-        // Check if associated outlet name matches
-        const matchesOutlet = orderType.outlet_id &&
-            orderType.outlet_id.name?.toLowerCase().includes(searchLower);
-
-        const matchesSearch = matchesName || matchesCategory || matchesBrand || matchesOutlet;
-
-        // Check if order type status matches (or no status filter applied)
-        const matchesStatus = !status || orderType.status?.toLowerCase() === statusLower;
+        const statusLower = status.toLowerCase();
+        const matchesSearch = (
+            type.payment_name?.toLowerCase().includes(searchLower) ||
+            type.brand_id?.name?.toLowerCase().includes(searchLower) ||
+            type.brand_id?.short_name?.toLowerCase().includes(searchLower) ||
+            type.outlet_id?.name?.toLowerCase().includes(searchLower)
+        );
+        const matchesStatus = !status || type.status.toLowerCase() === statusLower;
 
         return matchesSearch && matchesStatus;
     });
 
-
     return (
         <>
-            <HeadingText>Order Type</HeadingText>
+            <HeadingText>Payment Type</HeadingText>
             <SearchFilterBar
-                placeholder="Search Brand, Outlet, Order Type..."
+                placeholder="Search Brand, Outlet, Payment Type..."
                 searchValue={search}
                 onSearchChange={setSearch}
                 statusValue={status}
@@ -199,10 +168,10 @@ const OrderType = () => {
                 {loading ? (
                     <p>Loading...</p>
                 ) : (
-                    filteredOrderTypes.map(type => (
+                    filteredPaymentTypes.map(type => (
                         <EditCard
                             key={type._id}
-                            title={type.name}
+                            title={type.payment_name}
                             role={type.outlet_id?.name || "All Outlets"}
                             status={type.status}
                             handleEdit={() => handleEdit(type)}
@@ -213,7 +182,7 @@ const OrderType = () => {
             </div>
 
             {showPopup && (
-                <Popup title="Order Type" closePopup={() => setShowPopup(false)}>
+                <Popup title="Payment Type" closePopup={() => setShowPopup(false)}>
                     <div className="inputs-container">
                         <SelectInput
                             label="Select Brand"
@@ -222,18 +191,12 @@ const OrderType = () => {
                             options={brands}
                         />
                         <InputField
-                            label="Type Name"
-                            name="name"
+                            label="Payment Name"
+                            name="payment_name"
                             type="text"
-                            value={orderTypeInfo.name}
+                            value={paymentInfo.payment_name}
                             onChange={handleInputChange}
-                            placeholder="Enter Order Type name"
-                        />
-                        <SelectInput
-                            label="Category"
-                            selectedOption={selectedCategory}
-                            onChange={setSelectedCategory}
-                            options={category}
+                            placeholder="Enter payment type name"
                         />
                         <SelectInput
                             disable={applyOnAllOutlets || !selectedBrand || filteredOutlets.length === 0}
@@ -253,9 +216,9 @@ const OrderType = () => {
                             {isEditing && (
                                 <Checkbox
                                     label="Active"
-                                    checked={orderTypeInfo.status === 'active'}
+                                    checked={paymentInfo.status === 'active'}
                                     onChange={() =>
-                                        setOrderTypeInfo(prev => ({
+                                        setPaymentInfo(prev => ({
                                             ...prev,
                                             status: prev.status === 'active' ? 'inactive' : 'active',
                                         }))
@@ -282,4 +245,4 @@ const OrderType = () => {
     );
 };
 
-export default OrderType;
+export default PaymentType;

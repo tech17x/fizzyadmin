@@ -1,6 +1,6 @@
 // src/pages/Brand.js
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import HeadingText from '../components/HeadingText';
 import './Brand.css';
 import './Outlet.css';
@@ -14,11 +14,17 @@ import InputField from '../components/InputField';
 import Popup from '../components/Popup';
 import Checkbox from '../components/Checkbox';
 import { useLocation } from 'react-router-dom';
+import useFetchBrands from '../hooks/useFetchBrands';
+import useFetchOutlets from '../hooks/useFetchOutlets';
+import SearchFilterBar from '../components/SearchFilterBar';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import { use } from 'react';
 
 const Discount = () => {
 
     const location = useLocation();
-    
+
     // Mapping route paths to corresponding headings
     const pageTitles = {
         "/discount": "Discount",
@@ -28,37 +34,76 @@ const Discount = () => {
 
     const heading = pageTitles[location.pathname] || "Discount";
 
-    const [selectedValue, setSelectedValue] = useState("");
-    const [username, setUsername] = useState("");
-    const [isChecked, setIsChecked] = useState(false);
+    const { brands } = useFetchBrands();
+    const { outlets } = useFetchOutlets();
+    const [orderTypes, setOrderTypes] = useState([]);
+    const [menus, setMenus] = useState([]);
+    const [categories, setCategories] = useState([]);
+
+    const [search, setSearch] = useState('');
+    const [filterStatus, setFilterStatus] = useState('');
+
+    const [filteredOutlets, setFilteredOutlets] = useState([]);
+    const [filteredOrderTypes, setFilteredOrderTypes] = useState([]);
+    const [filteredMenus, setFilteredMenus] = useState([]);
+    const [filteredCategories, setFilteredCategories] = useState([]);
+
+    const [selectedBrand, setSelectedBrand] = useState(null);
+    const [selectedOutlet, setSelectedOutlet] = useState(null);
+    const [selectedOrderTypes, setSelectedOrderTypes] = useState([]);
+    const [selectedMenus, setSelectedMenus] = useState([]);
+    const [selectedCategories, setSelectedCategories] = useState([]);
+
+    const [applyOnAllOutlets, setApplyOnAllOutlets] = useState(false);
+    const [applyOnAllMenus, setApplyOnAllMenus] = useState(false);
+    const [applyOnAllCategories, setApplyOnAllCategories] = useState(false);
+    const [applyOnAllItems, setApplyOnAllItems] = useState(false);
+    const [status, setStatus] = useState(false);
+    const [isCoupon, setIsCoupon] = useState(heading === "Discount" ? false : true); // false = discount, true = coupon
+
+    const [name, setName] = useState('');
+    const [rate, setRate] = useState(null);
+    const [type, setType] = useState('');  // ["fixed", "percentage"]
+
+    const [selectedItems, setSelectedItems] = useState(null);
+    const [day, setDay] = useState(null);
+    const [startTime, setStartTime] = useState(null);
+    const [endTime, setEndTime] = useState(null);
+    const [couponCode, setCouponCode] = useState("");
+    const [isExtraCharge, setIsExtraCharge] = useState(false);
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [showPopup, setPopup] = useState(false);
+
+
+    useEffect(() => {
+        fetchOrderTypes();
+    }, []);
+
+    const fetchOrderTypes = async () => {
+        try {
+            const response = await axios.get("http://localhost:5001/api/order-type/accessible", {
+                withCredentials: true,
+            });
+            setOrderTypes(response.data.orderTypes);
+        } catch (error) {
+            console.error("Error fetching order types:", error);
+            toast.error(error?.response?.data?.message || "Failed to fetch order types");
+        } finally {
+            // setLoading(false);
+        }
+    };
 
     return (
         <>
             <HeadingText>{heading}</HeadingText>
-            <div className="current-staff-info">
-                <div className="brand-filter">
-                    <div className="two-col-row">
-                        <SelectInput
-                            label="Brand Name"
-                            options={["Option 1"]}
-                            placeholder="Seclect Brand"
-                            value={selectedValue}
-                            onChange={setSelectedValue}
-                        />
-                        <SelectInput
-                            label="Outlet Name"
-                            options={["Option 1"]}
-                            placeholder="Select Outlet"
-                            value={selectedValue}
-                            onChange={setSelectedValue}
-                        />
-                    </div>
-                    <div className="filter-action-btns">
-                        <GradientButton>Submit</GradientButton>
-                        <Button>Reset</Button>
-                    </div>
-                </div>
-            </div>
+            <SearchFilterBar
+                placeholder={`Search Brand, Outlet, ${heading}s...`}
+                searchValue={search}
+                onSearchChange={setSearch}
+                statusValue={filterStatus}
+                onStatusChange={setFilterStatus}
+            />
             <div className="add-new-staff-info">
                 <GradientButton>Add {heading}</GradientButton>
                 <div className="table-container">
@@ -103,7 +148,7 @@ const Discount = () => {
                     </table>
                 </div>
             </div>
-            {
+            {/* {
                 false &&
                 <Popup
                     title={`${heading} Information`}
@@ -232,7 +277,7 @@ const Discount = () => {
                         <Button>Close</Button>
                     </div>
                 </Popup>
-            }
+            } */}
         </>
     )
 }
