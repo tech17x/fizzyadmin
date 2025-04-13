@@ -1,6 +1,6 @@
 // src/pages/Brand.js
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import HeadingText from '../components/HeadingText';
 import './Brand.css';
 import './Outlet.css';
@@ -17,18 +17,16 @@ import SearchFilterBar from '../components/SearchFilterBar';
 import useFetchBrands from '../hooks/useFetchBrands';
 import useFetchOutlets from '../hooks/useFetchOutlets';
 import { toast } from 'react-toastify';
-import TableComponent from '../components/TableComponent';
 import axios from 'axios';
+import EditMenu from '../components/EditableMenuTable';
 
 const Menu = () => {
 
     const { brands } = useFetchBrands();
     const { outlets } = useFetchOutlets();
     const [menus, setMenus] = useState([]);
-    const [items, setItems] = useState([]);
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
-    const tableRef = useRef();
 
 
     const [filteredOutlets, setFilteredOutlets] = useState([]);
@@ -47,140 +45,14 @@ const Menu = () => {
     const [isEditing, setIsEditing] = useState(false);
 
     const [showMenuDetails, setShowMenuDetails] = useState(false);
-
-    const [selectedFile, setSelectedFile] = useState(null);
-    const [selectedFileName, setSelectedFileName] = useState("Choose CSV");
+    const [brandOutletIds,setBrandOutletIds] = useState(null);
 
 
-
-    const handleFileChange = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        if (!file.name.endsWith(".csv")) {
-            toast.error("Please upload a CSV file.");
-            return;
-        }
-
-        setSelectedFile(file);
-        setSelectedFileName(file.name);
-    };
-
-    const handleUploadClick = () => {
-        if (!selectedFile) {
-            toast.warn("Please select a CSV file before uploading.");
-            return;
-        }
-
-        const reader = new FileReader();
-        reader.onload = (evt) => {
-            const text = evt.target.result;
-            const rows = text
-                .split("\n")
-                .slice(1)
-                .map((line) => line.replace(/"/g, "").split(","))
-                .filter(row => row.length >= 4)
-                .map(([menuName, price, category, type, image = ""]) => ({
-                    menuName,
-                    price,
-                    category,
-                    type,
-                    image
-                }));
-
-            if (rows.length === 0 || !rows[0].menuName || !rows[0].price) {
-                toast.error("CSV format is invalid or missing required fields.");
-                return;
-            }
-
-            tableRef.current.importBulkRows(rows);
-        };
-        reader.readAsText(selectedFile);
-    };
-
-    const handleUpdateClick = async () => {
-        const updatedItems = tableRef.current.getUpdatedChanges();
-        const newItems = tableRef.current.getNewRows();
-        const allItems = [...updatedItems, ...newItems];
-
-        if (allItems.length === 0) {
-            toast.warn("No items to update or create.");
-            return;
-        }
-
-        const missingFields = [];
-
-        for (const item of allItems) {
-            const { menuName, price, category, type, image } = item;
-
-            if (
-                !menuName?.toString().trim() ||
-                !price?.toString().trim() ||
-                !category?.toString().trim() ||
-                !type?.toString().trim() ||
-                !image?.toString().trim()
-            ) {
-                missingFields.push(item);
-            }
-        }
-
-        if (missingFields.length > 0) {
-            toast.error("All fields are required for each item.");
-            console.error("❌ Missing field items:", missingFields);
-            return;
-        }
-
-        const payload = {
-            menu_id: 1,
-            createdItems: newItems.map(item => ({
-                name: item.menuName.trim(),
-                price: item.price,
-                category: item.category,
-                type: item.type,
-                image: item.image
-            })),
-            updatedItems: updatedItems.map(item => ({
-                id: item.id,
-                name: item.menuName.trim(),
-                price: item.price,
-                category: item.category,
-                type: item.type,
-                image: item.image
-            }))
-        };
-
-        try {
-            console.log("📦 Sending payload:", payload);
-
-            const res = await fetch("/api/menus/update-or-create", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify(payload)
-            });
-
-            if (!res.ok) {
-                throw new Error("API request failed");
-            }
-
-            const result = await res.json();
-            console.log("✅ API response:", result);
-            toast.success("Changes successfully synced with the server.");
-        } catch (error) {
-            console.error("❌ API Error:", error);
-            toast.error("Failed to sync with server. Try again.");
-        }
-    };
 
 
     useEffect(() => {
         fetchAllMenus();
     }, []);
-
-    const handleAddItem = () => {
-        tableRef.current?.addNewRow();
-    };
 
     const fetchAllMenus = async () => {
         try {
@@ -278,47 +150,15 @@ const Menu = () => {
     }
 
     const handleShowMenuItems = async (menu) => {
-        try {
-            const res = await axios.get(`http://localhost:5001/api/items/menu/${menu._id}`, {
-                withCredentials: true,
-            });
-            setItems(res.data.items || []);
-        } catch (err) {
-            toast.error(err?.response?.data?.message || "Failed to fetch items");
-        } finally {
-            setShowMenuDetails(true);
-        }
-    }
-
-    const handleDownloadSample = () => {
-        const sampleData = [
-            ["Menu Name", "Price", "Category", "Type", "Image URL"],
-            ["Paneer Momos", 120, "Momos", "Veg", "https://example.com/images/paneer-momos.jpg"],
-            ["Spicy Chicken Pizza", 220, "Pizza", "Non-Veg", "https://example.com/images/spicy-chicken-pizza.jpg"],
-            ["Veg Cheese Burger", 150, "Burger", "Veg", "https://example.com/images/veg-cheese-burger.jpg"],
-            ["BBQ Chicken Burger", 180, "Burger", "Non-Veg", "https://example.com/images/bbq-chicken-burger.jpg"],
-            ["Classic Margherita", 160, "Pizza", "Veg", "https://example.com/images/margherita.jpg"],
-            ["Chicken Peri Peri Pizza", 240, "Pizza", "Non-Veg", "https://example.com/images/peri-peri-pizza.jpg"],
-            ["Corn Cheese Momos", 130, "Momos", "Veg", "https://example.com/images/corn-cheese-momos.jpg"],
-            ["Butter Chicken Momos", 170, "Momos", "Non-Veg", "https://example.com/images/butter-chicken-momos.jpg"],
-            ["Veggie Delight Pizza", 200, "Pizza", "Veg", "https://example.com/images/veggie-delight.jpg"],
-            ["Double Chicken Burger", 250, "Burger", "Non-Veg", "https://example.com/images/double-chicken-burger.jpg"],
-        ];
-
-        const csvContent = sampleData
-            .map(row => row.map(val => `"${val}"`).join(","))
-            .join("\n");
-
-        const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-        const url = URL.createObjectURL(blob);
-
-        const link = document.createElement("a");
-        link.href = url;
-        link.setAttribute("download", "menu-sample.csv");
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        setMenuId(menu._id);
+        setBrandOutletIds({
+            brand: menu.brand_id._id,
+            outlet: menu.outlet_id._id
+        });
+        setShowMenuDetails(true);
     };
+
+
 
 
     return (
@@ -456,48 +296,7 @@ const Menu = () => {
             }
             {
                 showMenuDetails &&
-                <div className="edit-menu">
-                    <div className="row top-bar">
-                        <GradientButton clickAction={handleAddItem}>Add Item</GradientButton>
-                        <div className="file-upload">
-                            <label htmlFor="fileInput" className="custom-file-label">
-                                <span className="file-name">{selectedFileName}</span>
-                                <span className="browse-btn">Browse</span>
-                            </label>
-                            <input
-                                type="file"
-                                id="fileInput"
-                                className="hidden-file-input"
-                                onChange={handleFileChange}
-                            />
-                            <GradientButton clickAction={handleUploadClick}>Upload</GradientButton>
-                            <Button clickAction={handleDownloadSample}>Download Format</Button>
-                        </div>
-                    </div>
-
-                    <div className="tables">
-                        <TableComponent ref={tableRef} items={items} />
-                        {/* <TableComponent items={items} /> */}
-                    </div>
-
-                    <div className="bottom-bar">
-
-                        <div className="search-container">
-                            <input
-                                type="text"
-                                placeholder="Filter results using any relevant detail..."
-                                className="search-input"
-                                onChange={(e) => console.log("Search:", e.target.value)}
-                            />
-                        </div>
-
-                        <div>
-                            <GradientButton clickAction={handleUpdateClick}>Update</GradientButton>
-                            <Button clickAction={() => setShowMenuDetails(false)}>Close</Button>
-                        </div>
-
-                    </div>
-                </div>
+                <EditMenu menuId={menuId} brandOutletIds={brandOutletIds} closeMenuDetails={()=>setShowMenuDetails(false)}/>
             }
         </>
     )

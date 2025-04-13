@@ -19,6 +19,7 @@ import 'react-toastify/dist/ReactToastify.css';
 import PaymentType from "./pages/PaymentType";
 import Floor from "./pages/Floor";
 import Table from "./pages/Table";
+// import Addon from "./pages/Addon";
 
 function App() {
     return (
@@ -45,6 +46,7 @@ function App() {
                             <Route path="/buy-x-get-y-item" element={<BuyXGetY />} />
                             <Route path="/categories" element={<Categories />} />
                             <Route path="/menu" element={<Menu />} />
+                            {/* <Route path="/addon" element={<Addon />} /> */}
                         </Route>
 
                         {/* Redirect unknown routes to login */}
