@@ -1,6 +1,6 @@
 // src/pages/PaymentType.js
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import CardAdd from '../components/CardAdd';
 import EditCard from '../components/EditCard';
 import HeadingText from '../components/HeadingText';
@@ -16,8 +16,11 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import useFetchBrands from '../hooks/useFetchBrands';
 import useFetchOutlets from '../hooks/useFetchOutlets';
+import useFilteredData from '../hooks/filterData';
+import Loader from '../components/Loader';
 
 const PaymentType = () => {
+    const API = process.env.REACT_APP_API_URL;
     const { brands } = useFetchBrands();
     const { outlets } = useFetchOutlets();
 
@@ -31,33 +34,32 @@ const PaymentType = () => {
     const [selectedBrand, setSelectedBrand] = useState(null);
     const [filteredOutlets, setFilteredOutlets] = useState([]);
     const [selectedOutlet, setSelectedOutlet] = useState(null);
-    const [applyOnAllOutlets, setApplyOnAllOutlets] = useState(false);
 
     const [paymentInfo, setPaymentInfo] = useState({
         _id: '',
         payment_name: '',
         status: 'active',
-        apply_on_all_outlets: false,
         brand_id: '',
         outlet_id: ''
     });
 
-    useEffect(() => {
-        fetchPaymentTypes();
-    }, []);
-
-    const fetchPaymentTypes = async () => {
+    const fetchPaymentTypes = useCallback(async () => {
         try {
-            const res = await axios.get("http://localhost:5001/api/payment-type/accessible", {
+            const res = await axios.get(`${API}/api/payment-type/accessible`, {
                 withCredentials: true,
             });
-            setPaymentTypes(res.data.paymentTypes || []);
+            setPaymentTypes(res.data?.paymentTypes || []);
         } catch (err) {
+            console.error("Error fetching payment types:", err);
             toast.error(err?.response?.data?.message || "Failed to fetch payment types");
         } finally {
             setLoading(false);
         }
-    };
+    }, [API]);
+
+    useEffect(() => {
+        fetchPaymentTypes();
+    }, [fetchPaymentTypes]);
 
     const handleAdd = () => {
         setIsEditing(false);
@@ -65,14 +67,12 @@ const PaymentType = () => {
             _id: '',
             payment_name: '',
             status: 'active',
-            apply_on_all_outlets: false,
             brand_id: '',
             outlet_id: ''
         });
         setFilteredOutlets([]);
         setSelectedBrand(null);
         setSelectedOutlet(null);
-        setApplyOnAllOutlets(false);
         setShowPopup(true);
     };
 
@@ -86,14 +86,12 @@ const PaymentType = () => {
             _id: type._id,
             payment_name: type.payment_name,
             status: type.status,
-            apply_on_all_outlets: type.apply_on_all_outlets,
             brand_id: type.brand_id?._id || '',
             outlet_id: type.outlet_id?._id || ''
         });
         setSelectedBrand(brand);
         setFilteredOutlets(outletOptions);
         setSelectedOutlet(outlet ? { label: outlet.name, value: outlet._id } : null);
-        setApplyOnAllOutlets(type.apply_on_all_outlets);
         setShowPopup(true);
     };
 
@@ -108,27 +106,48 @@ const PaymentType = () => {
         setFilteredOutlets(filtered);
         if (filtered.length === 0) {
             toast.error("Selected brand has no outlets.");
-            setApplyOnAllOutlets(false);
         }
     };
 
     const handleSave = async () => {
+        // Front-end validation
+        if (!paymentInfo.payment_name || paymentInfo.payment_name.trim().length < 3) {
+            toast.error("Payment name must be at least 3 characters long.");
+            return;
+        }
+        if (paymentInfo.payment_name.trim().length > 50) {
+            toast.error("Payment name cannot exceed 50 characters.");
+            return;
+        }
+        if (!paymentInfo.status) {
+            toast.error("Please select a status.");
+            return;
+        }
+        if (!selectedBrand?._id) {
+            toast.error("Please select a brand.");
+            return;
+        }
+        if (!selectedOutlet?.value) {
+            toast.error("Please select an outlet.");
+            return;
+        }
+
+        setLoading(true);
         const payload = {
-            payment_name: paymentInfo.payment_name,
+            payment_name: paymentInfo.payment_name.trim(),
             status: paymentInfo.status,
-            apply_on_all_outlets: applyOnAllOutlets,
-            brand_id: selectedBrand?._id || '',
-            outlet_id: (selectedOutlet && !applyOnAllOutlets) ? selectedOutlet.value : null
+            brand_id: selectedBrand._id,
+            outlet_id: selectedOutlet.value,
         };
 
         try {
             if (isEditing) {
-                await axios.put(`http://localhost:5001/api/payment-type/update/${paymentInfo._id}`, payload, {
+                await axios.put(`${API}/api/payment-type/update/${paymentInfo._id}`, payload, {
                     withCredentials: true,
                 });
                 toast.success("Payment type updated successfully!");
             } else {
-                await axios.post("http://localhost:5001/api/payment-type/create", payload, {
+                await axios.post(`${API}/api/payment-type/create`, payload, {
                     withCredentials: true,
                 });
                 toast.success("Payment type created successfully!");
@@ -137,25 +156,17 @@ const PaymentType = () => {
             setShowPopup(false);
         } catch (error) {
             toast.error(error?.response?.data?.message || "Failed to save payment type");
+        } finally {
+            setLoading(false);
         }
     };
 
-    const filteredPaymentTypes = paymentTypes.filter((type) => {
-        const searchLower = search.toLowerCase();
-        const statusLower = status.toLowerCase();
-        const matchesSearch = (
-            type.payment_name?.toLowerCase().includes(searchLower) ||
-            type.brand_id?.name?.toLowerCase().includes(searchLower) ||
-            type.brand_id?.short_name?.toLowerCase().includes(searchLower) ||
-            type.outlet_id?.name?.toLowerCase().includes(searchLower)
-        );
-        const matchesStatus = !status || type.status.toLowerCase() === statusLower;
-
-        return matchesSearch && matchesStatus;
-    });
 
     return (
         <>
+            {
+                loading && <Loader />
+            }
             <HeadingText>Payment Type</HeadingText>
             <SearchFilterBar
                 placeholder="Search Brand, Outlet, Payment Type..."
@@ -165,10 +176,15 @@ const PaymentType = () => {
                 onStatusChange={setStatus}
             />
             <div className="cards-container">
-                {loading ? (
-                    <p>Loading...</p>
-                ) : (
-                    filteredPaymentTypes.map(type => (
+                {
+                    useFilteredData({
+                        data: paymentTypes,
+                        searchTerm: search,
+                        searchKeys: ["name", "brand_id.full_name", "outlet_id.name"],
+                        filters: {
+                            status: status,
+                        },
+                    }).map(type => (
                         <EditCard
                             key={type._id}
                             title={type.payment_name}
@@ -177,41 +193,43 @@ const PaymentType = () => {
                             handleEdit={() => handleEdit(type)}
                         />
                     ))
-                )}
+                }
                 <CardAdd handleAdd={handleAdd} />
             </div>
 
             {showPopup && (
-                <Popup title="Payment Type" closePopup={() => setShowPopup(false)}>
+                <Popup title={`${isEditing ? 'Edit' : "Add"} Order Type`} closePopup={() => setShowPopup(false)}>
                     <div className="inputs-container">
-                        <SelectInput
-                            label="Select Brand"
-                            selectedOption={selectedBrand}
-                            onChange={handleBrandSelection}
-                            options={brands}
-                        />
-                        <InputField
-                            label="Payment Name"
-                            name="payment_name"
-                            type="text"
-                            value={paymentInfo.payment_name}
-                            onChange={handleInputChange}
-                            placeholder="Enter payment type name"
-                        />
-                        <SelectInput
-                            disable={applyOnAllOutlets || !selectedBrand || filteredOutlets.length === 0}
-                            label="Outlet"
-                            selectedOption={selectedOutlet}
-                            onChange={setSelectedOutlet}
-                            options={filteredOutlets.map(o => ({ label: o.name, value: o._id }))}
-                            placeholder={
-                                !selectedBrand
-                                    ? "Select a brand first"
-                                    : applyOnAllOutlets
-                                        ? "Disabled (All outlets)"
+                        <div className="inputs-row">
+                            <SelectInput
+                                label="Select Brand"
+                                selectedOption={selectedBrand}
+                                onChange={handleBrandSelection}
+                                options={brands}
+                            />
+                            <SelectInput
+                                disable={filteredOutlets.length === 0}
+                                label="Outlet"
+                                selectedOption={selectedOutlet}
+                                onChange={setSelectedOutlet}
+                                options={filteredOutlets.map(o => ({ label: o.name, value: o._id }))}
+                                placeholder={
+                                    !selectedBrand
+                                        ? "Select a brand first"
                                         : "Select outlet"
-                            }
-                        />
+                                }
+                            />
+                        </div>
+                        <div className="inputs-row" style={{ width: "50%" }}>
+                            <InputField
+                                label="Payment Name"
+                                name="payment_name"
+                                type="text"
+                                value={paymentInfo.payment_name}
+                                onChange={handleInputChange}
+                                placeholder="Enter payment type name"
+                            />
+                        </div>
                         <div className="checkbox-container">
                             {isEditing && (
                                 <Checkbox
@@ -225,12 +243,6 @@ const PaymentType = () => {
                                     }
                                 />
                             )}
-                            <Checkbox
-                                label="Apply on all outlets"
-                                checked={applyOnAllOutlets}
-                                disable={filteredOutlets.length === 0}
-                                onChange={() => setApplyOnAllOutlets(!applyOnAllOutlets)}
-                            />
                         </div>
                     </div>
                     <div className="action-btns-container">

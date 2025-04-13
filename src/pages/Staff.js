@@ -1,6 +1,6 @@
 // src/pages/Brand.js
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import CardAdd from '../components/CardAdd';
 import EditCard from '../components/EditCard';
 import HeadingText from '../components/HeadingText';
@@ -17,10 +17,14 @@ import useFetchOutlets from '../hooks/useFetchOutlets';
 import axios from 'axios';
 import SearchFilterBar from '../components/SearchFilterBar';
 import { toast } from 'react-toastify';
+import useFilteredData from '../hooks/filterData';
+import Loader from '../components/Loader';
 
 const Staff = () => {
+    const API = process.env.REACT_APP_API_URL;
     const { brands } = useFetchBrands();
     const { outlets } = useFetchOutlets();
+    const [loading, setLoading] = useState(true);
 
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
@@ -37,6 +41,7 @@ const Staff = () => {
 
     const [staffInfo, setStaffInfo] = useState({
         _id: null,
+        image: "",
         name: "",
         email: "",
         phone: "",
@@ -49,13 +54,9 @@ const Staff = () => {
         outlets: [],
     });
 
-    useEffect(() => {
-        fetchStaff();
-    }, []);
-
-    const fetchStaff = async () => {
+    const fetchStaff = useCallback(async () => {
         try {
-            const response = await axios.get("http://localhost:5001/api/staff/staff/authorized", {
+            const response = await axios.get(`${API}/api/staff/staff/authorized`, {
                 withCredentials: true,
             });
 
@@ -66,8 +67,14 @@ const Staff = () => {
             }
         } catch (error) {
             console.error("API Error:", error.response?.data || error.message);
+        } finally{
+            setLoading(false);
         }
-    };
+    }, [API]);
+
+    useEffect(() => {
+        fetchStaff();
+    }, [fetchStaff]);
 
     const handleAddNewStaff = () => {
         setIsEditing(false);
@@ -96,13 +103,14 @@ const Staff = () => {
         return date.toLocaleString();
     }
 
-
     const getRolesAndPermissions = async (staff) => {
+        setLoading(true);
         try {
 
             if (staff) {
                 setStaffInfo({
                     _id: staff._id,
+                    image: staff.image,
                     name: staff.name,
                     email: staff.email,
                     phone: staff.phone,
@@ -117,6 +125,7 @@ const Staff = () => {
             } else {
                 setStaffInfo({
                     _id: null,
+                    image: "",
                     name: "",
                     email: "",
                     phone: "",
@@ -130,7 +139,7 @@ const Staff = () => {
                 });
             }
 
-            const response = await axios.get("http://localhost:5001/api/utils/roles-permissions", {
+            const response = await axios.get(`${API}/api/utils/roles-permissions`, {
                 withCredentials: true,
             });
 
@@ -162,6 +171,8 @@ const Staff = () => {
             console.error("API Error:", error.response?.data || error.message);
             setRoles([]);
             setPermissions([]);
+        } finally{
+            setLoading(false);
         }
     };
 
@@ -232,32 +243,6 @@ const Staff = () => {
         });
     };
 
-    const filteredStaffs = staff.filter((staff) => {
-        const searchLower = search.toLowerCase();
-        const statusLower = status?.toLowerCase();
-
-        // Check if staff name matches
-        const matchesStaffName = staff.name.toLowerCase().includes(searchLower);
-
-        // Check if any brand name or short_name matches
-        const matchesBrand = staff.brands?.some(brand =>
-            brand.name.toLowerCase().includes(searchLower) ||
-            brand.short_name.toLowerCase().includes(searchLower)
-        );
-
-        // Check if any outlet name matches
-        const matchesOutlet = staff.outlets?.some(outlet =>
-            outlet.name.toLowerCase().includes(searchLower)
-        );
-
-        const matchesSearch = matchesStaffName || matchesBrand || matchesOutlet;
-
-        // Check if staff status matches (or if no status filter applied)
-        const matchesStatus = !status || staff.status.toLowerCase() === statusLower;
-
-        return matchesSearch && matchesStatus;
-    });
-
     const handleStatusChange = () => {
         setStaffInfo((prev) => ({
             ...prev,
@@ -265,8 +250,8 @@ const Staff = () => {
         }));
     };
 
-
     const handleStaffSave = async () => {
+        setLoading(true);
         const errors = [];
 
         // Validations
@@ -295,6 +280,7 @@ const Staff = () => {
 
         // Prepare data
         const formattedStaffData = {
+            image: staffInfo.image,
             name: staffInfo.name,
             email: staffInfo.email,
             phone: staffInfo.phone,
@@ -316,7 +302,7 @@ const Staff = () => {
         try {
             if (isEditing) {
                 await axios.put(
-                    `http://localhost:5001/api/staff/update/${staffInfo._id}`,
+                    `${API}/api/staff/update/${staffInfo._id}`,
                     formattedStaffData,
                     { withCredentials: true }
                 );
@@ -324,7 +310,7 @@ const Staff = () => {
                 toast.success("Staff updated successfully!");
             } else {
                 await axios.post(
-                    "http://localhost:5001/api/staff/create",
+                    `${API}/api/staff/create`,
                     formattedStaffData,
                     { withCredentials: true }
                 );
@@ -336,12 +322,23 @@ const Staff = () => {
         } catch (error) {
             console.error("Error saving staff:", error.response?.data || error.message);
             toast.error(error.response?.data?.message || "An error occurred while saving staff.");
+        } finally{
+            setLoading(false);
         }
     };
 
+    const filteredData = useFilteredData({
+        data: staff,
+        searchTerm: search,
+        searchKeys: ['name', 'email', 'phone', "outlets.name", "role.name", "brands.full_name"],
+        filters: { status: status },
+    });
 
     return (
         <>
+        {
+            loading && <Loader/>
+        }
             <HeadingText>Staff</HeadingText>
             {
                 !showSecondScreen ?
@@ -355,12 +352,14 @@ const Staff = () => {
                         />
 
                         <div className="cards-container">
-                            {
-                                filteredStaffs.map(staff => (
-                                    <EditCard key={staff._id} firstLetter={staff.name.charAt(0)} title={staff.name} role={staff.role.name} time={formatDate(staff.createdAt)} status={staff.status} handleEdit={() => handleStaffEdit(staff)} />
-                                ))
-                            }
-                            <CardAdd handleAdd={handleAddNewStaff} />
+                            <>
+                                {
+                                    filteredData.map(staff => (
+                                        <EditCard key={staff._id} firstLetter={staff.name.charAt(0)} title={staff.name} role={staff.role.name} time={formatDate(staff.createdAt)} status={staff.status} handleEdit={() => handleStaffEdit(staff)} />
+                                    ))
+                                }
+                                <CardAdd handleAdd={handleAddNewStaff} />
+                            </>
                         </div>
 
                     </div> :
@@ -402,6 +401,16 @@ const Staff = () => {
                         {
                             showSecondScreenSection === "PROFILE" &&
                             <div className="profile-info">
+                                <img src={staffInfo.image} alt="" onError={(e) => e.target.src = "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png"} style={{ borderRadius: "10%", height: "10rem", width: "10rem" }} />
+                                <InputField
+                                    label="Image"
+                                    type="url"
+                                    name={"image"}
+                                    value={staffInfo.image || ""}
+                                    onChange={handleInputChange}
+                                    placeholder="Enter Name"
+                                    required
+                                />
                                 <InputField
                                     label="Name"
                                     type="text"

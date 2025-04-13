@@ -78,22 +78,7 @@ const useOutlets = () => {
         }
     };
 
-    // ✅ Delete an outlet
-    const deleteOutlet = async (outletId) => {
-        setLoading(true);
-        try {
-            await axios.delete(`http://localhost:5001/api/outlets/${outletId}`, {
-                withCredentials: true,
-            });
-            setOutlets((prevOutlets) => prevOutlets.filter((outlet) => outlet._id !== outletId));
-            setError(""); // Clear error on success
-        } catch (error) {
-            setError(error.response?.data?.message || "Failed to delete outlet.");
-        }
-        setLoading(false);
-    };
-
-    return { outlets, loading, error, fetchOutlets, createOutlet, updateOutlet, deleteOutlet };
+    return { outlets, loading, error, fetchOutlets, createOutlet, updateOutlet };
 };
 
 export default useOutlets;

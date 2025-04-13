@@ -1,30 +1,42 @@
-const filterData = ({
-  data = [],
-  searchTerm = "",
-  searchKeys = [],
-  filters = {},
-}) => {
-  if (!data.length) return []; // Early return if no data
+import { useMemo } from 'react';
 
-  return data.filter((item) => {
-    // Check if the item matches the search term in any of the search keys
-    const matchesSearch = searchKeys.some((key) =>
-      (item[key] || "").toString().toLowerCase().includes(searchTerm.toLowerCase())
-    );
+function getValueByPath(obj, path) {
+  return path.split('.').reduce((acc, key) => {
+    if (Array.isArray(acc)) {
+      return acc.flatMap(item => item?.[key] || []);
+    }
+    return acc?.[key];
+  }, obj);
+}
 
-    // Check if the item matches all filter conditions
-    const matchesFilters = Object.entries(filters).every(([filterKey, filterValue]) => {
-      if (!filterValue) return true; // If the filter value is empty, ignore it
-      const itemValue = item[filterKey];
-      return (
-        itemValue &&
-        String(itemValue).toLowerCase() === String(filterValue).toLowerCase()
-      );
+function useFilteredData({ data, searchTerm, searchKeys, filters = {} }) {
+  const filteredData = useMemo(() => {
+    return data.filter(item => {
+      const matchesSearch = searchTerm
+        ? searchKeys.some(key => {
+          const value = getValueByPath(item, key);
+          if (Array.isArray(value)) {
+            return value.some(v =>
+              typeof v === 'string' &&
+              v.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+          }
+          return (
+            typeof value === 'string' &&
+            value.toLowerCase().includes(searchTerm.toLowerCase())
+          );
+        })
+        : true;
+
+      const matchesFilters = Object.entries(filters).every(([key, val]) => {
+        return val === '' || item[key] === val;
+      });
+
+      return matchesSearch && matchesFilters;
     });
+  }, [data, searchTerm, searchKeys, filters]);
 
-    // Return true if both search and filters match
-    return matchesSearch && matchesFilters;
-  });
-};
+  return filteredData;
+}
 
-export default filterData;
+export default useFilteredData;

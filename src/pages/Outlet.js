@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import CardAdd from '../components/CardAdd';
 import EditCard from '../components/EditCard';
 import HeadingText from '../components/HeadingText';
@@ -8,16 +8,21 @@ import './Brand.css';
 import './Outlet.css';
 import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
-import useOutlets from '../hooks/useOutlets';
 import SelectInput from '../components/SelectInput';
 import Checkbox from '../components/Checkbox';
 import useFetchBrands from '../hooks/useFetchBrands';
 import SearchFilterBar from '../components/SearchFilterBar';
 import timezones from '../data/timezones.json';
+import { toast } from 'react-toastify';
+import axios from 'axios';
+import Loader from '../components/Loader';
+import useFilteredData from '../hooks/filterData';
 
 const Outlet = () => {
+    const API = process.env.REACT_APP_API_URL;
     const { brands } = useFetchBrands();
-    const { outlets, loading, error, updateOutlet, createOutlet } = useOutlets(); // API methods
+    const [outlets, setOutlets] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
     const [isEditing, setIsEditing] = useState(false);
@@ -44,6 +49,23 @@ const Outlet = () => {
         postal_code: "",
         status: true,
     });
+
+    const fetchOutlets = useCallback(async () => {
+        try {
+            const response = await axios.get(`${API}/api/outlets`, {
+                withCredentials: true,
+            });
+            setOutlets(response.data);
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to fetch brands.");
+        } finally {
+            setLoading(false);
+        }
+    }, [API]);
+
+    useEffect(() => {
+        fetchOutlets();
+    }, [fetchOutlets]); // No warning, fetchBrands is memoized
 
     const handleOutletEdit = (outlet) => {
         setIsEditing(true);
@@ -139,7 +161,6 @@ const Outlet = () => {
         } else {
             createOutlet(formattedOutletData);
         }
-        setShowPopup(false);
     };
 
 
@@ -148,19 +169,90 @@ const Outlet = () => {
         return date.toLocaleString();
     }
 
+    const validateOutletData = (data) => {
+        const errors = {};
 
-    const filteredOutlets = outlets.filter((outlet) => {
-        const matchesSearch = outlet.name.toLowerCase().includes(search.toLowerCase()) ||
-            outlet.brand_id.short_name.toLowerCase().includes(search.toLowerCase());
+        const timeRegex = /^([0-1][0-9]|2[0-3]):([0-5][0-9])$/;
+        const phoneRegex = /^\d{3}-\d{3}-\d{4}$/;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-        const matchesStatus =
-            !status || outlet.status.toLowerCase() === status.toLowerCase(); // empty status means all
+        if (!data.brand_id) errors.brand_id = "Brand is required.";
+        if (!data.name) errors.name = "Name is required.";
+        if (!data.code) errors.code = "Code is required.";
+        if (!data.email || !emailRegex.test(data.email)) errors.email = "Valid email is required.";
+        if (!data.phone || !phoneRegex.test(data.phone)) errors.phone = "Phone must be ###-###-####.";
 
-        return matchesSearch && matchesStatus;
-    });
+        if (!data.timezone?.label) errors.timezone_label = "Timezone label is required.";
+        if (!data.timezone?.value) errors.timezone_value = "Timezone value is required.";
+
+        if (!data.opening_time || !timeRegex.test(data.opening_time))
+            errors.opening_time = "Opening time must be in HH:mm format.";
+        if (!data.closing_time || !timeRegex.test(data.closing_time))
+            errors.closing_time = "Closing time must be in HH:mm format.";
+
+        if (!data.street) errors.street = "Street is required.";
+        if (!data.city) errors.city = "City is required.";
+        if (!data.state) errors.state = "State is required.";
+        if (!data.country) errors.country = "Country is required.";
+
+        return errors;
+    };
+
+
+    // ✅ Create a new outlet
+    const createOutlet = async (outletData) => {
+        const errors = validateOutletData(outletData);
+        if (Object.keys(errors).length > 0) {
+            Object.values(errors).forEach((msg) => toast.error(msg));
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const response = await axios.post(`${API}/api/outlets`, outletData, {
+                withCredentials: true,
+            });
+            setOutlets((prevOutlets) => [...prevOutlets, response.data.outlet]);
+            setShowPopup(false);
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to create outlet.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ✅ Update an existing outlet
+    const updateOutlet = async (outletId, updatedData) => {
+        const errors = validateOutletData(updatedData);
+        if (Object.keys(errors).length > 0) {
+            Object.values(errors).forEach((msg) => toast.error(msg));
+            return;
+        }
+
+        setLoading(true);
+        try {
+            const response = await axios.put(`${API}/api/outlets/${outletId}`, updatedData, {
+                withCredentials: true,
+            });
+
+            const updatedOutlet = response.data.outlet;
+            setOutlets((prevOutlets) =>
+                prevOutlets.map((outlet) => (outlet._id === outletId ? updatedOutlet : outlet))
+            );
+
+            setShowPopup(false);
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to update outlet.");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
         <>
+            {
+                loading && <Loader />
+            }
             <HeadingText>Outlet</HeadingText>
             <SearchFilterBar
                 placeholder="Search Brand, Outlet..."
@@ -170,29 +262,30 @@ const Outlet = () => {
                 onStatusChange={setStatus}
             />
             <div className="cards-container">
-                {loading ? (
-                    <p>Loading brands...</p>
-                ) : error ? (
-                    <p style={{ color: "red" }}>{error}</p>
-                ) : (
-                    <>
-                        {filteredOutlets.map((outlet) => (
-                            <EditCard
-                                key={outlet._id}
-                                firstLetter={outlet.name.charAt(0)}
-                                title={outlet.name}
-                                time={formatDate(outlet.updatedAt)}
-                                link={outlet.website}
-                                status={outlet.status}
-                                handleEdit={() => handleOutletEdit(outlet)}
-                            />
-                        ))}
-                        <CardAdd handleAdd={handleAddNewOutlet} />
-                    </>
-                )}
+                <>
+                    {useFilteredData({
+                        data: outlets,
+                        searchTerm: search,
+                        searchKeys: ["name", "code", "email", "phone", "website", "license_no", "food_license", "website", "city", "state", "country", "postal_code", "street_address", "brand_id.full_name"],
+                        filters: {
+                            status: status,
+                        },
+                    }).map((outlet) => (
+                        <EditCard
+                            key={outlet._id}
+                            firstLetter={outlet.name.charAt(0)}
+                            title={outlet.name}
+                            time={formatDate(outlet.updatedAt)}
+                            link={outlet.website}
+                            status={outlet.status}
+                            handleEdit={() => handleOutletEdit(outlet)}
+                        />
+                    ))}
+                    <CardAdd handleAdd={handleAddNewOutlet} />
+                </>
             </div>
             {showPopup && (
-                <Popup title="Outlet Configuration" closePopup={() => setShowPopup(false)}>
+                <Popup title={isEditing ? "Edit Outlet" : "Add Outlet"} closePopup={() => setShowPopup(false)}>
                     <div className="inputs-row">
                         <SelectInput
                             selectedOption={selectedBrand}
@@ -234,7 +327,7 @@ const Outlet = () => {
                             label="Phone No"
                             type="tel"
                             name="phone"
-                            format={"(###) ###-####"}
+                            format={"###-###-####"}
                             value={outletData.phone}
                             onChange={handleInputChange}
                             required
@@ -262,7 +355,7 @@ const Outlet = () => {
                             name="opening_time"
                             value={outletData.opening_time}
                             onChange={handleInputChange}
-                            format={"##/##"}
+                            format={"##:##"}
                             required
                         />
                     </div>
@@ -271,6 +364,7 @@ const Outlet = () => {
                         <InputField
                             label="Closing Time"
                             type="text"
+                            format={"##:##"}
                             name="closing_time"
                             value={outletData.closing_time}
                             onChange={handleInputChange}

@@ -3,7 +3,6 @@
 import React, { useContext, useState } from 'react';
 import './Header.css';
 import logo from "../assets/Logo.png";
-import user from "../assets/user.png";
 import downArrow from "../assets/downArrow.png";
 import AuthContext from "../context/AuthContext";
 
@@ -27,7 +26,7 @@ const Header = () => {
       </div>
       <div className="right-side">
         <div className="profile-image">
-          <img src={staff.image} alt="user profile" onError={(e) => e.target.src = user} />
+          <img src={staff.image} alt="user profile" onError={(e) => e.target.src = "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png"} />
         </div>
         <div>
           <p className="name">{staff.name}</p>

@@ -8,11 +8,11 @@ import "./Brand.css";
 import GradientButton from "../components/GradientButton";
 import Button from "../components/Button";
 import Loader from "../components/Loader";
-import filterData from "../hooks/filterData";
 import Checkbox from "../components/Checkbox";
 import SearchFilterBar from "../components/SearchFilterBar";
 import { toast } from "react-toastify";
 import axios from "axios";
+import useFilteredData from "../hooks/filterData";
 
 const Brand = () => {
     const API = process.env.REACT_APP_API_URL;
@@ -222,10 +222,10 @@ const Brand = () => {
                 onStatusChange={setStatus}
             />
             <div className="cards-container">
-                {filterData({
+                {useFilteredData({
                     data: brands,
                     searchTerm: search,
-                    searchKeys: ["full_name", "short_name", "email", "phone", "gst_no", "license_no", "food_license", "website", "city", "state", "country", "postal_code", "street_address"],
+                    searchKeys: ["full_name", "short_name", "email", "phone", "website", "city", "state", "country", "postal_code", "street"],
                     filters: {
                         status: status,
                     },

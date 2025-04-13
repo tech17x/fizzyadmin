@@ -1,6 +1,6 @@
 // src/pages/OrderType.js
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import CardAdd from '../components/CardAdd';
 import EditCard from '../components/EditCard';
 import HeadingText from '../components/HeadingText';
@@ -16,6 +16,8 @@ import { toast } from 'react-toastify';
 import axios from 'axios';
 import useFetchBrands from '../hooks/useFetchBrands';
 import useFetchOutlets from '../hooks/useFetchOutlets';
+import useFilteredData from '../hooks/filterData';
+import Loader from '../components/Loader';
 
 const category = [
     { label: "Pickup", value: "pickup" },
@@ -26,6 +28,7 @@ const category = [
 ];
 
 const OrderType = () => {
+    const API = process.env.REACT_APP_API_URL;
     const { brands } = useFetchBrands();
     const { outlets } = useFetchOutlets();
 
@@ -38,35 +41,34 @@ const OrderType = () => {
     const [selectedBrand, setSelectedBrand] = useState(null);
     const [filteredOutlets, setFilteredOutlets] = useState([]);
     const [selectedOutlet, setSelectedOutlet] = useState(null);
-    const [applyOnAllOutlets, setApplyOnAllOutlets] = useState(false);
     const [selectedCategory, setSelectedCategory] = useState(null);
     const [orderTypeInfo, setOrderTypeInfo] = useState({
         _id: '',
         name: '',
         category: '',
         status: 'active',
-        apply_on_all_outlets: false,
         brand_id: '',
         outlet_id: '',
     });
 
-    useEffect(() => {
-        fetchOrderTypes();
-    }, []);
-
-    const fetchOrderTypes = async () => {
+    const fetchOrderTypes = useCallback(async () => {
         try {
-            const response = await axios.get("http://localhost:5001/api/order-type/accessible", {
+            const response = await axios.get(`${API}/api/order-type/accessible`, {
                 withCredentials: true,
             });
-            setOrderTypes(response.data.orderTypes);
+            setOrderTypes(response.data?.orderTypes || []);
         } catch (error) {
             console.error("Error fetching order types:", error);
             toast.error(error?.response?.data?.message || "Failed to fetch order types");
         } finally {
             setLoading(false);
         }
-    };
+    }, [API]);
+
+    useEffect(() => {
+        fetchOrderTypes();
+    }, [fetchOrderTypes]);
+
 
     const handleAdd = () => {
         setIsEditing(false);
@@ -75,7 +77,6 @@ const OrderType = () => {
             name: '',
             category: '',
             status: 'active',
-            apply_on_all_outlets: false,
             brand_id: '',
             outlet_id: '',
         });
@@ -83,7 +84,6 @@ const OrderType = () => {
         setSelectedBrand(null);
         setSelectedOutlet(null);
         setSelectedCategory(null);
-        setApplyOnAllOutlets(false);
         setShowPopup(true);
     };
 
@@ -98,7 +98,6 @@ const OrderType = () => {
             _id: type._id,
             name: type.name,
             status: type.status,
-            apply_on_all_outlets: type.apply_on_all_outlets,
             brand_id: type.brand_id?._id || '',
             outlet_id: type.outlet_id?._id || '',
         });
@@ -106,7 +105,6 @@ const OrderType = () => {
         setFilteredOutlets(outletOptions);
         setSelectedOutlet(outlet ? { label: outlet.name, value: outlet._id } : null);
         setSelectedCategory(categoryOption);
-        setApplyOnAllOutlets(type.apply_on_all_outlets);
         setShowPopup(true);
     };
 
@@ -121,28 +119,53 @@ const OrderType = () => {
         setFilteredOutlets(filtered);
         if (filtered.length === 0) {
             toast.error("Selected brand has no outlets.");
-            setApplyOnAllOutlets(false);
         }
     };
 
     const handleSave = async () => {
+        // Front-end Validation
+        if (!orderTypeInfo.name || orderTypeInfo.name.trim().length < 3) {
+            toast.error("Name must be at least 3 characters long.");
+            return;
+        }
+        if (orderTypeInfo.name.trim().length > 50) {
+            toast.error("Name cannot exceed 50 characters.");
+            return;
+        }
+        if (!selectedCategory?.value) {
+            toast.error("Please select a category.");
+            return;
+        }
+        if (!orderTypeInfo.status) {
+            toast.error("Please select a status.");
+            return;
+        }
+        if (!selectedBrand?._id) {
+            toast.error("Please select a brand.");
+            return;
+        }
+        if (!selectedOutlet?.value) {
+            toast.error("Please select an outlet.");
+            return;
+        }
+
+        setLoading(true);
         const payload = {
-            name: orderTypeInfo.name,
-            category: selectedCategory?.value || '',
+            name: orderTypeInfo.name.trim(),
+            category: selectedCategory.value,
             status: orderTypeInfo.status,
-            apply_on_all_outlets: applyOnAllOutlets,
-            brand_id: selectedBrand?._id || '',
-            outlet_id: (selectedOutlet && !applyOnAllOutlets) ? selectedOutlet.value : null,
+            brand_id: selectedBrand._id,
+            outlet_id: selectedOutlet.value,
         };
 
         try {
             if (isEditing) {
-                await axios.put(`http://localhost:5001/api/order-type/update/${orderTypeInfo._id}`, payload, {
+                await axios.put(`${API}/api/order-type/update/${orderTypeInfo._id}`, payload, {
                     withCredentials: true,
                 });
                 toast.success("Order type updated successfully!");
             } else {
-                await axios.post("http://localhost:5001/api/order-type/create", payload, {
+                await axios.post(`${API}/api/order-type/create`, payload, {
                     withCredentials: true,
                 });
                 toast.success("Order type created successfully!");
@@ -152,41 +175,17 @@ const OrderType = () => {
         } catch (error) {
             console.error("Error saving order type:", error);
             toast.error(error?.response?.data?.message || "Failed to save order type");
+        } finally {
+            setLoading(false);
         }
     };
-
-    const filteredOrderTypes = orderTypes.filter((orderType) => {
-        const searchLower = search.toLowerCase();
-        const statusLower = status?.toLowerCase();
-
-        // Check if order type name matches
-        const matchesName = orderType.name?.toLowerCase().includes(searchLower);
-
-        // Check if order type category matches
-        const matchesCategory = orderType.category?.toLowerCase().includes(searchLower);
-
-        // Check if associated brand name or short_name matches
-        const matchesBrand = orderType.brand_id &&
-            (
-                orderType.brand_id.name?.toLowerCase().includes(searchLower) ||
-                orderType.brand_id.short_name?.toLowerCase().includes(searchLower)
-            );
-
-        // Check if associated outlet name matches
-        const matchesOutlet = orderType.outlet_id &&
-            orderType.outlet_id.name?.toLowerCase().includes(searchLower);
-
-        const matchesSearch = matchesName || matchesCategory || matchesBrand || matchesOutlet;
-
-        // Check if order type status matches (or no status filter applied)
-        const matchesStatus = !status || orderType.status?.toLowerCase() === statusLower;
-
-        return matchesSearch && matchesStatus;
-    });
 
 
     return (
         <>
+            {
+                loading && <Loader />
+            }
             <HeadingText>Order Type</HeadingText>
             <SearchFilterBar
                 placeholder="Search Brand, Outlet, Order Type..."
@@ -196,10 +195,15 @@ const OrderType = () => {
                 onStatusChange={setStatus}
             />
             <div className="cards-container">
-                {loading ? (
-                    <p>Loading...</p>
-                ) : (
-                    filteredOrderTypes.map(type => (
+                {
+                    useFilteredData({
+                        data: orderTypes,
+                        searchTerm: search,
+                        searchKeys: ["name", "category", "brand_id.full_name", "outlet_id.name"],
+                        filters: {
+                            status: status,
+                        },
+                    }).map(type => (
                         <EditCard
                             key={type._id}
                             title={type.name}
@@ -208,47 +212,49 @@ const OrderType = () => {
                             handleEdit={() => handleEdit(type)}
                         />
                     ))
-                )}
+                }
                 <CardAdd handleAdd={handleAdd} />
             </div>
 
             {showPopup && (
-                <Popup title="Order Type" closePopup={() => setShowPopup(false)}>
+                <Popup title={`${isEditing ? 'Edit' : "Add"} Order Type`} closePopup={() => setShowPopup(false)}>
                     <div className="inputs-container">
-                        <SelectInput
-                            label="Select Brand"
-                            selectedOption={selectedBrand}
-                            onChange={handleBrandSelection}
-                            options={brands}
-                        />
-                        <InputField
-                            label="Type Name"
-                            name="name"
-                            type="text"
-                            value={orderTypeInfo.name}
-                            onChange={handleInputChange}
-                            placeholder="Enter Order Type name"
-                        />
-                        <SelectInput
-                            label="Category"
-                            selectedOption={selectedCategory}
-                            onChange={setSelectedCategory}
-                            options={category}
-                        />
-                        <SelectInput
-                            disable={applyOnAllOutlets || !selectedBrand || filteredOutlets.length === 0}
-                            label="Outlet"
-                            selectedOption={selectedOutlet}
-                            onChange={setSelectedOutlet}
-                            options={filteredOutlets.map(o => ({ label: o.name, value: o._id }))}
-                            placeholder={
-                                !selectedBrand
-                                    ? "Select a brand first"
-                                    : applyOnAllOutlets
-                                        ? "Disabled (All outlets)"
+                        <div className="inputs-row">
+                            <SelectInput
+                                label="Select Brand"
+                                selectedOption={selectedBrand}
+                                onChange={handleBrandSelection}
+                                options={brands}
+                            />
+                            <SelectInput
+                                disable={filteredOutlets.length === 0}
+                                label="Outlet"
+                                selectedOption={selectedOutlet}
+                                onChange={setSelectedOutlet}
+                                options={filteredOutlets.map(o => ({ label: o.name, value: o._id }))}
+                                placeholder={
+                                    !selectedBrand
+                                        ? "Select a brand first"
                                         : "Select outlet"
-                            }
-                        />
+                                }
+                            />
+                        </div>
+                        <div className="inputs-row">
+                            <SelectInput
+                                label="Category"
+                                selectedOption={selectedCategory}
+                                onChange={setSelectedCategory}
+                                options={category}
+                            />
+                            <InputField
+                                label="Type Name"
+                                name="name"
+                                type="text"
+                                value={orderTypeInfo.name}
+                                onChange={handleInputChange}
+                                placeholder="Enter Order Type name"
+                            />
+                        </div>
                         <div className="checkbox-container">
                             {isEditing && (
                                 <Checkbox
@@ -262,12 +268,6 @@ const OrderType = () => {
                                     }
                                 />
                             )}
-                            <Checkbox
-                                label="Apply on all outlets"
-                                checked={applyOnAllOutlets}
-                                disable={filteredOutlets.length === 0}
-                                onChange={() => setApplyOnAllOutlets(!applyOnAllOutlets)}
-                            />
                         </div>
                     </div>
                     <div className="action-btns-container">
