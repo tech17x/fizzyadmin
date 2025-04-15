@@ -9,7 +9,7 @@ const useFetchOutlets = () => {
     useEffect(() => {
         const fetchOutlets = async () => {
             try {
-                const response = await axios.get(`http://localhost:5001/api/outlets/assigned/outlets`, {
+                const response = await axios.get(`http://88.222.244.251:5001/api/outlets/assigned/outlets`, {
                     withCredentials: true,
                 });
                 setOutlets(response.data);

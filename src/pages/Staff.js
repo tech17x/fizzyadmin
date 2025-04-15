@@ -67,7 +67,7 @@ const Staff = () => {
             }
         } catch (error) {
             console.error("API Error:", error.response?.data || error.message);
-        } finally{
+        } finally {
             setLoading(false);
         }
     }, [API]);
@@ -171,7 +171,7 @@ const Staff = () => {
             console.error("API Error:", error.response?.data || error.message);
             setRoles([]);
             setPermissions([]);
-        } finally{
+        } finally {
             setLoading(false);
         }
     };
@@ -254,38 +254,52 @@ const Staff = () => {
         setLoading(true);
         const errors = [];
 
-        // Validations
+        // Required Fields
         if (!staffInfo.name?.trim()) errors.push("Name is required.");
-        if (!staffInfo.email?.trim()) errors.push("Email is required.");
-        if (!staffInfo.phone?.trim()) errors.push("Phone is required.");
+        if (!staffInfo.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(staffInfo.email))
+            errors.push("Valid email is required.");
+        if (!staffInfo.phone?.trim() || !/^\+?\d{10,15}$/.test(staffInfo.phone))
+            errors.push("Valid phone number is required.");
         if (!selectedRole?._id) errors.push("Role is required.");
-        if (!Object.keys(checkedPermissions).some(key => checkedPermissions[key])) errors.push("Select at least one permission.");
-        if (!staffInfo.brands?.length) errors.push("Select at least one brand.");
-        if (!staffInfo.outlets?.length) errors.push("Select at least one outlet.");
 
-        if (!isEditing && !staffInfo.password) {
-            errors.push("Password is required for new staff.");
+        const selectedPermissions = Object.keys(checkedPermissions).filter(key => checkedPermissions[key]);
+        if (!selectedPermissions.length) errors.push("Permissions must contain at least one item.");
+
+        if (!Array.isArray(staffInfo.brands) || staffInfo.brands.length === 0)
+            errors.push("At least one brand is required.");
+        if (!Array.isArray(staffInfo.outlets))
+            errors.push("Outlets must be an array.");
+
+        // Password
+        if (!isEditing) {
+            if (!staffInfo.password?.trim()) {
+                errors.push("Password is required for new staff.");
+            } else if (staffInfo.password.length < 6) {
+                errors.push("Password must be at least 6 characters.");
+            }
         } else if (staffInfo.password && staffInfo.password.length < 6) {
             errors.push("Password must be at least 6 characters.");
         }
 
+        // POS PIN (Optional but must be valid if present)
         if (staffInfo.pos_login_pin && !/^\d{4}$/.test(staffInfo.pos_login_pin)) {
             errors.push("POS login PIN must be a 4-digit number.");
         }
 
         if (errors.length > 0) {
             errors.forEach(err => toast.error(err));
+            setLoading(false);
             return;
         }
 
-        // Prepare data
+        // Format data to send
         const formattedStaffData = {
             image: staffInfo.image,
             name: staffInfo.name,
             email: staffInfo.email,
             phone: staffInfo.phone,
             role: selectedRole._id,
-            permissions: Object.keys(checkedPermissions).filter(key => checkedPermissions[key]),
+            permissions: selectedPermissions,
             brands: staffInfo.brands,
             outlets: staffInfo.outlets,
             status: isEditing ? staffInfo.status : "active",
@@ -301,31 +315,23 @@ const Staff = () => {
 
         try {
             if (isEditing) {
-                await axios.put(
-                    `${API}/api/staff/update/${staffInfo._id}`,
-                    formattedStaffData,
-                    { withCredentials: true }
-                );
-                fetchStaff();
+                await axios.put(`${API}/api/staff/update/${staffInfo._id}`, formattedStaffData, { withCredentials: true });
                 toast.success("Staff updated successfully!");
             } else {
-                await axios.post(
-                    `${API}/api/staff/create`,
-                    formattedStaffData,
-                    { withCredentials: true }
-                );
-                fetchStaff();
+                await axios.post(`${API}/api/staff/create`, formattedStaffData, { withCredentials: true });
                 toast.success("Staff created successfully!");
             }
 
+            fetchStaff();
             setShowSecondScreen(false);
         } catch (error) {
             console.error("Error saving staff:", error.response?.data || error.message);
             toast.error(error.response?.data?.message || "An error occurred while saving staff.");
-        } finally{
+        } finally {
             setLoading(false);
         }
     };
+
 
     const filteredData = useFilteredData({
         data: staff,
@@ -336,9 +342,9 @@ const Staff = () => {
 
     return (
         <>
-        {
-            loading && <Loader/>
-        }
+            {
+                loading && <Loader />
+            }
             <HeadingText>Staff</HeadingText>
             {
                 !showSecondScreen ?

@@ -82,7 +82,7 @@ const Discount = () => {
 
     const fetchOrderTypes = async () => {
         try {
-            const response = await axios.get("http://localhost:5001/api/order-type/accessible", {
+            const response = await axios.get("http://88.222.244.251:5001/api/order-type/accessible", {
                 withCredentials: true,
             });
             setOrderTypes(response.data.orderTypes);

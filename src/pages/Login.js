@@ -24,7 +24,7 @@ const Login = () => {
 
         try {
             const response = await axios.post(
-                "http://localhost:5001/api/staff/login",
+                "http://88.222.244.251:5001/api/staff/login",
                 { email: username, password },
                 { withCredentials: true }
             );

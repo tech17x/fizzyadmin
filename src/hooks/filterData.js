@@ -17,13 +17,11 @@ function useFilteredData({ data, searchTerm, searchKeys, filters = {} }) {
           const value = getValueByPath(item, key);
           if (Array.isArray(value)) {
             return value.some(v =>
-              typeof v === 'string' &&
-              v.toLowerCase().includes(searchTerm.toLowerCase())
+              String(v).toLowerCase().includes(searchTerm.toLowerCase())
             );
           }
           return (
-            typeof value === 'string' &&
-            value.toLowerCase().includes(searchTerm.toLowerCase())
+            String(value).toLowerCase().includes(searchTerm.toLowerCase())
           );
         })
         : true;
