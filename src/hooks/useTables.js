@@ -10,7 +10,7 @@ const useTables = () => {
     const fetchTables = useCallback(async () => {
         setLoading(true);
         try {
-            const response = await axios.get("http://88.222.244.251:5001/api/tables/staff-tables", {
+            const response = await axios.get("http://localhost:5002/api/tables/staff-tables", {
                 withCredentials: true,
             });
             setTables(response.data.tables || []);
@@ -31,7 +31,7 @@ const useTables = () => {
         setLoading(true);
         try {
             const response = await axios.post(
-                "http://88.222.244.251:5001/api/tables/create",
+                "http://localhost:5002/api/tables/create",
                 tableData,
                 { withCredentials: true }
             );
@@ -49,7 +49,7 @@ const useTables = () => {
         setLoading(true);
         try {
             const response = await axios.put(
-                `http://88.222.244.251:5001/api/tables/update/${tableId}`,
+                `http://localhost:5002/api/tables/update/${tableId}`,
                 updatedData,
                 { withCredentials: true }
             );
@@ -69,7 +69,7 @@ const useTables = () => {
     const deleteTable = async (tableId) => {
         setLoading(true);
         try {
-            await axios.delete(`http://88.222.244.251:5001/api/tables/delete/${tableId}`, {
+            await axios.delete(`http://localhost:5002/api/tables/delete/${tableId}`, {
                 withCredentials: true,
             });
             setTables((prev) => prev.filter((table) => table._id !== tableId));

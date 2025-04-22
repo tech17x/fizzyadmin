@@ -17,7 +17,7 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
 
     const fetchItems = async (id) => {
         try {
-            const res = await axios.get(`http://88.222.244.251:5001/api/items/menu/${id}`, {
+            const res = await axios.get(`http://localhost:5002/api/items/menu/${id}`, {
                 withCredentials: true,
             });
             setItems(res.data.items || []);
@@ -227,7 +227,7 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
 
         // Handle API request for saving changed and new items
         try {
-            const response = await axios.post("http://88.222.244.251:5001/api/items/upsert", payload, {
+            const response = await axios.post("http://localhost:5002/api/items/upsert", payload, {
                 withCredentials: true
             });
             if (response.data.successCount > 0) {

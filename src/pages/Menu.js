@@ -56,7 +56,7 @@ const Menu = () => {
 
     const fetchAllMenus = async () => {
         try {
-            const res = await axios.get("http://88.222.244.251:5001/api/menus/accessible", {
+            const res = await axios.get("http://localhost:5002/api/menus/accessible", {
                 withCredentials: true,
             });
             setMenus(res.data.menus || []);
@@ -122,10 +122,10 @@ const Menu = () => {
         try {
             if (isEditing) {
                 // Assuming you're keeping track of the selected tax to edit
-                await axios.put(`http://88.222.244.251:5001/api/menus/update/${menuId}`, payload, { withCredentials: true });
+                await axios.put(`http://localhost:5002/api/menus/update/${menuId}`, payload, { withCredentials: true });
                 toast.success("Category updated successfully");
             } else {
-                await axios.post("http://88.222.244.251:5001/api/menus/create", payload, { withCredentials: true });
+                await axios.post("http://localhost:5002/api/menus/create", payload, { withCredentials: true });
                 toast.success("Category added successfully!")
             }
             setShowPopup(false);

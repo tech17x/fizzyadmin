@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
         if (staff) return; // ✅ Prevents unnecessary API calls
 
         try {
-            const response = await axios.get("http://88.222.244.251:5001/validate_token", { withCredentials: true });
+            const response = await axios.get("http://localhost:5002/validate_token", { withCredentials: true });
             if (response.data.staff) {
                 setStaff(response.data.staff);
                 setLoading(false);
@@ -33,7 +33,7 @@ export const AuthProvider = ({ children }) => {
 
     // Logout function
     const logout = async () => {
-        await axios.post("http://88.222.244.251:5001/api/staff/logout", {}, { withCredentials: true });
+        await axios.post("http://localhost:5002/api/staff/logout", {}, { withCredentials: true });
         setStaff(null);
     };
 

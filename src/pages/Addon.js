@@ -59,7 +59,7 @@
 
 //     const fetchAllAddons = async () => {
 //         try {
-//             const res = await axios.get("http://88.222.244.251:5001/api/addons/accessible", {
+//             const res = await axios.get("http://localhost:5002/api/addons/accessible", {
 //                 withCredentials: true,
 //             });
 //             setAddons(res.data.addons || []);
@@ -128,10 +128,10 @@
 //         try {
 //             if (isEditing) {
 //                 // Assuming you're keeping track of the selected tax to edit
-//                 await axios.put(`http://88.222.244.251:5001/api/categories/update/${categoryId}`, payload, { withCredentials: true });
+//                 await axios.put(`http://localhost:5002/api/categories/update/${categoryId}`, payload, { withCredentials: true });
 //                 toast.success("Category updated successfully");
 //             } else {
-//                 await axios.post("http://88.222.244.251:5001/api/categories/create", payload, { withCredentials: true });
+//                 await axios.post("http://localhost:5002/api/categories/create", payload, { withCredentials: true });
 //                 toast.success("Category added successfully!")
 //             }
 //             setShowPopup(false);

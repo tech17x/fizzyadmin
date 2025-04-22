@@ -19,7 +19,7 @@ const useOutlets = () => {
 
         setLoading(true);
         try {
-            const response = await axios.get("http://88.222.244.251:5001/api/outlets", {
+            const response = await axios.get("http://localhost:5002/api/outlets", {
                 withCredentials: true,
             });
             setOutlets(response.data);
@@ -39,7 +39,7 @@ const useOutlets = () => {
     const createOutlet = async (outletData) => {
         setLoading(true);
         try {
-            const response = await axios.post("http://88.222.244.251:5001/api/outlets", outletData, {
+            const response = await axios.post("http://localhost:5002/api/outlets", outletData, {
                 withCredentials: true,
             });
             setOutlets((prevOutlets) => [...prevOutlets, response.data.outlet]); // Append new outlet
@@ -55,7 +55,7 @@ const useOutlets = () => {
         setLoading(true);
         try {
             const response = await axios.put(
-                `http://88.222.244.251:5001/api/outlets/${outletId}`,
+                `http://localhost:5002/api/outlets/${outletId}`,
                 updatedData,
                 { withCredentials: true }
             );

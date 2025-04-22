@@ -13,6 +13,8 @@ import SearchFilterBar from "../components/SearchFilterBar";
 import { toast } from "react-toastify";
 import axios from "axios";
 import useFilteredData from "../hooks/filterData";
+import useUniqueValidator from "../hooks/useUniqueValidator";
+
 
 const Brand = () => {
     const API = process.env.REACT_APP_API_URL;
@@ -39,6 +41,17 @@ const Brand = () => {
         street_address: "",
         status: true, // Default to active (checked)
     });
+
+    const { errors, validate } = useUniqueValidator(brands, [
+        "full_name",
+        "short_name",
+        "email",
+        "phone",
+        "gst_no",
+        "license_no",
+        "food_license",
+        "website"
+    ]);
 
     const fetchBrands = useCallback(async () => {
         try {
@@ -111,16 +124,25 @@ const Brand = () => {
     };
 
     const handleSave = () => {
+        setLoading(true);
         const formattedBrandData = {
             ...brandData,
             status: isEditing ? (brandData.status ? "active" : "inactive") : "active", // Always active for new brand
         };
 
-        if (isEditing) {
-            updateBrand(brandData._id, formattedBrandData);
+        if (validate(formattedBrandData)) {
+            if (isEditing) {
+                updateBrand(brandData._id, formattedBrandData);
+            } else {
+                createBrand(formattedBrandData);
+            }
         } else {
-            createBrand(formattedBrandData);
+            Object.values(errors).map(err=>toast.error(err));
+            setTimeout(() => {
+                setLoading(false);
+            }, 1000);
         }
+
     };
 
     const validateBrandData = (brandData) => {
@@ -160,8 +182,6 @@ const Brand = () => {
             toast.error(errors.join(" "));
             return;
         }
-
-        setLoading(true);
         try {
             const response = await axios.post(`${API}/api/brands`, brandData, {
                 withCredentials: true,
@@ -181,8 +201,6 @@ const Brand = () => {
             toast.error(errors.join(" "));
             return;
         }
-
-        setLoading(true);
         try {
             const response = await axios.put(
                 `${API}/api/brands/${brandId}`,
