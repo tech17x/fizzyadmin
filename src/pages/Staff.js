@@ -1,6 +1,6 @@
 // src/pages/Brand.js
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import CardAdd from '../components/CardAdd';
 import EditCard from '../components/EditCard';
 import HeadingText from '../components/HeadingText';
@@ -19,9 +19,11 @@ import SearchFilterBar from '../components/SearchFilterBar';
 import { toast } from 'react-toastify';
 import useFilteredData from '../hooks/filterData';
 import Loader from '../components/Loader';
+import AuthContext from '../context/AuthContext';
 
 const Staff = () => {
     const API = process.env.REACT_APP_API_URL;
+    const { staff: currentStaff } = useContext(AuthContext);
     const { brands } = useFetchBrands();
     const { outlets } = useFetchOutlets();
     const [loading, setLoading] = useState(true);
@@ -47,7 +49,7 @@ const Staff = () => {
         phone: "",
         password: "",
         pos_login_pin: "",
-        status: "",
+        status: true,
         role: "",
         permissions: [],
         brands: [],
@@ -94,7 +96,6 @@ const Staff = () => {
         setStaffInfo((prevData) => ({
             ...prevData,
             [name]: value, // Updates the input field dynamically
-            status: prevData.status === "active" ? "inactive" : "active", // Toggles status
         }));
     };
 
@@ -116,7 +117,7 @@ const Staff = () => {
                     phone: staff.phone,
                     password: "",
                     pos_login_pin: "",
-                    status: staff.status,
+                    status: staff.status === "active" ? true : false,
                     role: staff.role._id,
                     permissions: staff.permissions,
                     brands: staff.brands.map((brand) => brand._id),
@@ -131,7 +132,7 @@ const Staff = () => {
                     phone: "",
                     password: "",
                     pos_login_pin: "",
-                    status: "active",
+                    status: true,
                     role: "",
                     permissions: [],
                     brands: [],
@@ -246,7 +247,7 @@ const Staff = () => {
     const handleStatusChange = () => {
         setStaffInfo((prev) => ({
             ...prev,
-            status: prev.status === "active" ? "inactive" : "active",
+            status: prev.status ? false : true,
         }));
     };
 
@@ -258,7 +259,7 @@ const Staff = () => {
         if (!staffInfo.name?.trim()) errors.push("Name is required.");
         if (!staffInfo.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(staffInfo.email))
             errors.push("Valid email is required.");
-        if (!staffInfo.phone?.trim() || !/^\+?\d{10,15}$/.test(staffInfo.phone))
+        if (!staffInfo.phone?.trim() || !/^\d{3}-\d{3}-\d{4}$/.test(staffInfo.phone))
             errors.push("Valid phone number is required.");
         if (!selectedRole?._id) errors.push("Role is required.");
 
@@ -286,6 +287,39 @@ const Staff = () => {
             errors.push("POS login PIN must be a 4-digit number.");
         }
 
+        // Uniqueness check for staff info within a specific brand
+        const isDuplicate = (field) => {
+            return staff?.some((existingStaff) => {
+                if (existingStaff._id === staffInfo._id) return false; // skip self
+
+                const existingBrandIds = existingStaff.brands?.map(brand => brand._id) || [];
+                const currentBrandIds = staffInfo.brands || [];
+
+                // Check if there is any overlapping brand ID
+                const hasCommonBrand = existingBrandIds.some(id => currentBrandIds.includes(id));
+                if (!hasCommonBrand) return false;
+
+                // Compare the given field (name, email, phone)
+                const existingField = existingStaff[field]?.trim().toLowerCase();
+                const currentField = staffInfo[field]?.trim().toLowerCase();
+
+                return existingField === currentField;
+            });
+        };
+
+
+        if (staffInfo.name && isDuplicate("name")) {
+            errors.push("Name already exists for this brand.");
+        }
+
+        if (staffInfo.email && isDuplicate("email")) {
+            errors.push("Email already exists for this brand.");
+        }
+
+        if (staffInfo.phone && isDuplicate("phone")) {
+            errors.push("Phone already exists for this brand.");
+        }
+
         if (errors.length > 0) {
             errors.forEach(err => toast.error(err));
             setLoading(false);
@@ -302,7 +336,7 @@ const Staff = () => {
             permissions: selectedPermissions,
             brands: staffInfo.brands,
             outlets: staffInfo.outlets,
-            status: isEditing ? staffInfo.status : "active",
+            status: isEditing ? staffInfo.status ? "active" : "inactive" : "active",
         };
 
         if (staffInfo.password) {
@@ -314,15 +348,27 @@ const Staff = () => {
         }
 
         try {
-            if (isEditing) {
-                await axios.put(`${API}/api/staff/update/${staffInfo._id}`, formattedStaffData, { withCredentials: true });
-                toast.success("Staff updated successfully!");
-            } else {
-                await axios.post(`${API}/api/staff/create`, formattedStaffData, { withCredentials: true });
-                toast.success("Staff created successfully!");
+            // Prevent current user from updating their own status
+            if (isEditing && staffInfo._id === currentStaff._id && staffInfo.status !== currentStaff.status) {
+                toast.error("You cannot change logged in user status.");
+                return;
             }
 
-            fetchStaff();
+            if (isEditing) {
+                const response = await axios.put(`${API}/api/staff/update/${staffInfo._id}`, formattedStaffData, { withCredentials: true });
+                const updatedStaff = response.data.staff;
+
+                setStaff((prev) =>
+                    prev.map((staff) =>
+                        staff._id === staffInfo._id ? updatedStaff : staff
+                    )
+                );
+                toast.success("Staff updated successfully!");
+            } else {
+                const response = await axios.post(`${API}/api/staff/create`, formattedStaffData, { withCredentials: true });
+                setStaff((prev) => [...prev, response.data.staff]);
+                toast.success("Staff created successfully!");
+            }
             setShowSecondScreen(false);
         } catch (error) {
             console.error("Error saving staff:", error.response?.data || error.message);
@@ -429,6 +475,7 @@ const Staff = () => {
                                 <InputField
                                     label="Phone"
                                     type="tel"
+                                    format={"###-###-####"}
                                     name={"phone"}
                                     value={staffInfo.phone || ""}
                                     onChange={handleInputChange}
@@ -456,6 +503,7 @@ const Staff = () => {
                                 <InputField
                                     label="Pos Login Pin"
                                     type="number"
+                                    format={"####"}
                                     name={"pos_login_pin"}
                                     value={staffInfo.pos_login_pin || ""}
                                     onChange={handleInputChange}
@@ -466,7 +514,7 @@ const Staff = () => {
                                     <div className="inputs-row" style={{ padding: "10px", flexDirection: "column", gap: "5px" }}>
                                         <Checkbox
                                             label="Active Status"
-                                            checked={staffInfo.status === "active"}
+                                            checked={staffInfo.status}
                                             onChange={handleStatusChange}
                                         />
                                     </div>
