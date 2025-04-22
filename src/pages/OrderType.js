@@ -123,33 +123,60 @@ const OrderType = () => {
     };
 
     const handleSave = async () => {
+        setLoading(true);
         // Front-end Validation
         if (!orderTypeInfo.name || orderTypeInfo.name.trim().length < 3) {
             toast.error("Name must be at least 3 characters long.");
+            setLoading(false);
             return;
         }
         if (orderTypeInfo.name.trim().length > 50) {
             toast.error("Name cannot exceed 50 characters.");
+            setLoading(false);
             return;
         }
         if (!selectedCategory?.value) {
             toast.error("Please select a category.");
+            setLoading(false);
             return;
         }
         if (!orderTypeInfo.status) {
             toast.error("Please select a status.");
+            setLoading(false);
             return;
         }
         if (!selectedBrand?._id) {
             toast.error("Please select a brand.");
+            setLoading(false);
             return;
         }
         if (!selectedOutlet?.value) {
             toast.error("Please select an outlet.");
+            setLoading(false);
             return;
         }
 
-        setLoading(true);
+        // Uniqueness check
+        const isDuplicate = (field) => {
+            return orderTypes?.some((type) => {
+                return (
+                    type.brand_id._id === selectedBrand?._id &&
+                    type[field]?.trim().toLowerCase() === orderTypeInfo[field]?.trim().toLowerCase() &&
+                    type._id !== orderTypeInfo._id // exclude self if editing
+                );
+            });
+        };
+
+        console.log(isDuplicate('name'));
+
+        if (orderTypeInfo.name && isDuplicate("name")) {
+            toast.error("Name already exists for this brand.");
+            setLoading(false);
+            return;
+        }
+
+
+
         const payload = {
             name: orderTypeInfo.name.trim(),
             category: selectedCategory.value,
@@ -160,17 +187,21 @@ const OrderType = () => {
 
         try {
             if (isEditing) {
-                await axios.put(`${API}/api/order-type/update/${orderTypeInfo._id}`, payload, {
+                const response = await axios.put(`${API}/api/order-type/update/${orderTypeInfo._id}`, payload, {
                     withCredentials: true,
                 });
+                const updatedType = response.data.orderType;
+                setOrderTypes((prev) =>
+                    prev.map((type) => (type._id === orderTypeInfo._id ? updatedType : type))
+                );
                 toast.success("Order type updated successfully!");
             } else {
-                await axios.post(`${API}/api/order-type/create`, payload, {
+                const response = await axios.post(`${API}/api/order-type/create`, payload, {
                     withCredentials: true,
                 });
+                setOrderTypes((prev) => [...prev, response.data.orderType]);
                 toast.success("Order type created successfully!");
             }
-            fetchOrderTypes();
             setShowPopup(false);
         } catch (error) {
             console.error("Error saving order type:", error);
