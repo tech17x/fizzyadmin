@@ -71,7 +71,7 @@ const Outlet = () => {
         setIsEditing(true);
         setOutletData({
             _id: outlet._id,
-            brand_id: outlet.brand_id,
+            brand_id: outlet.brand_id._id,
             name: outlet.name,
             code: outlet.code,
             email: outlet.email,
@@ -150,11 +150,21 @@ const Outlet = () => {
     };
 
     const handleSave = async () => {
+        setLoading(true);
         const formattedOutletData = {
             ...outletData,
             status: isEditing ? (outletData.status) : "active", // Always active for new brand
-            brand_id: selectedBrand._id
+            brand_id: selectedBrand?._id
         };
+
+        const errors = validateOutletData(formattedOutletData, outlets);
+        if (Object.keys(errors).length > 0) {
+            Object.values(errors).forEach((msg) => toast.error(msg));
+            setTimeout(() => {
+                setLoading(false);
+            }, 1000);
+            return;
+        }
 
         if (isEditing) {
             await updateOutlet(outletData._id, formattedOutletData);
@@ -169,13 +179,17 @@ const Outlet = () => {
         return date.toLocaleString();
     }
 
-    const validateOutletData = (data) => {
+    const validateOutletData = (data, outlets) => {
+        console.log("Validating Outlet Data: ", data);
+        console.log("Existing Outlets: ", outlets);
+
         const errors = {};
 
         const timeRegex = /^([0-1][0-9]|2[0-3]):([0-5][0-9])$/;
         const phoneRegex = /^\d{3}-\d{3}-\d{4}$/;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+        // Basic required fields
         if (!data.brand_id) errors.brand_id = "Brand is required.";
         if (!data.name) errors.name = "Name is required.";
         if (!data.code) errors.code = "Code is required.";
@@ -195,19 +209,43 @@ const Outlet = () => {
         if (!data.state) errors.state = "State is required.";
         if (!data.country) errors.country = "Country is required.";
 
+        // Uniqueness check
+        const isDuplicate = (field) => {
+            return outlets?.some((outlet) => {
+                // console.log(`Comparing ${field}:`, outlet[field], data[field]);
+                // Make sure comparison handles exact duplicates and only checks same brand
+                return (
+                    outlet.brand_id._id === data.brand_id &&
+                    outlet[field]?.trim().toLowerCase() === data[field]?.trim().toLowerCase() &&
+                    outlet._id !== data._id // exclude self if editing
+                );
+            });
+        };
+        
+
+        if (data.name && isDuplicate("name")) {
+            errors.name = "Name already exists for this brand.";
+        }
+
+        if (data.code && isDuplicate("code")) {
+            errors.code = "Code already exists for this brand.";
+        }
+
+        if (data.email && isDuplicate("email")) {
+            errors.email = "Email already exists for this brand.";
+        }
+
+        if (data.phone && isDuplicate("phone")) {
+            errors.phone = "Phone already exists for this brand.";
+        }
+
         return errors;
     };
 
 
+
     // ✅ Create a new outlet
     const createOutlet = async (outletData) => {
-        const errors = validateOutletData(outletData);
-        if (Object.keys(errors).length > 0) {
-            Object.values(errors).forEach((msg) => toast.error(msg));
-            return;
-        }
-
-        setLoading(true);
         try {
             const response = await axios.post(`${API}/api/outlets`, outletData, {
                 withCredentials: true,
@@ -223,13 +261,6 @@ const Outlet = () => {
 
     // ✅ Update an existing outlet
     const updateOutlet = async (outletId, updatedData) => {
-        const errors = validateOutletData(updatedData);
-        if (Object.keys(errors).length > 0) {
-            Object.values(errors).forEach((msg) => toast.error(msg));
-            return;
-        }
-
-        setLoading(true);
         try {
             const response = await axios.put(`${API}/api/outlets/${outletId}`, updatedData, {
                 withCredentials: true,
@@ -266,7 +297,7 @@ const Outlet = () => {
                     {useFilteredData({
                         data: outlets,
                         searchTerm: search,
-                        searchKeys: ["name", "code", "email", "phone", "website", "license_no", "food_license", "website", "city", "state", "country", "postal_code", "street_address", "brand_id.full_name"],
+                        searchKeys: ["name", "code", "email", "phone", "website", "license_no", "food_license", "website", "city", "state", "country", "postal_code", "street_address", "brand_id.full_name", "brand_id.short_name"],
                         filters: {
                             status: status,
                         },

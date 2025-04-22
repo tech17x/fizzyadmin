@@ -13,7 +13,6 @@ import SearchFilterBar from "../components/SearchFilterBar";
 import { toast } from "react-toastify";
 import axios from "axios";
 import useFilteredData from "../hooks/filterData";
-import useUniqueValidator from "../hooks/useUniqueValidator";
 
 
 const Brand = () => {
@@ -41,17 +40,6 @@ const Brand = () => {
         street_address: "",
         status: true, // Default to active (checked)
     });
-
-    const { errors, validate } = useUniqueValidator(brands, [
-        "full_name",
-        "short_name",
-        "email",
-        "phone",
-        "gst_no",
-        "license_no",
-        "food_license",
-        "website"
-    ]);
 
     const fetchBrands = useCallback(async () => {
         try {
@@ -130,58 +118,96 @@ const Brand = () => {
             status: isEditing ? (brandData.status ? "active" : "inactive") : "active", // Always active for new brand
         };
 
-        if (validate(formattedBrandData)) {
-            if (isEditing) {
-                updateBrand(brandData._id, formattedBrandData);
-            } else {
-                createBrand(formattedBrandData);
-            }
-        } else {
-            Object.values(errors).map(err=>toast.error(err));
+        const errors = validateBrandData(formattedBrandData, brands);
+        if (Object.keys(errors).length > 0) {
+            Object.values(errors).forEach((msg) => toast.error(msg));
             setTimeout(() => {
                 setLoading(false);
             }, 1000);
+            return;
+        }
+
+        if (isEditing) {
+            updateBrand(brandData._id, formattedBrandData);
+        } else {
+            createBrand(formattedBrandData);
         }
 
     };
 
-    const validateBrandData = (brandData) => {
-        const errors = [];
+    const validateBrandData = (brandData, brands) => {
+        const errors = {};
 
-        // Check if required fields are empty
-        if (!brandData.full_name) errors.push("Brand name is required.");
-        if (!brandData.short_name) errors.push("Short name is required.");
-        if (!brandData.email) errors.push("Email is required.");
-        if (!brandData.phone) errors.push("Phone number is required.");
-        if (!brandData.gst_no) errors.push("GST number is required.");
-        if (!brandData.license_no) errors.push("License number is required.");
-        if (!brandData.food_license) errors.push("Food license is required.");
-        if (!brandData.city) errors.push("City is required.");
-        if (!brandData.state) errors.push("State is required.");
-        if (!brandData.country) errors.push("Country is required.");
-        if (!brandData.postal_code) errors.push("Postal code is required.");
-        if (!brandData.street_address) errors.push("Street address is required.");
+        // Required fields
+        if (!brandData.full_name) errors.full_name = "Brand name is required.";
+        if (!brandData.short_name) errors.short_name = "Short name is required.";
+        if (!brandData.email) errors.email = "Email is required.";
+        if (!brandData.phone) errors.phone = "Phone number is required.";
+        if (!brandData.gst_no) errors.gst_no = "GST number is required.";
+        if (!brandData.license_no) errors.license_no = "License number is required.";
+        if (!brandData.food_license) errors.food_license = "Food license is required.";
+        if (!brandData.city) errors.city = "City is required.";
+        if (!brandData.state) errors.state = "State is required.";
+        if (!brandData.country) errors.country = "Country is required.";
+        if (!brandData.postal_code) errors.postal_code = "Postal code is required.";
+        if (!brandData.street_address) errors.street_address = "Street address is required.";
 
-        // Additional validations (like email format, phone number format, etc.)
+        // Format validations
         const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
         if (brandData.email && !emailRegex.test(brandData.email)) {
-            errors.push("Invalid email format.");
+            errors.email = "Invalid email format.";
         }
 
-        const phoneRegex = /^\d{3}-\d{3}-\d{4}$/; // Matches ###-###-#### format
+        const phoneRegex = /^\d{3}-\d{3}-\d{4}$/;
         if (brandData.phone && !phoneRegex.test(brandData.phone)) {
-            errors.push("Invalid phone number format.");
+            errors.phone = "Invalid phone number format. Use ###-###-####";
+        }
+
+        // Uniqueness check
+        const isDuplicate = (field) => {
+            return brands?.some((brand) =>
+                brand[field]?.trim().toLowerCase() === brandData[field]?.trim().toLowerCase() &&
+                brand._id !== brandData._id
+            );
+        };
+
+        if (brandData.full_name && isDuplicate("full_name")) {
+            errors.full_name = "Full name already exists.";
+        }
+
+        if (brandData.short_name && isDuplicate("short_name")) {
+            errors.short_name = "Short name already exists.";
+        }
+
+        if (brandData.email && isDuplicate("email")) {
+            errors.email = "Email already exists.";
+        }
+
+        if (brandData.phone && isDuplicate("phone")) {
+            errors.phone = "Phone number already exists.";
+        }
+
+        if (brandData.gst_no && isDuplicate("gst_no")) {
+            errors.gst_no = "GST number already exists.";
+        }
+
+        if (brandData.license_no && isDuplicate("license_no")) {
+            errors.license_no = "License number already exists.";
+        }
+
+        if (brandData.food_license && isDuplicate("food_license")) {
+            errors.food_license = "Food license number already exists.";
+        }
+
+        if (brandData.website && isDuplicate("website")) {
+            errors.website = "Website already exists.";
         }
 
         return errors;
     };
 
+
     const createBrand = async (brandData) => {
-        const errors = validateBrandData(brandData);
-        if (errors.length > 0) {
-            toast.error(errors.join(" "));
-            return;
-        }
         try {
             const response = await axios.post(`${API}/api/brands`, brandData, {
                 withCredentials: true,
@@ -196,11 +222,6 @@ const Brand = () => {
     };
 
     const updateBrand = async (brandId, updatedData) => {
-        const errors = validateBrandData(updatedData);
-        if (errors.length > 0) {
-            toast.error(errors.join(" "));
-            return;
-        }
         try {
             const response = await axios.put(
                 `${API}/api/brands/${brandId}`,
