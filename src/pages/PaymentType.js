@@ -37,7 +37,7 @@ const PaymentType = () => {
 
     const [paymentInfo, setPaymentInfo] = useState({
         _id: '',
-        payment_name: '',
+        name: '',
         status: 'active',
         brand_id: '',
         outlet_id: ''
@@ -65,7 +65,7 @@ const PaymentType = () => {
         setIsEditing(false);
         setPaymentInfo({
             _id: '',
-            payment_name: '',
+            name: '',
             status: 'active',
             brand_id: '',
             outlet_id: ''
@@ -84,7 +84,7 @@ const PaymentType = () => {
 
         setPaymentInfo({
             _id: type._id,
-            payment_name: type.payment_name,
+            name: type.name,
             status: type.status,
             brand_id: type.brand_id?._id || '',
             outlet_id: type.outlet_id?._id || ''
@@ -111,11 +111,11 @@ const PaymentType = () => {
 
     const handleSave = async () => {
         // Front-end validation
-        if (!paymentInfo.payment_name || paymentInfo.payment_name.trim().length < 3) {
+        if (!paymentInfo.name || paymentInfo.name.trim().length < 3) {
             toast.error("Payment name must be at least 3 characters long.");
             return;
         }
-        if (paymentInfo.payment_name.trim().length > 50) {
+        if (paymentInfo.name.trim().length > 50) {
             toast.error("Payment name cannot exceed 50 characters.");
             return;
         }
@@ -132,9 +132,27 @@ const PaymentType = () => {
             return;
         }
 
+        // Uniqueness check
+        const isDuplicate = (field) => {
+            return paymentTypes?.some((type) => {
+                return (
+                    type.outlet_id._id === selectedOutlet?.value &&
+                    type[field]?.trim().toLowerCase() === paymentInfo[field]?.trim().toLowerCase() &&
+                    type._id !== paymentInfo._id // exclude self if editing
+                );
+            });
+        };
+
+        if (paymentInfo.name && isDuplicate("name")) {
+            toast.error("Name already exists for this Outlet.");
+            setLoading(false);
+            return;
+        }
+
+
         setLoading(true);
         const payload = {
-            payment_name: paymentInfo.payment_name.trim(),
+            name: paymentInfo.name.trim(),
             status: paymentInfo.status,
             brand_id: selectedBrand._id,
             outlet_id: selectedOutlet.value,
@@ -187,7 +205,7 @@ const PaymentType = () => {
                     }).map(type => (
                         <EditCard
                             key={type._id}
-                            title={type.payment_name}
+                            title={type.name}
                             role={type.outlet_id?.name || "All Outlets"}
                             status={type.status}
                             handleEdit={() => handleEdit(type)}
@@ -223,9 +241,9 @@ const PaymentType = () => {
                         <div className="inputs-row" style={{ width: "50%" }}>
                             <InputField
                                 label="Payment Name"
-                                name="payment_name"
+                                name="name"
                                 type="text"
-                                value={paymentInfo.payment_name}
+                                value={paymentInfo.name}
                                 onChange={handleInputChange}
                                 placeholder="Enter payment type name"
                             />

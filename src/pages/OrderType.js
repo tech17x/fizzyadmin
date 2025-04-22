@@ -160,14 +160,19 @@ const OrderType = () => {
         const isDuplicate = (field) => {
             return orderTypes?.some((type) => {
                 return (
-                    type.brand_id._id === selectedBrand?._id &&
-                    type[field]?.trim().toLowerCase() === orderTypeInfo[field]?.trim().toLowerCase() &&
+                    type.outlet_id._id === selectedOutlet?.value &&
+                    type[field]?.trim().toLowerCase() === (orderTypeInfo[field]?.trim().toLowerCase() || selectedCategory.value) &&
                     type._id !== orderTypeInfo._id // exclude self if editing
                 );
             });
         };
 
-        console.log(isDuplicate('name'));
+        // Check for category duplication
+        if (isDuplicate("category")) {
+            toast.error("Category already exists for this outlet.");
+            setLoading(false);
+            return;
+        }
 
         if (orderTypeInfo.name && isDuplicate("name")) {
             toast.error("Name already exists for this brand.");
