@@ -95,24 +95,39 @@ const Tax = () => {
     }
 
     const handleSave = async () => {
+        setLoading(true);
         if (!selectedBrand || !selectedOutlet) {
             toast.error("Brand and Outlet are required.");
+            setLoading(false);
             return;
         }
 
         if (!taxName || taxName.trim().length < 3 || taxName.trim().length > 50) {
             toast.error("Tax name must be between 3 and 50 characters.");
+            setLoading(false);
             return;
         }
 
         if (!displayTaxName || displayTaxName.trim().length === 0) {
             toast.error("Display tax name is required.");
+            setLoading(false);
             return;
         }
 
         const taxVal = Number(taxValue);
         if (isNaN(taxVal) || taxVal < 0 || taxVal > 100) {
             toast.error("Tax value must be a number between 0 and 100.");
+            setLoading(false);
+            return;
+        }
+
+        const existingTaxForOutlet = taxes.find(tax => tax.outlet_id?._id === selectedOutlet.value);
+
+        console.log(existingTaxForOutlet)
+
+        if (existingTaxForOutlet && !isEditing) {
+            toast.error("This outlet already has a tax assigned.");
+            setLoading(false);
             return;
         }
 
@@ -127,21 +142,26 @@ const Tax = () => {
 
         try {
             if (isEditing) {
-                await axios.put(`${API}/api/taxes/update/${taxId}`, payload, {
+                const response = await axios.put(`${API}/api/taxes/update/${taxId}`, payload, {
                     withCredentials: true,
                 });
+                const updatedTaxes = response.data.tax;
+                setTaxes((prev) =>
+                    prev.map((tax) => (tax._id === taxId ? updatedTaxes : tax))
+                );
                 toast.success("Tax updated successfully");
             } else {
-                await axios.post(`${API}/api/taxes/create`, payload, {
+                const response = await axios.post(`${API}/api/taxes/create`, payload, {
                     withCredentials: true,
                 });
+                setTaxes((prev) => [...prev, response.data.tax]);
                 toast.success("Tax added successfully");
             }
-
             setShowPopup(false);
-            fetchTaxes();
         } catch (err) {
             toast.error(err?.response?.data?.message || "Something went wrong");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -191,7 +211,7 @@ const Tax = () => {
                                 useFilteredData({
                                     data: taxes,
                                     searchTerm: search,
-                                    searchKeys: ["tax_name", "tax_value", "display_tax_name", "brand_id.short_name", "outlet_id.name"],
+                                    searchKeys: ["tax_name", "tax_value", "display_tax_name", "brand_id.full_name", "brand_id.short_name", "outlet_id.name"],
                                     filters: {
                                         status: status,
                                     },

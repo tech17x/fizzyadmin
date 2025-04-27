@@ -1,6 +1,6 @@
 // src/pages/Brand.js
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import HeadingText from '../components/HeadingText';
 import './Brand.css';
 import './Outlet.css';
@@ -17,8 +17,9 @@ import SearchFilterBar from '../components/SearchFilterBar';
 import useFetchBrands from '../hooks/useFetchBrands';
 import useFetchOutlets from '../hooks/useFetchOutlets';
 import { toast } from 'react-toastify';
-import MultiSelect from './MultiSelect';
 import axios from 'axios';
+import Loader from '../components/Loader';
+import useFilteredData from '../hooks/filterData';
 
 const weeks = [
     { label: "Sunday", value: "sunday" },
@@ -32,7 +33,7 @@ const weeks = [
 
 
 const Categories = () => {
-
+    const API = process.env.REACT_APP_API_URL;
     const { brands } = useFetchBrands();
     const { outlets } = useFetchOutlets();
     const [categories, setCategories] = useState([]);
@@ -42,8 +43,7 @@ const Categories = () => {
     const [selectedBrand, setSelectedBrand] = useState(null);
     const [selectedOutlet, setSelectedOutlet] = useState(null);
     const [filteredOutlets, setFilteredOutlets] = useState([]);
-    const [applyOnAllOutlets, setApplyOnAllOutlets] = useState(false);
-    const [selectedDays, setSelectedDays] = useState([]);
+    const [selectedDay, setSelectedDay] = useState(null);
     const [name, setName] = useState("");
     const [startTime, setStartTime] = useState("");
     const [endTime, setEndTime] = useState('');
@@ -53,22 +53,25 @@ const Categories = () => {
     const [showPopup, setShowPopup] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
 
-    useEffect(() => {
-        fetchAllCategories();
-    }, [])
+    const [loading, setLoading] = useState(true);
 
-    const fetchAllCategories = async () => {
+    // ✅ Fetch staff floors
+    const fetchAllCategories = useCallback(async () => {
         try {
-            const res = await axios.get("http://localhost:5002/api/categories/accessible", {
+            const response = await axios.get(`${API}/api/categories/accessible`, {
                 withCredentials: true,
             });
-            setCategories(res.data.categories || []);
-        } catch (err) {
-            toast.error(err?.response?.data?.message || "Failed to fetch payment types");
+            setCategories(response.data.categories || []);
+        } catch (error) {
+            toast.error(error.response?.data?.message || "Failed to fetch floors.");
         } finally {
-            // setLoading(false);
+            setLoading(false);
         }
-    }
+    }, [API]);
+
+    useEffect(() => {
+        fetchAllCategories();
+    }, [fetchAllCategories]);
 
     const handleAddNewCategory = () => {
         setSelectedBrand(null);
@@ -78,7 +81,6 @@ const Categories = () => {
         setStartTime("");
         setEndTime("");
         setCategoryStatus(true);
-        setApplyOnAllOutlets(false);
         setIsEditing(false);
         setShowPopup(true);
     }
@@ -89,11 +91,9 @@ const Categories = () => {
         setStartTime(cat.start_time);
         setEndTime(cat.end_time);
         setCategoryStatus(cat.status === "active" ? true : false);
-        setApplyOnAllOutlets(cat.apply_on_all_outlets);
         handleBrandSelection(cat.brand_id);
-        const filteredDays = weeks.filter(day => cat.day.includes(day.value));
-        console.log(filteredDays);
-        handleDaySelection(filteredDays);
+        const filteredDay = weeks.find(day => cat.day === day.value);
+        handleDaySelection(filteredDay);
         const selectedOutlet = outlets.find(outlet => outlet._id === cat.outlet_id?._id);
         if (selectedOutlet) {
             handleOutletSelection({
@@ -109,35 +109,57 @@ const Categories = () => {
 
 
     const handleSave = async () => {
-        if (!selectedBrand || !name || !(selectedDays.length > 0) || !startTime || !endTime || (!selectedOutlet && !applyOnAllOutlets)) {
+        setLoading(true);
+        if (!selectedBrand || !name || (!selectedOutlet)) {
             toast.error("Please fill all required fields.");
+            setLoading(false);
+            return;
+        }
+        const isDuplicate = (field) => {
+            return categories?.some((type) => {
+                return (
+                    type.outlet_id._id === selectedOutlet?.value &&
+                    type[field]?.trim().toLowerCase() === name?.trim().toLowerCase() &&
+                    type._id !== categoryId // exclude self if editing
+                );
+            });
+        };
+
+        if (isDuplicate('name')) {
+            toast.error("Category name already exists in this outlet.");
+            setLoading(false);
             return;
         }
 
         const payload = {
             brand_id: selectedBrand._id,
-            outlet_id: applyOnAllOutlets ? undefined : selectedOutlet?.value,
+            outlet_id: selectedOutlet?.value,
             name: name,
-            day: selectedDays.map(day => day.value),
+            day: selectedDay.value,
             start_time: startTime,
             end_time: endTime,
             status: categoryStatus ? "active" : "inactive",
-            apply_on_all_outlets: applyOnAllOutlets,
         };
 
         try {
             if (isEditing) {
                 // Assuming you're keeping track of the selected tax to edit
-                await axios.put(`http://localhost:5002/api/categories/update/${categoryId}`, payload, { withCredentials: true });
+                const response = await axios.put(`${API}/api/categories/update/${categoryId}`, payload, { withCredentials: true });
                 toast.success("Category updated successfully");
+                const updatedCat = response.data.category;
+                setCategories((prev) =>
+                    prev.map((cat) => (cat._id === categoryId ? updatedCat : cat))
+                );
             } else {
-                await axios.post("http://localhost:5002/api/categories/create", payload, { withCredentials: true });
+                const response = await axios.post(`${API}/api/categories/create`, payload, { withCredentials: true });
+                setCategories((prev) => [...prev, response.data.category]);
                 toast.success("Category added successfully!")
             }
             setShowPopup(false);
-            fetchAllCategories();
         } catch (err) {
             toast.error(err?.response?.data?.message || "Something went wrong");
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -148,7 +170,6 @@ const Categories = () => {
         setFilteredOutlets(filtered);
         if (filtered.length === 0) {
             toast.error("Selected brand has no outlets.");
-            setApplyOnAllOutlets(false);
         }
     };
 
@@ -156,8 +177,8 @@ const Categories = () => {
         setSelectedOutlet(outlet);
     }
 
-    const handleDaySelection = (dayArray) => {
-        setSelectedDays(dayArray);
+    const handleDaySelection = (day) => {
+        setSelectedDay(day);
     };
 
 
@@ -165,6 +186,9 @@ const Categories = () => {
 
     return (
         <>
+            {
+                loading && <Loader />
+            }
             <HeadingText>Categories</HeadingText>
             <SearchFilterBar
                 placeholder="Search Brand, Outlet, Categories..."
@@ -187,7 +211,14 @@ const Categories = () => {
                         </thead>
                         <tbody>
                             {
-                                categories.map((item, index) => (
+                                useFilteredData({
+                                    data: categories,
+                                    searchTerm: search,
+                                    searchKeys: ["full_name", "short_name", "email", "phone", "website", "city", "state", "country", "postal_code", "street"],
+                                    filters: {
+                                        status: status,
+                                    },
+                                }).map((item, index) => (
                                     <tr key={index}>
                                         <td>{index + 1}</td>
                                         <td>{item.name}</td>
@@ -216,7 +247,7 @@ const Categories = () => {
             {
                 showPopup &&
                 <Popup
-                    title={`Buy X Get Y Item`}
+                    title={`${isEditing ? "Edit" : "Add"} Category`}
                     closePopup={() => setShowPopup(false)}
                 >
                     <div className="inputs-container">
@@ -243,11 +274,11 @@ const Categories = () => {
                                 placeholder="Enter Tax name"
                                 required
                             />
-                            <MultiSelect
-                                label={"Select Days"}
-                                options={weeks}
-                                selectedOptions={selectedDays}
+                            <SelectInput
+                                label="Days"
+                                selectedOption={selectedDay}
                                 onChange={(day) => handleDaySelection(day)}
+                                options={weeks}
                             />
                         </div>
                         <div className='inputs-row'>
@@ -279,11 +310,6 @@ const Categories = () => {
                                         onChange={() => setCategoryStatus(!categoryStatus)}
                                     /> : null
                             }
-                            <Checkbox
-                                label="Apply On All Outlets"
-                                checked={applyOnAllOutlets}
-                                onChange={() => setApplyOnAllOutlets(!applyOnAllOutlets)}
-                            />
                         </div>
                     </div>
 

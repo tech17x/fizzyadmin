@@ -19,7 +19,8 @@ import 'react-toastify/dist/ReactToastify.css';
 import PaymentType from "./pages/PaymentType";
 import Floor from "./pages/Floor";
 import Table from "./pages/Table";
-// import Addon from "./pages/Addon";
+import Addon from "./pages/Addon";
+import Customer from "./pages/Customer";
 
 function App() {
     return (
@@ -40,13 +41,12 @@ function App() {
                             <Route path="/tax" element={<Tax />} />
                             <Route path="/floor" element={<Floor />} />
                             <Route path="/table" element={<Table />} />
-                            <Route path="/discount" element={<Discount />} />
-                            <Route path="/charge" element={<Discount />} />
-                            <Route path="/coupon" element={<Discount />} />
+                            <Route path="/discount-charge" element={<Discount />} />
                             <Route path="/buy-x-get-y-item" element={<BuyXGetY />} />
                             <Route path="/categories" element={<Categories />} />
                             <Route path="/menu" element={<Menu />} />
-                            {/* <Route path="/addon" element={<Addon />} /> */}
+                            <Route path="/addon" element={<Addon />} />
+                            <Route path="/customer" element={<Customer />} />
                         </Route>
 
                         {/* Redirect unknown routes to login */}

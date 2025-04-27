@@ -10,6 +10,7 @@ const Sidebar = () => {
   const [isBrandConfigOpen, setIsBrandConfigOpen] = useState(false);
   const [isMasterConfigOpen, setIsMasterConfigOpen] = useState(false);
   const [isMenuConfiguration, setIsMenuConfiguration] = useState(false);
+  const [isCRM, setIsCRM] = useState(false);
 
   const toggleBrandConfig = () => {
     setIsBrandConfigOpen(!isBrandConfigOpen);
@@ -21,6 +22,10 @@ const Sidebar = () => {
 
   const toggleMenuConfig = () => {
     setIsMenuConfiguration(!isMenuConfiguration);
+  };
+
+  const toggleCRM = () => {
+    setIsCRM(!isCRM);
   };
 
   return (
@@ -108,21 +113,9 @@ const Sidebar = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link to={'/discount'}>
+                  <Link to="/discount-charge">
                     <img src={demoIcon} alt="link icon" />
-                    <GradientText>Discount</GradientText>
-                  </Link>
-                </li>
-                <li>
-                  <Link to={'/coupon'}>
-                    <img src={demoIcon} alt="link icon" />
-                    <GradientText>Coupon</GradientText>
-                  </Link>
-                </li>
-                <li>
-                  <Link to={'/charge'}>
-                    <img src={demoIcon} alt="link icon" />
-                    <GradientText>Charge</GradientText>
+                    <GradientText>Discount/Charge</GradientText>
                   </Link>
                 </li>
                 <li>
@@ -161,6 +154,39 @@ const Sidebar = () => {
                   <Link to={'/addon'}>
                     <img src={demoIcon} alt="link icon" />
                     <GradientText>Addon</GradientText>
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </li>
+
+
+          {/* CRM Configuration Dropdown */}
+          <li>
+            <div className="dropdown-header" onClick={toggleCRM}>
+              <img src={demoIcon} alt="link icon" />
+              <GradientText>CRM</GradientText>
+            </div>
+
+            {/* Submenu items */}
+            {isCRM && (
+              <ul className="submenu">
+                <li>
+                  <Link to={'/customer'}>
+                    <img src={demoIcon} alt="link icon" />
+                    <GradientText>Customers</GradientText>
+                  </Link>
+                </li>
+                <li>
+                  <Link to={'/categories'}>
+                    <img src={demoIcon} alt="link icon" />
+                    <GradientText>Orders</GradientText>
+                  </Link>
+                </li>
+                <li>
+                  <Link to={'/menu'}>
+                    <img src={demoIcon} alt="link icon" />
+                    <GradientText>Whatsapp API</GradientText>
                   </Link>
                 </li>
               </ul>

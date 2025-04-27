@@ -9,7 +9,8 @@ const InputField = ({
     onChange,
     placeholder,
     required = false,
-    format
+    format,
+    disabled = false
 }) => {
     const [showPassword, setShowPassword] = useState(false);
 
@@ -46,12 +47,13 @@ const InputField = ({
             <label>{label}</label>
             <div className="input-container">
                 <input
-                    type={type === "password" ? (showPassword ? "text" : "password") : "text"}
+                    type={type === "password" ? (showPassword ? "text" : "password") : type}
                     value={value || ""}
                     name={name}
                     onChange={format ? handleFormattedChange : onChange}
                     placeholder={placeholder}
                     required={required}
+                    disabled={disabled}
                     maxLength={format ? format.length : undefined}
                 />
                 {type === "password" && (

@@ -107,6 +107,16 @@ const Floor = () => {
         // Set loading state
         setLoading(true);
 
+        const isDuplicate = (field) => {
+            return floors?.some((type) => {
+                return (
+                    type.outlet_id._id === selectedOutlet?.value &&
+                    type[field]?.trim().toLowerCase() === floorName?.trim().toLowerCase() &&
+                    type._id !== floorId // exclude self if editing
+                );
+            });
+        };
+
         // Validate brand_id
         if (!selectedBrand || typeof selectedBrand._id !== "string" || selectedBrand._id.trim() === "") {
             toast.error("Valid brand is required.");
@@ -124,6 +134,10 @@ const Floor = () => {
         // Validate floor_name
         if (!floorName || typeof floorName !== "string" || floorName.trim() === "") {
             toast.error("Floor name is required.");
+            setLoading(false);
+            return;
+        } else if(isDuplicate("floor_name")){
+            toast.error("Another floor with the same name exists in this outlet.");
             setLoading(false);
             return;
         }

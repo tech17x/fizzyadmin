@@ -195,9 +195,9 @@ const Menu = () => {
                                         <td>{index + 1}</td>
                                         <td>{item.name}</td>
                                         <td>{item.apply_on_all_outlets ? "All" : item.outlet_id.name}</td>
-                                        <td><div className={`status ${item.menu_type === "pos" ? "active" : "inactive"}`}>{item.menu_type === "pos" ? "Yes" : "No"}</div></td>
-                                        <td><div className={`status ${item.menu_type === "digital" ? "active" : "inactive"}`}>{item.menu_type === "digital" ? "Yes" : "No"}</div></td>
-                                        <td><div className={`status ${item.menu_type === "third_party" ? "active" : "inactive"}`}>{item.menu_type === "third_party" ? "Yes" : "No"}</div></td>
+                                        <td><div className={``}>{item.menu_type === "pos" ? "Yes" : "No"}</div></td>
+                                        <td><div className={``}>{item.menu_type === "digital" ? "Yes" : "No"}</div></td>
+                                        <td><div className={``}>{item.menu_type === "third_party" ? "Yes" : "No"}</div></td>
                                         <td><div className={`status ${item.status}`}>{item.status}</div></td>
                                         <td>{item.createdAt}</td>
                                         <td>
