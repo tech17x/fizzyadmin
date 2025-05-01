@@ -21,6 +21,7 @@ import Floor from "./pages/Floor";
 import Table from "./pages/Table";
 import Addon from "./pages/Addon";
 import Customer from "./pages/Customer";
+import WhatsAppSetupPage from "./pages/WhatsAppSetupPage";
 
 function App() {
     return (
@@ -47,6 +48,7 @@ function App() {
                             <Route path="/menu" element={<Menu />} />
                             <Route path="/addon" element={<Addon />} />
                             <Route path="/customer" element={<Customer />} />
+                            <Route path="/whatsapp-setup" element={<WhatsAppSetupPage />} />
                         </Route>
 
                         {/* Redirect unknown routes to login */}

@@ -184,7 +184,7 @@ const Sidebar = () => {
                   </Link>
                 </li>
                 <li>
-                  <Link to={'/menu'}>
+                  <Link to={'/whatsapp-setup'}>
                     <img src={demoIcon} alt="link icon" />
                     <GradientText>Whatsapp API</GradientText>
                   </Link>
