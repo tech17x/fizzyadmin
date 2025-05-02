@@ -89,14 +89,20 @@ const SMSPortal = ({ hideSMSModel, customer }) => {
         setDynamicFields({ ...dynamicFields, [field]: value });
     };
 
-    const countryDialCodes = {
-        US: '1',
-        IN: '91',
-        CA: '1',
-        GB: '44',
-        AU: '61',
-        // Add more country codes as needed
-    };
+    // const countryDialCodes = {
+    //     US: '1',
+    //     IN: '91',
+    //     CA: '1',
+    //     GB: '44',
+    //     AU: '61',
+    //     // Add more country codes as needed
+    // };
+
+    // const resetAll = () => {
+    //     setSelectedCredential(null);
+    //     setSelectedTemplate(null);
+    //     setDynamicFields({});
+    // };
 
     const sendMessage = async () => {
         try {
@@ -104,12 +110,7 @@ const SMSPortal = ({ hideSMSModel, customer }) => {
                 (cred) => cred._id === selectedCredential?.value
             );
 
-            if (
-                !selectedCredentialObj ||
-                !selectedTemplate ||
-                !customer?.outlet_id?.phone ||
-                !customer?.outlet_id?.country
-            ) {
+            if (!selectedCredentialObj || !selectedTemplate || !customer?.phone) {
                 toast.error("Please select credential, template, and ensure phone & country are available.");
                 return;
             }
@@ -117,81 +118,91 @@ const SMSPortal = ({ hideSMSModel, customer }) => {
             const accessToken = selectedCredentialObj.accessToken;
             const phoneNumberId = selectedCredentialObj.phoneNumberId;
 
-            if (!accessToken || typeof accessToken !== 'string') {
-                console.error("❌ Invalid or missing access token:", accessToken);
+            if (!accessToken || typeof accessToken !== "string") {
                 toast.error("Access token is missing or invalid.");
                 return;
             }
 
-            // Normalize the phone number
-            let rawPhone = customer.outlet_id.phone;
+            // Normalize phone number
+            let rawPhone = customer.phone;
             let digitsOnly = rawPhone.replace(/\D/g, '');
-
-            // TODO: Use proper country code map
             const countryCode = "91";
             if (!digitsOnly.startsWith(countryCode)) {
                 digitsOnly = countryCode + digitsOnly;
             }
-
             const customerPhone = digitsOnly;
-            console.log(customerPhone);
 
-            const bodyParams = Object.entries(dynamicFields).map(([key, val]) => ({
-                type: "text",
-                text: val
-            }));
-            
-            const payload = {
+            // 🔍 Filter only changed (non-empty) dynamic fields
+            const changedFields = Object.entries(dynamicFields).reduce((acc, [key, value]) => {
+                if (value?.trim()) acc[key] = value;
+                return acc;
+            }, {});
+
+            console.log("Changed Input Values →", changedFields);
+
+            const components = [];
+
+            selectedTemplate.components.forEach(component => {
+                if (component.type === "BODY" && component.text) {
+                    const matches = [...component.text.matchAll(/{{(.*?)}}/g)];
+                    const parameters = [];
+
+                    matches.forEach((match) => {
+                        const variableKey = match[1]; // e.g., "1", "2"
+                        const value = changedFields[variableKey];
+                        if (value) {
+                            parameters.push({ type: "text", text: value });
+                        }
+                    });
+
+                    if (parameters.length > 0) {
+                        components.push({
+                            type: "body",
+                            parameters
+                        });
+                    }
+                }
+            });
+
+            const messagePayload = {
                 messaging_product: "whatsapp",
-                to: "919050962648",
+                to: customerPhone,
                 type: "template",
                 template: {
                     name: selectedTemplate.name,
-                    language: { code: "en" },
-                    components: [
-                        {
-                            type: "header",
-                            parameters: [
-                                {
-                                    type: "text",
-                                    text: dynamicFields.headerParam || "Default Header"
-                                }
-                            ]
-                        },
-                        {
-                            type: "body",
-                            parameters: bodyParams
-                        }
-                    ]
+                    language: {
+                        code: selectedTemplate.language || "en"
+                    },
+                    ...(components.length > 0 && { components })
                 }
             };
-            
-            const response = await axios.post(
-                `https://graph.facebook.com/v17.0/${phoneNumberId}/messages`,
-                payload,
+            console.log(selectedTemplate)
+            console.log("Message Payload →", JSON.stringify(messagePayload, null, 2));
+
+            // Now send the message if needed
+            await axios.post(
+                `https://graph.facebook.com/v12.0/${phoneNumberId}/messages`,
+                messagePayload,
                 {
                     headers: {
                         Authorization: `Bearer ${accessToken}`,
-                        "Content-Type": "application/json",
-                    },
+                        "Content-Type": "application/json"
+                    }
                 }
             );
 
             toast.success("Message sent successfully!");
-            console.log("✅ WhatsApp Response:", response.data);
-        } catch (err) {
-            console.error("❌ Failed to send WhatsApp message:", err.response?.data || err.message);
-            toast.error("Failed to send message");
+        } catch (error) {
+            toast.error("Error sending message: " + error.message);
         }
     };
 
 
 
-    const resetAll = () => {
-        setSelectedCredential(null);
-        setSelectedTemplate(null);
-        setDynamicFields({});
-    };
+
+
+
+
 
     const handleAPISelection = (val) => {
         setLoading(true);
@@ -272,7 +283,7 @@ const SMSPortal = ({ hideSMSModel, customer }) => {
                             padding: "20px",
                             fontFamily: "Segoe UI, Roboto, Helvetica, Arial, sans-serif",
                             color: "#111",
-                        }}>
+                        }} id="infoHere">
                             <h4 style={{ marginBottom: "10px" }}>WhatsApp Message Preview</h4>
                             {/* HEADER */}
                             {selectedTemplate.components?.find(c => c.type === "HEADER") && (

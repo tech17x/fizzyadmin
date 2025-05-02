@@ -59,7 +59,7 @@ const Customer = () => {
     const [showModel, setShowModel] = useState(false);
     const [bulkData, setBulkData] = useState([]);
 
-    const [showSMSModel, setShowSMSModel] = useState(true);
+    const [showSMSModel, setShowSMSModel] = useState(false);
     const [selectedCustomer, setSelectedCustomer] = useState(null);
 
     // ✅ Fetch staff floors
