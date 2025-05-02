@@ -132,7 +132,7 @@ const SMSPortal = ({ hideSMSModel, customer }) => {
             }
             const customerPhone = digitsOnly;
 
-            // 🔍 Filter only changed (non-empty) dynamic fields
+            // Collect only non-empty dynamic fields
             const changedFields = Object.entries(dynamicFields).reduce((acc, [key, value]) => {
                 if (value?.trim()) acc[key] = value;
                 return acc;
@@ -142,27 +142,47 @@ const SMSPortal = ({ hideSMSModel, customer }) => {
 
             const components = [];
 
-            selectedTemplate.components.forEach(component => {
-                if (component.type === "BODY" && component.text) {
-                    const matches = [...component.text.matchAll(/{{(.*?)}}/g)];
-                    const parameters = [];
+            for (const component of selectedTemplate.components) {
+                if (component.type === "BUTTONS" && component.buttons?.length) {
+                    component.buttons.forEach((btn, index) => {
+                        const urlTemplate = btn.url || "";
+                        const matches = [...urlTemplate.matchAll(/{{(\d+)}}/g)];
+                        const parameters = matches.map(match => {
+                            const variableKey = match[1];
+                            const value = changedFields[variableKey];
+                            return value ? { type: "text", text: value } : null;
+                        }).filter(Boolean);
 
-                    matches.forEach((match) => {
-                        const variableKey = match[1]; // e.g., "1", "2"
-                        const value = changedFields[variableKey];
-                        if (value) {
-                            parameters.push({ type: "text", text: value });
+                        if (parameters.length > 0) {
+                            components.push({
+                                type: "button",
+                                sub_type: "url",
+                                index,
+                                parameters
+                            });
                         }
                     });
+                }
+                else {
+                    const textSource = component.text || "";
+                    const matches = [...textSource.matchAll(/{{(\d+)}}/g)];
+
+                    if (matches.length === 0) continue;
+
+                    const parameters = matches.map(match => {
+                        const variableKey = match[1];
+                        const value = changedFields[variableKey];
+                        return value ? { type: "text", text: value } : null;
+                    }).filter(Boolean);
 
                     if (parameters.length > 0) {
                         components.push({
-                            type: "body",
+                            type: component.type.toLowerCase(), // "body", "header", etc.
                             parameters
                         });
                     }
                 }
-            });
+            }
 
             const messagePayload = {
                 messaging_product: "whatsapp",
@@ -176,12 +196,11 @@ const SMSPortal = ({ hideSMSModel, customer }) => {
                     ...(components.length > 0 && { components })
                 }
             };
-            console.log(selectedTemplate)
-            console.log("Message Payload →", JSON.stringify(messagePayload, null, 2));
 
-            // Now send the message if needed
+            console.log("📦 Message Payload:", JSON.stringify(messagePayload, null, 2));
+
             await axios.post(
-                `https://graph.facebook.com/v12.0/${phoneNumberId}/messages`,
+                `https://graph.facebook.com/v17.0/${phoneNumberId}/messages`,
                 messagePayload,
                 {
                     headers: {
@@ -193,14 +212,10 @@ const SMSPortal = ({ hideSMSModel, customer }) => {
 
             toast.success("Message sent successfully!");
         } catch (error) {
+            console.error("❌ WhatsApp API Error:", error?.response?.data || error.message);
             toast.error("Error sending message: " + error.message);
         }
     };
-
-
-
-
-
 
 
 
