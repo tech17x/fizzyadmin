@@ -252,7 +252,8 @@ const Brand = () => {
             {
                 loading && <Loader />
             }
-            <HeadingText>Brand List</HeadingText>
+            {/* <HeadingText title={"Brand"}/> */}
+            
             <SearchFilterBar
                 placeholder="Find what you’re looking for..."
                 searchValue={search}

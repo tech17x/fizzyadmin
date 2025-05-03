@@ -1,9 +1,13 @@
 /* src/components/GradientText.css */
 
 .gradient-text {
-    background-image: linear-gradient( #EFA280, #DF6229);
-    background-clip: text;
-    -webkit-background-clip: text;
-    color: transparent;
-    user-select: none;
-  }
+  background-image: linear-gradient(#EFA280, #DF6229);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  user-select: none;
+}
+
+.active{
+  text-transform: capitalize !important;
+}

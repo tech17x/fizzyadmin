@@ -1,9 +1,10 @@
 import React from 'react';
 
-const GradientButton = ({ disable = false, clickAction, children }) => {
+const GradientButton = ({ disable = false, clickAction, className="", children }) => {
     return (
         <button 
             disabled={disable} 
+            className={className}
             onClick={clickAction} 
             style={{
                 ...styles.button, 

@@ -1,38 +1,169 @@
-/* src/components/Sidebar.css */
+.sidebar {
+  background-color: #fff;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  width: 250px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px #00000014;
+  position: relative;
+  height: 100%;
+}
+
+.sidebar.collapsed {
+  width: 70px;
+}
+
+/* Logo section */
+.logo-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 2;
+}
+
+.logo-img {
+  height: 2.5rem;
+  object-fit: contain;
+}
+
+.toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #DF6229;
+}
+
+/* Nav */
+.sidebar nav {
+  flex: 1;
+  overflow-y: scroll;
+  padding: 1rem;
+}
+
+.sidebar ul {
+  padding: 0;
+  margin: 0;
+}
 
 li {
-  list-style-type: none;
-  margin-bottom: 15px;
+  list-style: none;
+  margin-bottom: 10px;
 }
 
 a,
 .dropdown-header {
   display: flex;
   align-items: center;
-  gap: .5rem;
+  gap: 0.5rem;
+  padding: 8px;
   text-decoration: none;
+  color: #303234;
+  border-radius: 6px;
+  transition: background-color 0.2s ease;
   cursor: pointer;
-  padding: 5px;
-  border-radius: 5px;
 }
 
-a>img,
-.dropdown-header>img {
-  width: 1.5rem;
+/* Active & Hover */
+a.active-link,
+.dropdown-header.active-link {
+  background-color: rgba(223, 98, 41, 0.08);
 }
 
-.submenu li{
-  margin-top: 15px;
+a:hover,
+.dropdown-header:hover {
+  background-color: rgba(223, 98, 41, 0.08);
 }
 
-.submenu a>img {
-  width: 1rem;
+/* Submenu */
+.submenu li {
+  margin-bottom: 10px;
+  margin-top: 1rem;
+  margin-left: 30px;
 }
 
-.submenu{
-  transform: translateX(10px);
+.submenu a {
+  padding: 6px 8px;
+  font-size: 0.95rem;
+  color: #444;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color 0.2s ease;
 }
 
-a:hover, .dropdown-header:hover{
-  background-color: #FFE8E1;
+.submenu a:hover {
+  background-color: rgba(223, 98, 41, 0.08);
+}
+
+/* Bottom section */
+.bottom-section {
+  padding: 1rem;
+  margin-top: auto;
+  border-top: 1px solid #eee;
+  position: sticky;
+  bottom: 0;
+  background: white;
+}
+
+/* Profile */
+.profile {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding-top: 1rem;
+  cursor: pointer;
+}
+
+.profile img {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile div span:first-child {
+  display: block;
+  font-weight: bold;
+}
+
+.profile div span:last-child {
+  font-size: 0.85rem;
+  color: #888;
+}
+
+/* Existing styles remain unchanged... add below */
+
+.logo-img.collapsed-logo {
+  display: block;
+  margin: 0 auto;
+}
+
+.menu-item {
+  position: relative;
+}
+
+.hover-submenu {
+  position: fixed;
+  /* changed from absolute */
+  top: auto;
+  left: 1rem;
+  /* match collapsed sidebar width */
+  background: white;
+  padding: 10px;
+  box-shadow: 0 0 10px #00000022;
+  border-radius: 6px;
+  z-index: 999;
+  min-width: 200px;
+  display: none;
+}
+
+/* Show submenu on hover */
+.menu-item:hover .hover-submenu {
+  display: block;
 }

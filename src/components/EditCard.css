@@ -76,8 +76,8 @@
 }
 
 .active{
-    background-color: #01CE56;
-    text-transform: uppercase;
+    background-color: #01CE56 !important;
+    text-transform: uppercase !important;
 }
 
 .inactive{

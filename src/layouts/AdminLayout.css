@@ -15,15 +15,10 @@
   overflow: hidden;
 }
 
-.admin-sidebar {
-  background-color: #fff;
-  padding: 20px;
-  overflow-y: auto;
-}
 
 .admin-main-content {
   flex: 1;
   background-color: #f0f0f0;
-  padding: 20px;
+  padding: 25px;
   overflow-y: scroll;
 }

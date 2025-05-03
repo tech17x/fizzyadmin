@@ -9,6 +9,7 @@ import {
   Calendar
 } from 'lucide-react';
 import './Dashboard.css';
+import HeadingText from '../components/HeadingText';
 
 const customerGrowthData = [
   { name: 'Jan', newCustomers: 120, regularCustomers: 200 },
@@ -81,8 +82,7 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard">
-      <h1>Dashboard</h1>
-
+      <HeadingText title={"Dashboard"}/>
       <div className="filters-grid">
         <div className="select-wrapper">
           <select className="select-input">
