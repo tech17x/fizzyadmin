@@ -56,10 +56,10 @@ const Orders = () => {
     // ✅ Fetch staff floors
     const fetchAllAddons = useCallback(async () => {
         try {
-            const response = await axios.get(`${API}/api/addons/accessible`, {
+            const response = await axios.get(`${API}/api/orders/accessible`, {
                 withCredentials: true,
             });
-            console.log(response);
+            console.log(response.data.orders);
             // setAddons(response.data.addons || []);
             setAddons([]);
         } catch (error) {

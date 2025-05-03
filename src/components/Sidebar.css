@@ -1,9 +1,8 @@
 .sidebar {
   background-color: #fff;
-  height: 100%;
   display: flex;
   flex-direction: column;
-  width: 250px;
+  align-items: center;
   transition: width 0.3s ease;
   box-shadow: 0 0 10px #00000014;
   position: relative;
@@ -17,42 +16,35 @@
 /* Logo section */
 .logo-section {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  padding: 1rem;
-  position: sticky;
-  top: 0;
-  background: white;
-  z-index: 2;
-}
-
-.logo-img {
-  height: 2.5rem;
-  object-fit: contain;
+  padding: 10px;
+  justify-content: space-between;
+  width: 100%;
 }
 
 .toggle-btn {
   background: none;
   border: none;
   cursor: pointer;
-  color: #DF6229;
 }
 
 /* Nav */
 .sidebar nav {
   flex: 1;
   overflow-y: scroll;
-  padding: 1rem;
+  padding: 10px;
 }
 
 .sidebar ul {
   padding: 0;
   margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 li {
   list-style: none;
-  margin-bottom: 10px;
 }
 
 a,
@@ -80,14 +72,19 @@ a:hover,
 }
 
 /* Submenu */
-.submenu li {
-  margin-bottom: 10px;
+
+.submenu {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
   margin-top: 1rem;
-  margin-left: 30px;
+}
+
+.submenu li {
+  margin-left: 15px;
 }
 
 .submenu a {
-  padding: 6px 8px;
   font-size: 0.95rem;
   color: #444;
   border-radius: 6px;
@@ -103,41 +100,43 @@ a:hover,
 
 /* Bottom section */
 .bottom-section {
-  padding: 1rem;
-  margin-top: auto;
-  border-top: 1px solid #eee;
+  padding: 10px;
+  border-top: 1px solid #EFA280;
   position: sticky;
   bottom: 0;
-  background: white;
+  left: 0;
+  background: #FFFFFF;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  align-items: stretch;
+}
+
+.align-center{
+  align-items: center;
 }
 
 /* Profile */
-.profile {
+.sidebar-profile {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding-top: 1rem;
+  gap: .5rem;
   cursor: pointer;
 }
 
-.profile img {
+.sidebar-profile img {
   width: 2rem;
   height: 2rem;
+  border: 1px solid #DF6229;
   border-radius: 50%;
   object-fit: cover;
 }
 
-.profile div span:first-child {
-  display: block;
-  font-weight: bold;
+.sidebar-profile>div {
+  display: flex;
+  flex-direction: column;
 }
-
-.profile div span:last-child {
-  font-size: 0.85rem;
-  color: #888;
-}
-
-/* Existing styles remain unchanged... add below */
 
 .logo-img.collapsed-logo {
   display: block;
@@ -146,24 +145,27 @@ a:hover,
 
 .menu-item {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .hover-submenu {
   position: fixed;
-  /* changed from absolute */
-  top: auto;
-  left: 1rem;
-  /* match collapsed sidebar width */
-  background: white;
-  padding: 10px;
+  padding: 10px !important;
   box-shadow: 0 0 10px #00000022;
-  border-radius: 6px;
-  z-index: 999;
-  min-width: 200px;
+  z-index: 2;
   display: none;
 }
 
-/* Show submenu on hover */
+.hover-submenu li {
+  margin-left: 0;
+}
+
+.hover-submenu ul {
+  display: flex;
+}
+
 .menu-item:hover .hover-submenu {
-  display: block;
+  display: flex;
 }

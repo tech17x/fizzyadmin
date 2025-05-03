@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Sidebar.css';
-import logo from '../assets/dark-logo.png';
-import logo2 from '../assets/logo.png';
 import GradientText from './GradientText';
 
 import {
@@ -37,73 +35,74 @@ import {
   Trash2,
 } from 'lucide-react';
 import Popup from './Popup';
+import FizzyLogo from './FizzyLogo';
 
 const menuItems = [
   {
     title: 'Dashboard',
-    icon: <LayoutDashboard color="#DF6229" />,
+    icon: <LayoutDashboard color="#DF6229" size={15} />,
     path: '/dashboard',
   },
   {
     title: 'Brand Configuration',
-    icon: <Settings color="#DF6229" />,
+    icon: <Settings color="#DF6229" size={15} />,
     submenu: [
-      { title: 'Brand', path: '/brand', icon: <Building color="#DF6229" size={16} /> },
-      { title: 'Outlet', path: '/outlet', icon: <Store color="#DF6229" size={16} /> },
-      { title: 'Staff', path: '/staff', icon: <Users color="#DF6229" size={16} /> },
-      { title: 'Order Type', path: '/order-type', icon: <Type color="#DF6229" size={16} /> },
-      { title: 'Payment Mode', path: '/payment-mode', icon: <CreditCard color="#DF6229" size={16} /> },
+      { title: 'Brand', path: '/brand', icon: <Building color="#DF6229" size={15} /> },
+      { title: 'Outlet', path: '/outlet', icon: <Store color="#DF6229" size={15} /> },
+      { title: 'Staff', path: '/staff', icon: <Users color="#DF6229" size={15} /> },
+      { title: 'Order Type', path: '/order-type', icon: <Type color="#DF6229" size={15} /> },
+      { title: 'Payment Mode', path: '/payment-mode', icon: <CreditCard color="#DF6229" size={15} /> },
     ],
   },
   {
     title: 'Master Configuration',
-    icon: <Layers color="#DF6229" />,
+    icon: <Layers color="#DF6229" size={15} />,
     submenu: [
-      { title: 'Tax', path: '/tax', icon: <Percent color="#DF6229" size={16} /> },
-      { title: 'Floor', path: '/floor', icon: <Grid color="#DF6229" size={16} /> },
-      { title: 'Table', path: '/table', icon: <TableProperties color="#DF6229" size={16} /> },
-      { title: 'Discount Charge', path: '/discount-charge', icon: <Tag color="#DF6229" size={16} /> },
-      { title: 'Buy X Get Y', path: '/buy-x-get-y-item', icon: <Gift color="#DF6229" size={16} /> },
+      { title: 'Tax', path: '/tax', icon: <Percent color="#DF6229" size={15} /> },
+      { title: 'Floor', path: '/floor', icon: <Grid color="#DF6229" size={15} /> },
+      { title: 'Table', path: '/table', icon: <TableProperties color="#DF6229" size={15} /> },
+      { title: 'Discount Charge', path: '/discount-charge', icon: <Tag color="#DF6229" size={15} /> },
+      { title: 'Buy X Get Y', path: '/buy-x-get-y-item', icon: <Gift color="#DF6229" size={15} /> },
     ],
   },
   {
     title: 'Menu Configuration',
-    icon: <MenuSquare color="#DF6229" />,
+    icon: <MenuSquare color="#DF6229" size={15} />,
     submenu: [
-      { title: 'Categories', path: '/categories', icon: <FolderKanban color="#DF6229" size={16} /> },
-      { title: 'Menu', path: '/menu', icon: <Utensils color="#DF6229" size={16} /> },
-      { title: 'Addon', path: '/addon', icon: <PlusCircle color="#DF6229" size={16} /> },
+      { title: 'Categories', path: '/categories', icon: <FolderKanban color="#DF6229" size={15} /> },
+      { title: 'Menu', path: '/menu', icon: <Utensils color="#DF6229" size={15} /> },
+      { title: 'Addon', path: '/addon', icon: <PlusCircle color="#DF6229" size={15} /> },
     ],
   },
   {
     title: 'CRM',
-    icon: <Contact2 color="#DF6229" />,
+    icon: <Contact2 color="#DF6229" size={15} />,
     submenu: [
-      { title: 'Customer', path: '/customer', icon: <User color="#DF6229" size={16} /> },
-      { title: 'Orders', path: '/orders', icon: <FileText color="#DF6229" size={16} /> },
-      { title: 'Whatsapp Setup', path: '/whatsapp-setup', icon: <MessageCircle color="#DF6229" size={16} /> },
+      { title: 'Customer', path: '/customer', icon: <User color="#DF6229" size={15} /> },
+      { title: 'Orders', path: '/orders', icon: <FileText color="#DF6229" size={15} /> },
+      { title: 'Whatsapp Setup', path: '/whatsapp-setup', icon: <MessageCircle color="#DF6229" size={15} /> },
     ],
   },
   {
     title: 'Support',
-    icon: <Headset color="#DF6229" />,
+    icon: <Headset color="#DF6229" size={15} />,
     submenu: [
       {
         title: '1800-100-1001',
         path: 'tel:+18001001001',  // Opens the phone dialer with the number
-        icon: <Phone color="#DF6229" size={16} />
+        icon: <Phone color="#DF6229" size={15} />
       },
       {
         title: 'support@fizzy.com',
         path: 'mailto:support@fizzy.com',  // Opens the default mail client with the email address
-        icon: <Mail color="#DF6229" size={16} />
+        icon: <Mail color="#DF6229" size={15} />
       },
     ],
   },
 ];
 
 const Sidebar = () => {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(window.innerWidth < 768 ? true : false);
   const [openIndex, setOpenIndex] = useState(null);
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [showNotificationPopup, setShowNotificationPopup] = useState(false);
@@ -126,7 +125,7 @@ const Sidebar = () => {
 
   const handleAccordionToggle = (index) => {
     if (collapsed) {
-      setCollapsed(false);
+      setCollapsed(window.innerWidth < 768 ? true : false);
       setOpenIndex(index);
     } else {
       setOpenIndex(openIndex === index ? null : index);
@@ -136,7 +135,12 @@ const Sidebar = () => {
   const isActive = (path) => location.pathname === path;
 
   const handleLinkClick = () => {
-    if (collapsed) setCollapsed(false);
+    if (window.innerWidth < 768) {
+      if (!collapsed) setCollapsed(true);
+      setHoveredIndex(null)
+    } else {
+      if (collapsed) setCollapsed(false);
+    }
   };
 
   // Function to handle marking a notification as read
@@ -158,15 +162,11 @@ const Sidebar = () => {
     <>
       <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
         <div className="logo-section">
-          <img
-            src={collapsed ? logo2 : logo}
-            alt="logo"
-            className={`logo-img ${collapsed ? 'collapsed-logo' : ''}`}
-          />
+          <FizzyLogo oneWord={collapsed} />
           {
             !collapsed && (
               <button className="toggle-btn" onClick={() => setCollapsed(!collapsed)}>
-                <PanelLeftClose size={20} />
+                <PanelLeftClose color='#DF6229' size={15} />
               </button>
             )
           }
@@ -202,7 +202,7 @@ const Sidebar = () => {
                 )}
 
                 {((openIndex === index && !collapsed) || (hoveredIndex === index && collapsed)) && item.submenu && (
-                  <ul className={`submenu ${collapsed ? 'hover-submenu' : ''}`}>
+                  <ul className={`submenu card ${collapsed ? 'hover-submenu' : ''}`}>
                     {item.submenu.map((subItem, subIdx) => (
                       <li key={subIdx}>
                         <Link
@@ -225,28 +225,28 @@ const Sidebar = () => {
           </ul>
         </nav>
 
-        <div className="bottom-section">
+        <div className={`bottom-section ${collapsed ? "align-center" : ""}`}>
           <ul>
             <li>
               <Link onClick={() => setShowNotificationPopup(true)} className={`link-span ${isActive('/notifications') ? 'active-link' : ''}`}>
-                <Bell color="#DF6229" />
+                <Bell color="#DF6229" size={15} />
                 {!collapsed && <GradientText>Notifications</GradientText>}
               </Link>
             </li>
             <li>
               <Link to="/logout" onClick={handleLinkClick} className={isActive('/logout') ? 'active-link' : ''}>
-                <LogOut color="#DF6229" />
+                <LogOut color="#DF6229" size={15} />
                 {!collapsed && <GradientText>Logout</GradientText>}
               </Link>
             </li>
           </ul>
 
-          <div className="profile" onClick={() => navigate("/profile")} style={{ cursor: "pointer" }}>
+          <div className="sidebar-profile" onClick={() => navigate("/profile")}>
             <img src="https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png" alt="user" />
             {!collapsed && (
               <div>
-                <span>Sahil Rao</span>
-                <span>Admin</span>
+                <strong style={{ fontSize: "15px", color: "#4b5563" }}>Sahil Rao</strong>
+                <small style={{ fontSize: "12px", color: "#DF6229" }}>Admin</small>
               </div>
             )}
           </div>

@@ -15,17 +15,13 @@
   background-color: #F05756;
 }
 
-html {
+/* html {
   transform: scale(0.8);
-  /* Scale the entire page down to 80% */
   transform-origin: top left;
-  /* Keep the scaling anchored to the top left */
   width: 125%;
-  /* Prevent horizontal scrolling issues */
   height: 125%;
-  /* Prevent horizontal scrolling issues */
   overflow: hidden;
-}
+} */
 
 body {
   font-family: "Poppins", sans-serif;
