@@ -1,69 +1,15 @@
 .search-filter-bar {
     display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-    margin-top: 24px;
-    margin-bottom: 24px;
     align-items: center;
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 20px;
-    border: 1px solid #e0e0e0;
+    justify-content: space-between;
 }
 
-/* Common styling for input and select */
-.search-input,
-.filter-select {
-    padding: 12px 16px;
-    font-size: 16px;
-    border: 1px solid #ddd;
-    border-radius: 10px;
-    outline: none;
-    transition: border-color 0.2s ease-in-out, background-color 0.2s ease-in-out;
-    background-color: #f9f9f9;
-}
-
-/* Styling for input field */
-.search-input {
-    flex: 1;
-    min-width: 250px;
-    background-color: #ffffff;
-}
-
-/* Styling for select dropdown */
-.filter-select {
-    min-width: 180px;
-    cursor: pointer;
-}
-
-/* Focus & Hover Effects */
-.search-input:focus,
-.filter-select:focus {
-    border-color: #aaa;
-}
-
-.search-input:hover,
-.filter-select:hover {
-    border-color: #bbb;
-}
-
-/* Make dropdowns look better */
-.filter-select {
-    appearance: none;
-    background: url('data:image/svg+xml;utf8,<svg fill="%23333" viewBox="0 0 24 24" width="16" height="16" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"></path></svg>') no-repeat right 12px center;
-    background-size: 14px;
-    padding-right: 30px;
-}
+.search-filter-bar > div{
+    display: flex;
+    gap: 1rem;
+}   
 
 /* Responsive design */
 @media (max-width: 768px) {
-    .search-filter-bar {
-        flex-direction: column;
-        padding: 16px;
-    }
-
-    .search-input,
-    .filter-select {
-        width: 100%;
-    }
+   
 }

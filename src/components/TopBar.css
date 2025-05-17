@@ -1,0 +1,160 @@
+
+/* Toolbar Layout */
+.topbar{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+
+.toolbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    /* Reduced gap for compact layout */
+    position: relative;
+}
+
+/* Page Heading */
+.toolbar .page-heading {
+    font-size: 18px;
+    color: #333;
+    font-weight: bolder;
+    letter-spacing: 0.4px;
+    text-transform: capitalize;
+    /* Push search and filter to the right */
+}
+
+/* Permanent Search Input */
+.toolbar .search-input {
+    padding: 8px 10px;
+    border: 1px solid #ddd;
+    border-radius: 30px;
+    font-size: 13px;
+    outline: none;
+    color: #333;
+    background-color: #fff;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    flex: 1;
+}
+
+.toolbar .search-input:focus {
+    border-color: #4caf50;
+    /* Green border on focus */
+    box-shadow: 0 2px 6px rgba(76, 175, 80, 0.2);
+    /* Soft green shadow on focus */
+}
+
+.toolbar .search-input::placeholder {
+    color: #aaa;
+    /* Lighter placeholder text */
+}
+
+/* Icon Styles */
+.toolbar .icon {
+    cursor: pointer;
+    stroke: #333;
+    transition: stroke 0.3s ease;
+}
+
+.toolbar .icon:hover {
+    stroke: #4caf50;
+    /* Hover effect */
+}
+
+/* Filter Container */
+.toolbar .filter-container {
+    position: relative;
+}
+
+/* Filter Wrapper */
+.toolbar .filter-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    /* Reduced gap for compact filter */
+    cursor: pointer;
+    background-color: #fff;
+    padding: 8px 10px;
+    /* Reduced padding */
+    border-radius: 30px;
+    border: 1px solid #ddd;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+    font-size: 13px;
+    /* Smaller font size */
+}
+
+.toolbar .filter-wrapper:hover {
+    background-color: #f9f9f9;
+    border-color: #4caf50;
+}
+
+/* Filter Name */
+.toolbar .filter-name {
+    color: #333;
+    font-weight: 400;
+    font-size: 12px;
+}
+
+/* Filter Dropdown */
+.toolbar .filter-dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    min-width: 150px;
+    z-index: 20;
+    font-size: 13px;
+    transition: opacity 0.2s ease;
+}
+
+/* Filter Options */
+.toolbar .filter-option {
+    padding: 8px 12px;
+    /* Smaller padding for options */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.toolbar .filter-option:hover {
+    background-color: #f5f5f5;
+    /* Subtle hover effect */
+}
+
+.toolbar .filter-option.selected {
+    font-weight: 600;
+    color: #4caf50;
+    /* Green highlight for selected filter */
+}
+
+.toolbar .check-icon {
+    stroke: #4caf50;
+}
+
+/* Subtle animations */
+.toolbar .filter-option:hover .check-icon,
+.icon:hover {
+    stroke: #4caf50;
+}
+
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .topbar{
+        flex-direction: column;
+        align-items: baseline;
+        gap: 10px;
+    }
+
+    .toolbar{
+        width: 100%;
+    }
+}

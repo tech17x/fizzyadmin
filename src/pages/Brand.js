@@ -1,124 +1,127 @@
-import { useCallback, useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import CardAdd from "../components/CardAdd";
 import EditCard from "../components/EditCard";
-import HeadingText from "../components/HeadingText";
 import InputField from "../components/InputField";
-import Popup from "../components/Popup";
 import "./Brand.css";
 import GradientButton from "../components/GradientButton";
 import Button from "../components/Button";
 import Loader from "../components/Loader";
 import Checkbox from "../components/Checkbox";
-import SearchFilterBar from "../components/SearchFilterBar";
 import { toast } from "react-toastify";
 import axios from "axios";
 import useFilteredData from "../hooks/filterData";
-
+import TopBar from "../components/TopBar";
+import PhoneNumberInput from "../components/PhoneNumberInput";
+import HeadingText from "../components/HeadingText";
+import SelectInput from "../components/SelectInput";
+import AuthContext from "../context/AuthContext";
+import { countryOptions, countryCodeOptions } from '../constants/countryOptions'; 
 
 const Brand = () => {
     const API = process.env.REACT_APP_API_URL;
+
+    const { staff, updateStaff, logout } = useContext(AuthContext);
     const [brands, setBrands] = useState([]);
+
     const [loading, setLoading] = useState(true);
+
     const [showPopup, setShowPopup] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
-    const [search, setSearch] = useState('');
-    const [status, setStatus] = useState('');
-    const [brandData, setBrandData] = useState({
-        _id: "",
-        full_name: "",
-        short_name: "",
-        gst_no: "",
-        license_no: "",
-        food_license: "",
-        phone: "",
-        email: "",
-        website: "",
-        city: "",
-        state: "",
-        country: "",
-        postal_code: "",
-        street_address: "",
-        status: true, // Default to active (checked)
-    });
 
-    const fetchBrands = useCallback(async () => {
-        try {
-            const response = await axios.get(`${API}/api/brands`, {
-                withCredentials: true,
-            });
-            setBrands(response.data);
-        } catch (error) {
-            toast.error(error.response?.data?.message || "Failed to fetch brands.");
-        } finally {
-            setLoading(false);
-        }
-    }, [API]);
+    const [search, setSearch] = useState('');
+    const [filteredStatus, setFilteredStatus] = useState('');
+
+    const [id, setId] = useState("");
+    const [fullName, setFullName] = useState('');
+    const [shortName, setShortName] = useState('');
+    const [gstNo, setGstNo] = useState('');
+    const [licenseNo, setLicenseNo] = useState('');
+    const [foodLicense, setFoodLicense] = useState('');
+    const [phone, setPhone] = useState('');
+    const [selectedCountryCode, setSelectedCountryCode] = useState(countryCodeOptions[1]);
+    const [email, setEmail] = useState('');
+    const [website, setWebsite] = useState('');
+    const [city, setCity] = useState('');
+    const [state, setState] = useState('');
+    const [selectedCountry, setSelectedCountry] = useState(countryOptions[1]);
+    const [postalCode, setPostalCode] = useState('');
+    const [address, setAddress] = useState('');
+    const [status, setStatus] = useState("");
 
     useEffect(() => {
-        fetchBrands();
-    }, [fetchBrands]); // No warning, fetchBrands is memoized
+        if (staff.permissions?.includes('brand_manage')) {
+            setBrands(staff.brands);
+            setLoading(false);
+        } else {
+            logout();
+        }
+    }, [staff, logout]);
 
     const handleAddNewBrand = () => {
         setIsEditing(false);
-        setBrandData({
-            _id: "",
-            full_name: "",
-            short_name: "",
-            gst_no: "",
-            license_no: "",
-            food_license: "",
-            phone: "",
-            email: "",
-            website: "",
-            city: "",
-            state: "",
-            country: "",
-            postal_code: "",
-            street_address: "",
-            status: true, // Default to active (checked)
-        });
+        setId('');
+        setFullName('');
+        setShortName('');
+        setGstNo('');
+        setLicenseNo('');
+        setFoodLicense('');
+        setPhone('');
+        setSelectedCountryCode(countryCodeOptions[1]);
+        setEmail('');
+        setWebsite('');
+        setCity('');
+        setState('');
+        setSelectedCountry(countryOptions[1]);
+        setPostalCode('');
+        setAddress('');
+        setStatus(true);
         setShowPopup(true);
     };
 
     const handleEditBrand = (brand) => {
         setIsEditing(true);
-        setBrandData({
-            _id: brand._id,
-            full_name: brand.full_name || "",
-            short_name: brand.short_name || "",
-            gst_no: brand.gst_no || "",
-            license_no: brand.license_no || "",
-            food_license: brand.food_license || "",
-            phone: brand.phone || "",
-            email: brand.email || "",
-            website: brand.website || "",
-            city: brand.city || "",
-            state: brand.state || "",
-            country: brand.country || "",
-            postal_code: brand.postal_code || "",
-            street_address: brand.street_address || "",
-            status: brand.status === "active", // Convert string status to boolean
-        });
+        setId(brand._id);
+        setFullName(brand.full_name);
+        setShortName(brand.short_name);
+        setGstNo(brand.gst_no);
+        setLicenseNo(brand.license_no);
+        setFoodLicense(brand.food_license);
+        setPhone(brand.phone);
+        setSelectedCountryCode(countryCodeOptions.find(i => i.value === brand.country_code));
+        setEmail(brand.email);
+        setWebsite(brand.website);
+        setCity(brand.city);
+        setState(brand.state);
+        setSelectedCountry(countryOptions.find(i => i.value === brand.country.toLowerCase()));
+        setPostalCode(brand.postal_code);
+        setAddress(brand.street_address);
+        setStatus(brand.status === "active");
         setShowPopup(true);
-    };
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setBrandData((prev) => ({ ...prev, [name]: value }));
-    };
-
-    const handleStatusChange = () => {
-        setBrandData((prev) => ({ ...prev, status: !prev.status }));
     };
 
     const handleSave = () => {
         setLoading(true);
-        const formattedBrandData = {
-            ...brandData,
-            status: isEditing ? (brandData.status ? "active" : "inactive") : "active", // Always active for new brand
-        };
+        const payload = {
+            _id: id,
+            full_name: fullName,
+            short_name: shortName,
+            gst_no: gstNo,
+            license_no: licenseNo,
+            food_license: foodLicense,
+            phone: phone,
+            country_code: selectedCountryCode.value,
+            email: email,
+            website: website,
+            city: city,
+            state: state,
+            country: selectedCountry.value,
+            postal_code: postalCode,
+            street_address: address,
+            status: status ? "active" : "inactive",
+        }
 
-        const errors = validateBrandData(formattedBrandData, brands);
+
+        const errors = validateBrandData(payload);
         if (Object.keys(errors).length > 0) {
             Object.values(errors).forEach((msg) => toast.error(msg));
             setTimeout(() => {
@@ -128,14 +131,14 @@ const Brand = () => {
         }
 
         if (isEditing) {
-            updateBrand(brandData._id, formattedBrandData);
+            updateBrand(payload);
         } else {
-            createBrand(formattedBrandData);
+            createBrand(payload);
         }
 
     };
 
-    const validateBrandData = (brandData, brands) => {
+    const validateBrandData = (brandData) => {
         const errors = {};
 
         // Required fields
@@ -149,6 +152,7 @@ const Brand = () => {
         if (!brandData.city) errors.city = "City is required.";
         if (!brandData.state) errors.state = "State is required.";
         if (!brandData.country) errors.country = "Country is required.";
+        if (!brandData.country_code) errors.country = "Country code is required.";
         if (!brandData.postal_code) errors.postal_code = "Postal code is required.";
         if (!brandData.street_address) errors.street_address = "Street address is required.";
 
@@ -156,51 +160,6 @@ const Brand = () => {
         const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
         if (brandData.email && !emailRegex.test(brandData.email)) {
             errors.email = "Invalid email format.";
-        }
-
-        const phoneRegex = /^\d{3}-\d{3}-\d{4}$/;
-        if (brandData.phone && !phoneRegex.test(brandData.phone)) {
-            errors.phone = "Invalid phone number format. Use ###-###-####";
-        }
-
-        // Uniqueness check
-        const isDuplicate = (field) => {
-            return brands?.some((brand) =>
-                brand[field]?.trim().toLowerCase() === brandData[field]?.trim().toLowerCase() &&
-                brand._id !== brandData._id
-            );
-        };
-
-        if (brandData.full_name && isDuplicate("full_name")) {
-            errors.full_name = "Full name already exists.";
-        }
-
-        if (brandData.short_name && isDuplicate("short_name")) {
-            errors.short_name = "Short name already exists.";
-        }
-
-        if (brandData.email && isDuplicate("email")) {
-            errors.email = "Email already exists.";
-        }
-
-        if (brandData.phone && isDuplicate("phone")) {
-            errors.phone = "Phone number already exists.";
-        }
-
-        if (brandData.gst_no && isDuplicate("gst_no")) {
-            errors.gst_no = "GST number already exists.";
-        }
-
-        if (brandData.license_no && isDuplicate("license_no")) {
-            errors.license_no = "License number already exists.";
-        }
-
-        if (brandData.food_license && isDuplicate("food_license")) {
-            errors.food_license = "Food license number already exists.";
-        }
-
-        if (brandData.website && isDuplicate("website")) {
-            errors.website = "Website already exists.";
         }
 
         return errors;
@@ -212,7 +171,20 @@ const Brand = () => {
             const response = await axios.post(`${API}/api/brands`, brandData, {
                 withCredentials: true,
             });
-            setBrands((prevBrands) => [...prevBrands, response.data.brand]); // Append new brand
+            const newBrand = response.data.brand;
+
+            const updatedBrands = [...brands, newBrand];
+
+            // ✅ Update local brands state
+            setBrands(updatedBrands);
+
+            // ✅ Update staff context with new brands array
+            const updatedStaff = {
+                ...staff,
+                brands: updatedBrands
+            };
+
+            updateStaff(updatedStaff); // Comes from AuthContext
             setShowPopup(false);
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to create brand.");
@@ -221,22 +193,31 @@ const Brand = () => {
         }
     };
 
-    const updateBrand = async (brandId, updatedData) => {
+    const updateBrand = async (updatedData) => {
         try {
             const response = await axios.put(
-                `${API}/api/brands/${brandId}`,
+                `${API}/api/brands/${updatedData._id}`,
                 updatedData,
                 { withCredentials: true }
             );
 
-            // Extract updated brand from response
             const updatedBrand = response.data.brand;
 
-            setBrands((prevBrands) =>
-                prevBrands.map((brand) =>
-                    brand._id === brandId ? updatedBrand : brand
-                )
+            const updatedBrands = brands.map((brand) =>
+                brand._id === updatedData._id ? updatedBrand : brand
             );
+
+            // ✅ Update brands state
+            setBrands(updatedBrands);
+
+            // ✅ Safely update staff using a new object
+            const updatedStaff = {
+                ...staff,
+                brands: updatedBrands
+            };
+
+            updateStaff(updatedStaff); // ✅ from AuthContext
+
 
             setShowPopup(false);
         } catch (error) {
@@ -246,63 +227,41 @@ const Brand = () => {
         }
     };
 
+    const filteredData = useFilteredData({
+        data: brands,
+        searchTerm: search,
+        searchKeys: ["full_name", "short_name", "email", "phone", "website", "city", "state", "country", "postal_code", "street_address", "gst_no", "license_no", "food_license"],
+        filters: {
+            status: filteredStatus,
+        },
+    });
+
 
     return (
         <>
             {
                 loading && <Loader />
             }
-            <HeadingText title={"Brand"}/>
-            
-            <SearchFilterBar
-                placeholder="Find what you’re looking for..."
-                searchValue={search}
-                onSearchChange={setSearch}
-                statusValue={status}
-                onStatusChange={setStatus}
-            />
-            <div className="cards-container">
-                {useFilteredData({
-                    data: brands,
-                    searchTerm: search,
-                    searchKeys: ["full_name", "short_name", "email", "phone", "website", "city", "state", "country", "postal_code", "street"],
-                    filters: {
-                        status: status,
-                    },
-                }).map((brand) => (
-                    <EditCard
-                        key={brand._id}
-                        firstLetter={brand.short_name.charAt(0)}
-                        title={brand.short_name}
-                        link={brand.website}
-                        status={brand.status}
-                        handleEdit={() => handleEditBrand(brand)}
-                    />
-                ))}
-                <CardAdd handleAdd={handleAddNewBrand} />
-            </div>
 
-            {showPopup && (
-                <Popup
-                    title={isEditing ? "Edit Brand" : "Add New Brand"}
-                    closePopup={() => setShowPopup(false)}
-                >
+            {showPopup ? (
+                <div className="card">
+                    <HeadingText title={`${isEditing ? "Edit" : "Add"} Brand`} />
                     <div className="inputs-container">
                         <div className="inputs-row">
                             <InputField
                                 label="Brand Name"
                                 type="text"
                                 name="full_name"
-                                value={brandData.full_name}
-                                onChange={handleInputChange}
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
                                 required
                             />
                             <InputField
                                 label="Short Name"
                                 type="text"
                                 name="short_name"
-                                value={brandData.short_name}
-                                onChange={handleInputChange}
+                                value={shortName}
+                                onChange={(e) => setShortName(e.target.value)}
                                 required
                             />
                         </div>
@@ -311,16 +270,16 @@ const Brand = () => {
                                 label="GST No"
                                 type="text"
                                 name="gst_no"
-                                value={brandData.gst_no}
-                                onChange={handleInputChange}
+                                value={gstNo}
+                                onChange={(e) => setGstNo(e.target.value)}
                                 required
                             />
                             <InputField
                                 label="License No"
                                 type="text"
                                 name="license_no"
-                                value={brandData.license_no}
-                                onChange={handleInputChange}
+                                value={licenseNo}
+                                onChange={(e) => setLicenseNo(e.target.value)}
                                 required
                             />
                         </div>
@@ -329,18 +288,16 @@ const Brand = () => {
                                 label="Food License"
                                 type="text"
                                 name="food_license"
-                                value={brandData.food_license}
-                                onChange={handleInputChange}
+                                value={foodLicense}
+                                onChange={(e) => setFoodLicense(e.target.value)}
                                 required
                             />
-                            <InputField
-                                label="Phone No"
-                                format={"###-###-####"}
-                                type="tel"
-                                name="phone"
-                                value={brandData.phone}
-                                onChange={handleInputChange}
-                                required
+                            <PhoneNumberInput
+                                phoneNumber={phone}
+                                onPhoneNumberChange={setPhone}
+                                selectedCountry={selectedCountryCode}
+                                onCountryChange={setSelectedCountryCode}
+                                countryOptions={countryCodeOptions}
                             />
                         </div>
                         <div className="inputs-row">
@@ -348,16 +305,16 @@ const Brand = () => {
                                 label="Email"
                                 type="email"
                                 name="email"
-                                value={brandData.email}
-                                onChange={handleInputChange}
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 required
                             />
                             <InputField
                                 label="Website"
                                 type="url"
                                 name="website"
-                                value={brandData.website}
-                                onChange={handleInputChange}
+                                value={website}
+                                onChange={(e) => setWebsite(e.target.value)}
                                 required
                             />
 
@@ -367,16 +324,16 @@ const Brand = () => {
                                 label="Street Address"
                                 type="text"
                                 name="street_address"
-                                value={brandData.street_address}
-                                onChange={handleInputChange}
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
                                 required
                             />
                             <InputField
                                 label="City"
                                 type="text"
                                 name="city"
-                                value={brandData.city}
-                                onChange={handleInputChange}
+                                value={city}
+                                onChange={(e) => setCity(e.target.value)}
                                 required
                             />
 
@@ -386,17 +343,15 @@ const Brand = () => {
                                 label="State"
                                 type="text"
                                 name="state"
-                                value={brandData.state}
-                                onChange={handleInputChange}
+                                value={state}
+                                onChange={(e) => setState(e.target.value)}
                                 required
                             />
-                            <InputField
-                                label="Country"
-                                type="text"
-                                name="country"
-                                value={brandData.country}
-                                onChange={handleInputChange}
-                                required
+                            <SelectInput
+                                label={"Country"}
+                                selectedOption={selectedCountry}
+                                onChange={setSelectedCountry}
+                                options={countryOptions}
                             />
                         </div>
                         <div className="inputs-row">
@@ -404,17 +359,18 @@ const Brand = () => {
                                 label="Postal Code"
                                 type="text"
                                 name="postal_code"
-                                value={brandData.postal_code}
-                                onChange={handleInputChange}
+                                value={postalCode}
+                                onChange={(e) => setPostalCode(e.target.value)}
                                 required
                             />
+
                         </div>
                         {isEditing && (
-                            <div className="inputs-row" style={{ padding: "10px", flexDirection: "column", gap: "5px" }}>
+                            <div className="inputs-row checkbox-input">
                                 <Checkbox
                                     label="Active Status"
-                                    checked={brandData.status}
-                                    onChange={handleStatusChange}
+                                    checked={status}
+                                    onChange={() => setStatus(!status)}
                                 />
                             </div>
                         )}
@@ -426,8 +382,31 @@ const Brand = () => {
                         </GradientButton>
                         <Button clickAction={() => setShowPopup(false)}>Close</Button>
                     </div>
-                </Popup>
-            )}
+                </div>
+            ) :
+                <div className="brand-container" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                    <TopBar
+                        title="Brands"
+                        searchText={search}
+                        setSearchText={setSearch}
+                        selectedFilter={filteredStatus}
+                        setSelectedFilter={setFilteredStatus}
+                    />
+                    <div className="cards-container card">
+                        {filteredData.map((brand) => (
+                            <EditCard
+                                key={brand._id}
+                                firstLetter={brand.short_name.charAt(0)}
+                                title={brand.short_name}
+                                link={brand.website}
+                                status={brand.status}
+                                handleEdit={() => handleEditBrand(brand)}
+                            />
+                        ))}
+                        <CardAdd handleAdd={handleAddNewBrand} />
+                    </div>
+                </div>
+            }
         </>
     );
 };

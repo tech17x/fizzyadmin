@@ -19,6 +19,14 @@
 .admin-main-content {
   flex: 1;
   background-color: #f0f0f0;
-  padding: 10px;
+  padding: 20px;
   overflow-y: scroll;
+}
+
+
+@media (max-width: 768px) {
+
+  .admin-main-content {
+    padding: 10px;
+  }
 }

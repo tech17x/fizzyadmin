@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Sidebar.css';
 import GradientText from './GradientText';
@@ -36,10 +36,12 @@ import {
 } from 'lucide-react';
 import Popup from './Popup';
 import FizzyLogo from './FizzyLogo';
+import AuthContext from '../context/AuthContext';
 
 const menuItems = [
   {
     title: 'Dashboard',
+    permission: 'dashboard_view',
     icon: <LayoutDashboard color="#DF6229" size={15} />,
     path: '/dashboard',
   },
@@ -47,40 +49,40 @@ const menuItems = [
     title: 'Brand Configuration',
     icon: <Settings color="#DF6229" size={15} />,
     submenu: [
-      { title: 'Brand', path: '/brand', icon: <Building color="#DF6229" size={15} /> },
-      { title: 'Outlet', path: '/outlet', icon: <Store color="#DF6229" size={15} /> },
-      { title: 'Staff', path: '/staff', icon: <Users color="#DF6229" size={15} /> },
-      { title: 'Order Type', path: '/order-type', icon: <Type color="#DF6229" size={15} /> },
-      { title: 'Payment Mode', path: '/payment-mode', icon: <CreditCard color="#DF6229" size={15} /> },
+      { title: 'Brand', path: '/brand', icon: <Building color="#DF6229" size={15} />, permission: 'brand_manage' },
+      { title: 'Outlet', path: '/outlet', icon: <Store color="#DF6229" size={15} />, permission: 'outlet_manage' },
+      { title: 'Staff', path: '/staff', icon: <Users color="#DF6229" size={15} />, permission: 'staff_manage' },
+      { title: 'Order Type', path: '/order-type', icon: <Type color="#DF6229" size={15} />, permission: 'order_type_manage' },
+      { title: 'Payment Mode', path: '/payment-mode', icon: <CreditCard color="#DF6229" size={15} />, permission: 'payment_type_manage' },
     ],
   },
   {
     title: 'Master Configuration',
     icon: <Layers color="#DF6229" size={15} />,
     submenu: [
-      { title: 'Tax', path: '/tax', icon: <Percent color="#DF6229" size={15} /> },
-      { title: 'Floor', path: '/floor', icon: <Grid color="#DF6229" size={15} /> },
-      { title: 'Table', path: '/table', icon: <TableProperties color="#DF6229" size={15} /> },
-      { title: 'Discount Charge', path: '/discount-charge', icon: <Tag color="#DF6229" size={15} /> },
-      { title: 'Buy X Get Y', path: '/buy-x-get-y-item', icon: <Gift color="#DF6229" size={15} /> },
+      { title: 'Tax', path: '/tax', icon: <Percent color="#DF6229" size={15} />, permission: 'tax_manage' },
+      { title: 'Floor', path: '/floor', icon: <Grid color="#DF6229" size={15} />, permission: 'floor_manage' },
+      { title: 'Table', path: '/table', icon: <TableProperties color="#DF6229" size={15} />, permission: 'table_manage' },
+      { title: 'Discount Charge', path: '/discount-charge', icon: <Tag color="#DF6229" size={15} />, permission: 'discount_manage' },
+      { title: 'Buy X Get Y', path: '/buy-x-get-y-item', icon: <Gift color="#DF6229" size={15} />, permission: 'buyxgety_manage' },
     ],
   },
   {
     title: 'Menu Configuration',
     icon: <MenuSquare color="#DF6229" size={15} />,
     submenu: [
-      { title: 'Categories', path: '/categories', icon: <FolderKanban color="#DF6229" size={15} /> },
-      { title: 'Menu', path: '/menu', icon: <Utensils color="#DF6229" size={15} /> },
-      { title: 'Addon', path: '/addon', icon: <PlusCircle color="#DF6229" size={15} /> },
+      { title: 'Categories', path: '/categories', icon: <FolderKanban color="#DF6229" size={15} />, permission: 'category_manage' },
+      { title: 'Menu', path: '/menu', icon: <Utensils color="#DF6229" size={15} />, permission: 'menu_manage' },
+      { title: 'Addon', path: '/addon', icon: <PlusCircle color="#DF6229" size={15} />, permission: 'addon_manage' },
     ],
   },
   {
     title: 'CRM',
     icon: <Contact2 color="#DF6229" size={15} />,
     submenu: [
-      { title: 'Customer', path: '/customer', icon: <User color="#DF6229" size={15} /> },
-      { title: 'Orders', path: '/orders', icon: <FileText color="#DF6229" size={15} /> },
-      { title: 'Whatsapp Setup', path: '/whatsapp-setup', icon: <MessageCircle color="#DF6229" size={15} /> },
+      { title: 'Customer', path: '/customer', icon: <User color="#DF6229" size={15} />, permission: 'customers_view' },
+      { title: 'Orders', path: '/orders', icon: <FileText color="#DF6229" size={15} />, permission: 'orders_view' },
+      { title: 'Whatsapp Setup', path: '/whatsapp-setup', icon: <MessageCircle color="#DF6229" size={15} />, permission: 'whatsapp_manage' },
     ],
   },
   {
@@ -89,13 +91,13 @@ const menuItems = [
     submenu: [
       {
         title: '1800-100-1001',
-        path: 'tel:+18001001001',  // Opens the phone dialer with the number
-        icon: <Phone color="#DF6229" size={15} />
+        path: 'tel:+18001001001',
+        icon: <Phone color="#DF6229" size={15} />,
       },
       {
         title: 'support@fizzy.com',
-        path: 'mailto:support@fizzy.com',  // Opens the default mail client with the email address
-        icon: <Mail color="#DF6229" size={15} />
+        path: 'mailto:support@fizzy.com',
+        icon: <Mail color="#DF6229" size={15} />,
       },
     ],
   },
@@ -111,6 +113,7 @@ const Sidebar = () => {
     { id: 2, message: '⚠️ System Update: Scheduled maintenance on May 5, 10:00 PM UTC.', time: '1 hour ago', read: false },
     { id: 3, message: '✅ Task Completed: "Homepage redesign" was marked as completed.', time: 'Yesterday', read: true },
   ]);
+  const { staff, logout } = useContext(AuthContext);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -157,6 +160,26 @@ const Sidebar = () => {
     setNotifications((prev) => prev.filter((notif) => notif.id !== id));
   };
 
+  const filteredMenuItems = menuItems
+  .map((item) => {
+    if (item.submenu) {
+      const filteredSubmenu = item.submenu.filter(
+        (sub) => !sub.permission || staff.permissions.includes(sub.permission)
+      );
+
+      // Only show parent if it has at least one allowed submenu
+      if (filteredSubmenu.length > 0) {
+        return { ...item, submenu: filteredSubmenu };
+      }
+      return null;
+    } else if (!item.permission || staff.permissions.includes(item.permission)) {
+      return item;
+    }
+    return null;
+  })
+  .filter(Boolean);
+
+
 
   return (
     <>
@@ -174,7 +197,7 @@ const Sidebar = () => {
 
         <nav>
           <ul>
-            {menuItems.map((item, index) => (
+            {filteredMenuItems.map((item, index) => (
               <li
                 key={index}
                 onMouseEnter={() => setHoveredIndex(index)}
@@ -226,34 +249,34 @@ const Sidebar = () => {
         </nav>
 
         <div className={`bottom-section ${collapsed ? "align-center" : ""}`}>
-          <ul>
+          {/* <ul>
             <li>
-              <Link onClick={() => setShowNotificationPopup(true)} className={`link-span ${isActive('/notifications') ? 'active-link' : ''}`}>
+              <Link onClick={() => { handleLinkClick(); setShowNotificationPopup(true); }} className={`link-span ${isActive('/notifications') ? 'active-link' : ''}`}>
                 <Bell color="#DF6229" size={15} />
                 {!collapsed && <GradientText>Notifications</GradientText>}
               </Link>
             </li>
             <li>
-              <Link to="/logout" onClick={handleLinkClick} className={isActive('/logout') ? 'active-link' : ''}>
+              <Link to="#" onClick={(e) => { e.preventDefault(); logout(); }} className={isActive('/logout') ? 'active-link' : ''}>
                 <LogOut color="#DF6229" size={15} />
                 {!collapsed && <GradientText>Logout</GradientText>}
               </Link>
             </li>
-          </ul>
+          </ul> */}
 
-          <div className="sidebar-profile" onClick={() => navigate("/profile")}>
+          <div className="sidebar-profile" onClick={() => { handleLinkClick(); navigate("/profile"); }}>
             <img src="https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png" alt="user" />
             {!collapsed && (
               <div>
-                <strong style={{ fontSize: "15px", color: "#4b5563" }}>Sahil Rao</strong>
-                <small style={{ fontSize: "12px", color: "#DF6229" }}>Admin</small>
+                <strong style={{ fontSize: "15px", color: "#4b5563" }}>{staff.name}</strong>
+                <small style={{ fontSize: "12px", color: "#DF6229" }}>{staff.role.name}</small>
               </div>
             )}
           </div>
         </div>
       </aside>
       {showNotificationPopup && (
-        <Popup title="Notifications" closePopup={() => setShowNotificationPopup(false)}>
+        <Popup title="Notifications" showCloseBtn={true} closePopup={() => setShowNotificationPopup(false)}>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {notifications.map((notification) => (
               <li
@@ -282,8 +305,8 @@ const Sidebar = () => {
                         marginRight: '8px',
                         color: '#DF6229',
                         cursor: 'pointer',
-                        fontSize: '1rem',
                       }}
+                      size={14}
                     />
                   )}
                   <Trash2
@@ -291,8 +314,8 @@ const Sidebar = () => {
                     style={{
                       color: '#e53e3e',
                       cursor: 'pointer',
-                      fontSize: '1rem',
                     }}
+                    size={14}
                   />
                 </div>
               </li>

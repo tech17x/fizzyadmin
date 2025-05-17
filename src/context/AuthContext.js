@@ -14,7 +14,7 @@ export const AuthProvider = ({ children }) => {
         if (staff) return; // ✅ Prevents unnecessary API calls
 
         try {
-            const response = await axios.get("http://localhost:5002/validate_token", { withCredentials: true });
+            const response = await axios.get("https://api.techseventeen.com/validate_token", { withCredentials: true });
             if (response.data.staff) {
                 setStaff(response.data.staff);
                 setLoading(false);
@@ -33,12 +33,16 @@ export const AuthProvider = ({ children }) => {
 
     // Logout function
     const logout = async () => {
-        await axios.post("http://localhost:5002/api/staff/logout", {}, { withCredentials: true });
+        await axios.post("https://api.techseventeen.com/api/staff/logout", {}, { withCredentials: true });
         setStaff(null);
     };
 
+    const updateStaff = (updatedStaff) => {
+        setStaff(updatedStaff)
+    }
+
     return (
-        <AuthContext.Provider value={{ staff, setStaff, loading, logout }}>
+        <AuthContext.Provider value={{ staff, setStaff, loading, logout, updateStaff }}>
             {children}
         </AuthContext.Provider>
     );

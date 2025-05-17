@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import axios from "axios";
 import TableRow from "./TableRow";
 import GradientButton from "./GradientButton";
@@ -6,26 +6,31 @@ import Button from "./Button";
 import { toast } from "react-toastify";
 
 const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
+    const API = process.env.REACT_APP_API_URL;
     const [items, setItems] = useState([]);
     const [initialItems, setInitialItems] = useState([]);
     const [selectedFileName, setSelectedFileName] = useState("No file chosen");
     const [selectedFile, setSelectedFile] = useState(null);
 
-    useEffect(() => {
-        fetchItems(menuId);
-    }, [menuId]);
+    // ✅ Fetch items by menu ID
+    const fetchItems = useCallback(async (menuId) => {
+        if (!menuId) return;
 
-    const fetchItems = async (id) => {
         try {
-            const res = await axios.get(`http://localhost:5002/api/items/menu/${id}`, {
+            const response = await axios.get(`${API}/api/items/menu/${menuId}`, {
                 withCredentials: true,
             });
-            setItems(res.data.items || []);
-            setInitialItems(res.data.items || []); // Save the fetched items as initial state
+            const fetchedItems = response.data.items || [];
+            setItems(fetchedItems);
+            setInitialItems(fetchedItems);
         } catch (error) {
             console.error("Failed to fetch items:", error);
         }
-    };
+    }, [API]);
+
+    useEffect(() => {
+        fetchItems(menuId);
+    }, [menuId, fetchItems]);
 
 
     const handleFieldChange = (id, field, value) => {
@@ -227,7 +232,7 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
 
         // Handle API request for saving changed and new items
         try {
-            const response = await axios.post("http://localhost:5002/api/items/upsert", payload, {
+            const response = await axios.post("https://api.techseventeen.com/api/items/upsert", payload, {
                 withCredentials: true
             });
             if (response.data.successCount > 0) {
@@ -246,32 +251,31 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
     return (
         <div className="edit-menu" style={{ height: "100%", width: "100%", zIndex: "100" }}>
             <div className="row top-bar">
-                <GradientButton clickAction={handleAddItem}>Add Item</GradientButton>
-
-                <div className="file-upload">
-                    <label htmlFor="fileInput" className="custom-file-label">
-                        <span className="file-name">{selectedFileName}</span>
-                        <span className="browse-btn">Browse</span>
-                    </label>
-                    <input
-                        type="file"
-                        id="fileInput"
-                        className="hidden-file-input"
-                        onChange={handleFileChange}
-                    />
-                    <GradientButton clickAction={handleUploadClick}>Upload CSV</GradientButton>
-                    <Button clickAction={handleDownloadSample}>Download Format</Button>
+                <div className="top-bar-top">
+                    <Button clickAction={handleDownloadSample}>{window.innerWidth > "600px" ? "Download Format" : "Format"}</Button>
+                    <div className="search-container">
+                        <input
+                            type="text"
+                            placeholder="Filter results using any relevant detail..."
+                            className="search-input"
+                            onChange={(e) => console.log("Search:", e.target.value)}
+                        />
+                    </div>
+                </div>
+                <div className="form-actions">
+                    <GradientButton clickAction={handleSave}>Save</GradientButton>
+                    <Button clickAction={closeMenuDetails}>Close</Button>
                 </div>
             </div>
 
             <div className="tables" style={{ overflowY: "auto", height: "calc(100vh - 150px)" }}>
-                <div className="table-container2">
+                <div className="table-container">
                     <table className="menu-table">
                         <thead>
                             <tr>
                                 <th>Sr No</th>
                                 <th>Image</th>
-                                <th>Menu Name</th>
+                                <th>Item Name</th>
                                 <th>Sale Price</th>
                                 <th>Category</th>
                                 <th>Type</th>
@@ -298,18 +302,21 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
                 </div>
             </div>
 
-            <div className="bottom-bar" style={{ position: "absolute", bottom: 0, width: "100%", padding: "10px" }}>
-                <div className="search-container">
+            <div className="bottom-bar">
+                <GradientButton clickAction={handleAddItem}>Add Item</GradientButton>
+
+                <div className="file-upload">
+                    <label htmlFor="fileInput" className="custom-file-label">
+                        <span className="file-name">{selectedFileName}</span>
+                        <span className="browse-btn">Browse</span>
+                    </label>
                     <input
-                        type="text"
-                        placeholder="Filter results using any relevant detail..."
-                        className="search-input"
-                        onChange={(e) => console.log("Search:", e.target.value)}
+                        type="file"
+                        id="fileInput"
+                        className="hidden-file-input"
+                        onChange={handleFileChange}
                     />
-                </div>
-                <div>
-                    <GradientButton clickAction={handleSave}>Save</GradientButton>
-                    <Button clickAction={closeMenuDetails}>Close</Button>
+                    <GradientButton clickAction={handleUploadClick}>Upload CSV</GradientButton>
                 </div>
             </div>
         </div>

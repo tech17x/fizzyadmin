@@ -1,28 +1,28 @@
 // src/pages/PaymentType.js
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import CardAdd from '../components/CardAdd';
 import EditCard from '../components/EditCard';
-import HeadingText from '../components/HeadingText';
 import InputField from '../components/InputField';
-import Popup from '../components/Popup';
 import './Brand.css';
 import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
 import Checkbox from '../components/Checkbox';
 import SelectInput from '../components/SelectInput';
-import SearchFilterBar from '../components/SearchFilterBar';
 import { toast } from 'react-toastify';
 import axios from 'axios';
-import useFetchBrands from '../hooks/useFetchBrands';
-import useFetchOutlets from '../hooks/useFetchOutlets';
 import useFilteredData from '../hooks/filterData';
 import Loader from '../components/Loader';
+import TopBar from '../components/TopBar';
+import HeadingText from '../components/HeadingText';
+import AuthContext from '../context/AuthContext';
 
 const PaymentType = () => {
     const API = process.env.REACT_APP_API_URL;
-    const { brands } = useFetchBrands();
-    const { outlets } = useFetchOutlets();
+    const { staff, logout } = useContext(AuthContext);
+
+    const [brands, setBrands] = useState([]);
+    const [outlets, setOutlets] = useState([]);
 
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
@@ -42,6 +42,15 @@ const PaymentType = () => {
         brand_id: '',
         outlet_id: ''
     });
+
+    useEffect(() => {
+        if (staff.permissions?.includes('payment_type_manage')) {
+            setOutlets(staff.outlets);
+            setBrands(staff.brands);
+        } else {
+            logout();
+        }
+    }, [staff, logout]);
 
     const fetchPaymentTypes = useCallback(async () => {
         try {
@@ -89,7 +98,7 @@ const PaymentType = () => {
             brand_id: type.brand_id?._id || '',
             outlet_id: type.outlet_id?._id || ''
         });
-        setSelectedBrand(brand);
+        setSelectedBrand({label: brand.full_name, value : brand._id});
         setFilteredOutlets(outletOptions);
         setSelectedOutlet(outlet ? { label: outlet.name, value: outlet._id } : null);
         setShowPopup(true);
@@ -102,7 +111,7 @@ const PaymentType = () => {
 
     const handleBrandSelection = (brand) => {
         setSelectedBrand(brand);
-        const filtered = outlets.filter(outlet => outlet.brand_id === brand._id);
+        const filtered = outlets.filter(outlet => outlet.brand_id === brand.value);
         setFilteredOutlets(filtered);
         if (filtered.length === 0) {
             toast.error("Selected brand has no outlets.");
@@ -123,7 +132,7 @@ const PaymentType = () => {
             toast.error("Please select a status.");
             return;
         }
-        if (!selectedBrand?._id) {
+        if (!selectedBrand?.value) {
             toast.error("Please select a brand.");
             return;
         }
@@ -154,7 +163,7 @@ const PaymentType = () => {
         const payload = {
             name: paymentInfo.name.trim(),
             status: paymentInfo.status,
-            brand_id: selectedBrand._id,
+            brand_id: selectedBrand.value,
             outlet_id: selectedOutlet.value,
         };
 
@@ -180,50 +189,31 @@ const PaymentType = () => {
     };
 
 
+    const filteredData = useFilteredData({
+        data: paymentTypes,
+        searchTerm: search,
+        searchKeys: ["name", "brand_id.full_name", "outlet_id.name"],
+        filters: {
+            status: status,
+        },
+    });
+
     return (
         <>
             {
                 loading && <Loader />
             }
-            <HeadingText>Payment Type</HeadingText>
-            <SearchFilterBar
-                placeholder="Search Brand, Outlet, Payment Type..."
-                searchValue={search}
-                onSearchChange={setSearch}
-                statusValue={status}
-                onStatusChange={setStatus}
-            />
-            <div className="cards-container">
-                {
-                    useFilteredData({
-                        data: paymentTypes,
-                        searchTerm: search,
-                        searchKeys: ["name", "brand_id.full_name", "outlet_id.name"],
-                        filters: {
-                            status: status,
-                        },
-                    }).map(type => (
-                        <EditCard
-                            key={type._id}
-                            title={type.name}
-                            role={type.outlet_id?.name || "All Outlets"}
-                            status={type.status}
-                            handleEdit={() => handleEdit(type)}
-                        />
-                    ))
-                }
-                <CardAdd handleAdd={handleAdd} />
-            </div>
 
-            {showPopup && (
-                <Popup title={`${isEditing ? 'Edit' : "Add"} Order Type`} closePopup={() => setShowPopup(false)}>
+            {showPopup ? (
+                <div className='card' >
+                    <HeadingText title={`${isEditing ? "Edit" : "Add"} Payment Type`} />
                     <div className="inputs-container">
                         <div className="inputs-row">
                             <SelectInput
                                 label="Select Brand"
                                 selectedOption={selectedBrand}
                                 onChange={handleBrandSelection}
-                                options={brands}
+                                options={brands.map(o=>({label: o.full_name, value : o._id}))}
                             />
                             <SelectInput
                                 disable={filteredOutlets.length === 0}
@@ -238,7 +228,7 @@ const PaymentType = () => {
                                 }
                             />
                         </div>
-                        <div className="inputs-row" style={{ width: "50%" }}>
+                        <div className="inputs-row">
                             <InputField
                                 label="Payment Name"
                                 name="name"
@@ -269,8 +259,32 @@ const PaymentType = () => {
                         </GradientButton>
                         <Button clickAction={() => setShowPopup(false)}>Close</Button>
                     </div>
-                </Popup>
-            )}
+                </div>
+            ) :
+                <div className="payment-type-container" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                    <TopBar
+                        title="Paymnent Type"
+                        searchText={search}
+                        setSearchText={setSearch}
+                        selectedFilter={status}
+                        setSelectedFilter={setStatus}
+                    />
+                    <div className="cards-container card">
+                        {
+                            filteredData.map(type => (
+                                <EditCard
+                                    key={type._id}
+                                    title={type.name}
+                                    role={type.outlet_id?.name || "All Outlets"}
+                                    status={type.status}
+                                    handleEdit={() => handleEdit(type)}
+                                />
+                            ))
+                        }
+                        <CardAdd handleAdd={handleAdd} />
+                    </div>
+                </div>
+            }
         </>
     );
 };

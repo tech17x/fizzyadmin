@@ -1,36 +1,198 @@
 /* Input Field Wrapper */
-.input-field {
+.input-field,
+.select-input {
     display: flex;
     flex-direction: column;
     gap: 5px;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
+    position: relative;
+    width: 100%;
 }
 
-.input-field label {
-    font-size: 16px;
-    font-weight: 500;
+/* Label Styling (Hidden for minimalist design) */
+.input-field__label,
+.select-input__label {
+    font-size: 12px;
+    font-weight: 400;
+    color: #374151;
 }
 
 /* Input Container */
-.input-container {
+.input-field__container,
+.select-input__container {
     position: relative;
-    display: flex;
-    align-items: center;
+    width: 100%;
 }
 
 /* Input Styling */
-.input-container input, .input-container select {
+.input-field__input,
+.select-input__custom-select {
+    padding: 8px 10px;
+    /* Same padding for both */
+    font-size: 12px;
+    font-weight: 400;
+    color: #111827;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
     width: 100%;
-    padding: 10px 35px 10px 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-size: 16px;
+    box-sizing: border-box;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
     outline: none;
 }
 
-/* Toggle Password Button */
-.toggle-password {
+/* Hover Effect */
+.input-field__input:hover,
+.select-input__custom-select:hover {
+    border-color: #4b5563;
+}
+
+/* Disabled Inputs */
+.input-field__input:disabled,
+.select-input__custom-select--disabled {
+    background-color: #f3f4f6;
+    color: #9ca3af;
+    cursor: not-allowed;
+}
+
+/* Password Toggle Icon */
+.input-field__toggle-password {
     position: absolute;
-    right: 10px;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
     cursor: pointer;
-    top: 10px;
+    color: #6b7280;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Select Input Specific Styling */
+.select-input__custom-select {
+    justify-content: space-between;
+}
+
+.select-input__selected-option {
+    flex-grow: 1;
+    color: #111827;
+    font-size: 12px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.select-input__icon {
+    transition: transform 0.25s ease;
+    color: #4b5563;
+}
+
+.select-input__icon--open {
+    transform: rotate(180deg);
+}
+
+/* Options List for Select Input */
+.select-input__options-list {
+    position: absolute;
+    width: 100%;
+    top: calc(100% + 4px);
+    left: 0;
+    background-color: #ffffff;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    z-index: 1;
+    max-height: 240px;
+    overflow-y: auto;
+    padding: 4px 0;
+}
+
+/* Option Items in Select Input */
+.select-input__option {
+    padding: 8px 10px;
+    font-size: 12px;
+    font-weight: 400;
+    color: #111827;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.select-input__option:hover {
+    background-color: #f3f4f6;
+}
+
+.select-input__option--selected {
+    background-color: #e5e7eb;
+    font-weight: 500;
+}
+
+
+.select-input__tel-container {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    width: 100%;
+}
+
+.select-input__tel-input {
+    flex: 2;
+    padding: 8px 10px;
+    font-size: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background-color: #ffffff;
+    color: #111827;
+    outline: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.select-input__country-select {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 10px;
+    background-color: #ffffff;
+    color: #111827;
+    outline: none;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.phone-input__row {
+    width: 49%;
+    display: flex;
+    align-items: flex-end;
+}
+
+.phone-input__row>.select-input {
+    width: 20%;
+}
+
+.phone-input__row>.input-field {
+    flex: 1;
+}
+
+.checkbox-input{
+    flex-direction: column;
+    gap: 5px;
+    padding: 10px;
+    align-self: baseline;
+}
+
+@media (max-width: 768px) {
+
+
+    .phone-input__row {
+        width: 100%;
+        gap: 5px;
+        flex-direction: column;
+    }
+
+    .phone-input__row>.select-input {
+        width: 100%;
+    }
+
 }

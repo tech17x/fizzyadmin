@@ -3,7 +3,6 @@
 import { useCallback, useContext, useEffect, useState } from 'react';
 import CardAdd from '../components/CardAdd';
 import EditCard from '../components/EditCard';
-import HeadingText from '../components/HeadingText';
 import InputField from '../components/InputField';
 import './Brand.css';
 import './Outlet.css';
@@ -12,21 +11,22 @@ import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
 import SelectInput from '../components/SelectInput';
 import Checkbox from '../components/Checkbox';
-import useFetchBrands from '../hooks/useFetchBrands';
-import useFetchOutlets from '../hooks/useFetchOutlets';
 import axios from 'axios';
-import SearchFilterBar from '../components/SearchFilterBar';
 import { toast } from 'react-toastify';
 import useFilteredData from '../hooks/filterData';
 import Loader from '../components/Loader';
 import AuthContext from '../context/AuthContext';
+import TopBar from '../components/TopBar';
+import PhoneNumberInput from '../components/PhoneNumberInput';
+import { countryCodeOptions } from '../constants/countryOptions';
 
 const Staff = () => {
     const API = process.env.REACT_APP_API_URL;
-    const { staff: currentStaff } = useContext(AuthContext);
-    const { brands } = useFetchBrands();
-    const { outlets } = useFetchOutlets();
+    const { staff: currentStaff, logout } = useContext(AuthContext);
     const [loading, setLoading] = useState(true);
+
+    const [brands, setBrands] = useState([]);
+    const [outlets, setOutlets] = useState([]);
 
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
@@ -38,7 +38,7 @@ const Staff = () => {
 
     const [roles, setRoles] = useState([]);
     const [permissions, setPermissions] = useState([]);
-    const [selectedRole, setSelectedRole] = useState(""); // Store selected role
+    const [selectedRole, setSelectedRole] = useState(null); // Store selected role
     const [checkedPermissions, setCheckedPermissions] = useState({});
 
     const [staffInfo, setStaffInfo] = useState({
@@ -47,6 +47,7 @@ const Staff = () => {
         name: "",
         email: "",
         phone: "",
+        country_code: countryCodeOptions[1].value,
         password: "",
         pos_login_pin: "",
         status: true,
@@ -55,6 +56,19 @@ const Staff = () => {
         brands: [],
         outlets: [],
     });
+
+    const [phone, setPhone] = useState('');
+    const [selectedCountryCode, setSelectedCountryCode] = useState(countryCodeOptions[1]);
+
+    useEffect(() => {
+        if (currentStaff.permissions?.includes('staff_manage')) {
+            setOutlets(currentStaff.outlets);
+            setBrands(currentStaff.brands);
+            setLoading(false);
+        } else {
+            logout();
+        }
+    }, [currentStaff, logout]);
 
     const fetchStaff = useCallback(async () => {
         try {
@@ -92,7 +106,6 @@ const Staff = () => {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-
         setStaffInfo((prevData) => ({
             ...prevData,
             [name]: value, // Updates the input field dynamically
@@ -115,6 +128,7 @@ const Staff = () => {
                     name: staff.name,
                     email: staff.email,
                     phone: staff.phone,
+                    country_code: staff.country_code,
                     password: "",
                     pos_login_pin: "",
                     status: staff.status === "active" ? true : false,
@@ -123,6 +137,8 @@ const Staff = () => {
                     brands: staff.brands.map((brand) => brand._id),
                     outlets: staff.outlets.map((outlet) => outlet._id),
                 });
+                setPhone(staff.phone);
+                setSelectedCountryCode(countryCodeOptions.find(opt => opt.value === staff.country_code) || null);
             } else {
                 setStaffInfo({
                     _id: null,
@@ -130,6 +146,7 @@ const Staff = () => {
                     name: "",
                     email: "",
                     phone: "",
+                    country_code: countryCodeOptions[1].value,
                     password: "",
                     pos_login_pin: "",
                     status: true,
@@ -138,6 +155,8 @@ const Staff = () => {
                     brands: [],
                     outlets: [],
                 });
+                setPhone("");
+                setSelectedCountryCode(countryCodeOptions[1]);
             }
 
             const response = await axios.get(`${API}/api/utils/roles-permissions`, {
@@ -149,19 +168,19 @@ const Staff = () => {
                 setPermissions(response.data.data.permissions);
                 if (staff) {
                     const filterRole = response.data.data.roles.find((r) => r._id === staff.role._id);
+
                     if (filterRole) {
-                        setSelectedRole(filterRole);
+                        setSelectedRole({ label: filterRole.name, value: filterRole._id });
                         // Set permissions checked based on the selected role
-                        // Initialize permissions object
                         const newCheckedPermissions = {};
-
-                        // Mark only those permissions that exist in both staff.permissions and role.default_permissions
                         filterRole.default_permissions.forEach((perm) => {
-                            newCheckedPermissions[perm] = staff.permissions.includes(perm);
+                            newCheckedPermissions[perm] = true;
                         });
-
                         setCheckedPermissions(newCheckedPermissions);
                     }
+                } else {
+                    const defaultRole = response.data.data.roles[4];
+                    handleRoleChange({ label: defaultRole.name, value: defaultRole._id });
                 }
             } else {
                 console.error("Error fetching roles & permissions:", response.data.message);
@@ -180,7 +199,7 @@ const Staff = () => {
     // Handle role selection
     const handleRoleChange = (role) => {
         setSelectedRole(role);
-        const filterRole = roles.find((r) => r._id === role._id);
+        const filterRole = roles.find((r) => r._id === role.value);
         if (filterRole) {
             // Set permissions checked based on the selected role
             const newCheckedPermissions = {};
@@ -259,9 +278,9 @@ const Staff = () => {
         if (!staffInfo.name?.trim()) errors.push("Name is required.");
         if (!staffInfo.email?.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(staffInfo.email))
             errors.push("Valid email is required.");
-        if (!staffInfo.phone?.trim() || !/^\d{3}-\d{3}-\d{4}$/.test(staffInfo.phone))
+        if (!staffInfo.phone?.trim())
             errors.push("Valid phone number is required.");
-        if (!selectedRole?._id) errors.push("Role is required.");
+        if (!selectedRole?.value) errors.push("Role is required.");
 
         const selectedPermissions = Object.keys(checkedPermissions).filter(key => checkedPermissions[key]);
         if (!selectedPermissions.length) errors.push("Permissions must contain at least one item.");
@@ -332,12 +351,16 @@ const Staff = () => {
             name: staffInfo.name,
             email: staffInfo.email,
             phone: staffInfo.phone,
-            role: selectedRole._id,
+            country_code: staffInfo.country_code,
+            role: selectedRole.value,
             permissions: selectedPermissions,
             brands: staffInfo.brands,
             outlets: staffInfo.outlets,
             status: isEditing ? staffInfo.status ? "active" : "inactive" : "active",
+            owner_id: currentStaff.owner_id,
         };
+
+        console.log(formattedStaffData);
 
         if (staffInfo.password) {
             formattedStaffData.password = staffInfo.password;
@@ -349,7 +372,7 @@ const Staff = () => {
 
         try {
             // Prevent current user from updating their own status
-            if (isEditing && staffInfo._id === currentStaff._id && staffInfo.status !== currentStaff.status) {
+            if (isEditing && staffInfo._id === currentStaff._id && !staffInfo.status) {
                 toast.error("You cannot change logged in user status.");
                 return;
             }
@@ -391,19 +414,17 @@ const Staff = () => {
             {
                 loading && <Loader />
             }
-            <HeadingText>Staff</HeadingText>
             {
                 !showSecondScreen ?
-                    <div className="current-staff-info">
-                        <SearchFilterBar
-                            placeholder="Search Brand, Outlet, Staff..."
-                            searchValue={search}
-                            onSearchChange={setSearch}
-                            statusValue={status}
-                            onStatusChange={setStatus}
+                    <div className="current-staff-info" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                        <TopBar
+                            title="Staff"
+                            searchText={search}
+                            setSearchText={setSearch}
+                            selectedFilter={status}
+                            setSelectedFilter={setStatus}
                         />
-
-                        <div className="cards-container">
+                        <div className="cards-container card">
                             <>
                                 {
                                     filteredData.map(staff => (
@@ -415,7 +436,7 @@ const Staff = () => {
                         </div>
 
                     </div> :
-                    <div className="add-new-staff-info">
+                    <div className="add-new-staff-info card">
                         <div className="step-links">
                             <div className="step-btns">
                                 {
@@ -425,42 +446,48 @@ const Staff = () => {
                                         <Button clickAction={() => setShowSecondScreenSection("PROFILE")}>Profile</Button>
                                 }
                             </div>
-                            <div className="step-btns">
-                                {
-                                    showSecondScreenSection === "USER" ?
-                                        <GradientButton>User Permissions</GradientButton>
-                                        :
-                                        <Button clickAction={() => setShowSecondScreenSection("USER")}>User Permissions</Button>
-                                }
-                            </div>
-                            <div className="step-btns">
-                                {
-                                    showSecondScreenSection === "BRAND" ?
-                                        <GradientButton>Brand Permissions</GradientButton>
-                                        :
-                                        <Button clickAction={() => setShowSecondScreenSection("BRAND")}>Brand Permissions</Button>
-                                }
-                            </div>
-                            <div className="step-btns">
-                                {
-                                    showSecondScreenSection === "OUTLET" ?
-                                        <GradientButton>Outlet Permissions</GradientButton>
-                                        :
-                                        <Button disable={(staffInfo.brands.length > 0 && outlets.filter((item) => staffInfo.brands.includes(item.brand_id)).length > 0) ? false : true} clickAction={() => setShowSecondScreenSection("OUTLET")}>Outlet Permissions</Button>
-                                }
-                            </div>
+                            {
+                                (selectedRole && selectedRole.label === "Admin" && isEditing) ? null :
+                                    <>
+                                        <div className="step-btns">
+                                            {
+                                                showSecondScreenSection === "USER" ?
+                                                    <GradientButton>User Permissions</GradientButton>
+                                                    :
+                                                    <Button clickAction={() => setShowSecondScreenSection("USER")}>User Permissions</Button>
+                                            }
+                                        </div>
+                                        <div className="step-btns">
+                                            {
+                                                showSecondScreenSection === "BRAND" ?
+                                                    <GradientButton>Brand Permissions</GradientButton>
+                                                    :
+                                                    <Button clickAction={() => setShowSecondScreenSection("BRAND")}>Brand Permissions</Button>
+                                            }
+                                        </div>
+                                        <div className="step-btns">
+                                            {
+                                                showSecondScreenSection === "OUTLET" ?
+                                                    <GradientButton>Outlet Permissions</GradientButton>
+                                                    :
+                                                    <Button disable={(staffInfo.brands.length > 0 && outlets.filter((item) => staffInfo.brands.includes(item.brand_id)).length > 0) ? false : true} clickAction={() => setShowSecondScreenSection("OUTLET")}>Outlet Permissions</Button>
+                                            }
+                                        </div>
+                                    </>
+                            }
                         </div>
                         {
                             showSecondScreenSection === "PROFILE" &&
                             <div className="profile-info">
                                 <img src={staffInfo.image} alt="" onError={(e) => e.target.src = "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png"} style={{ borderRadius: "10%", height: "10rem", width: "10rem" }} />
+
                                 <InputField
                                     label="Image"
-                                    type="url"
+                                    type="text"
                                     name={"image"}
                                     value={staffInfo.image || ""}
                                     onChange={handleInputChange}
-                                    placeholder="Enter Name"
+                                    placeholder="Enter Image url"
                                     required
                                 />
                                 <InputField
@@ -472,15 +499,12 @@ const Staff = () => {
                                     placeholder="Enter Name"
                                     required
                                 />
-                                <InputField
-                                    label="Phone"
-                                    type="tel"
-                                    format={"###-###-####"}
-                                    name={"phone"}
-                                    value={staffInfo.phone || ""}
-                                    onChange={handleInputChange}
-                                    placeholder="Enter Phone no"
-                                    required
+                                <PhoneNumberInput
+                                    phoneNumber={phone}
+                                    onPhoneNumberChange={(value) => { setPhone(value); setStaffInfo((prevData) => ({ ...prevData, phone: value })); }}
+                                    selectedCountry={selectedCountryCode}
+                                    onCountryChange={(value) => { setSelectedCountryCode(value); setStaffInfo((prevData) => ({ ...prevData, country_code: value.value })); }}
+                                    countryOptions={countryCodeOptions}
                                 />
                                 <InputField
                                     label="Email"
@@ -501,17 +525,18 @@ const Staff = () => {
                                     required
                                 />
                                 <InputField
-                                    label="Pos Login Pin"
-                                    type="number"
-                                    format={"####"}
+                                    label="Pos pin"
+                                    type="text"
                                     name={"pos_login_pin"}
+                                    format={"####"}
                                     value={staffInfo.pos_login_pin || ""}
                                     onChange={handleInputChange}
-                                    placeholder="Enter Pin"
+                                    placeholder="Enter Password"
                                     required
                                 />
+
                                 {isEditing && (
-                                    <div className="inputs-row" style={{ padding: "10px", flexDirection: "column", gap: "5px" }}>
+                                    <div className="inputs-row checkbox-input">
                                         <Checkbox
                                             label="Active Status"
                                             checked={staffInfo.status}
@@ -527,7 +552,7 @@ const Staff = () => {
                                 {/* Roles Dropdown */}
                                 <SelectInput
                                     label="Roles"
-                                    options={roles.map((role) => ({ name: role.name, _id: role._id }))}
+                                    options={roles.map((role) => ({ label: role.name, value: role._id }))}
                                     placeholder="Select a Role"
                                     selectedOption={selectedRole}
                                     onChange={handleRoleChange}
@@ -536,34 +561,36 @@ const Staff = () => {
                                 <p style={{ margin: "1rem 0" }}>Permissions</p>
 
                                 {/* Permissions Table */}
-                                <table className="checkbox-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Features</th>
-                                            <th>Capabilities</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {Array.from(new Set(permissions.map((p) => p.category))).map((category) => (
-                                            <tr key={category}>
-                                                <td>{category}</td>
-                                                <td>
-                                                    {permissions
-                                                        .filter((p) => p.category === category)
-                                                        .map((perm) => (
-                                                            <Checkbox
-                                                                disable={selectedRole.name === "Admin"}
-                                                                key={perm._id}
-                                                                label={perm.name}
-                                                                checked={checkedPermissions[perm.name] || false}
-                                                                onChange={() => handlePermissionToggle(perm.name)}
-                                                            />
-                                                        ))}
-                                                </td>
+                                <div className="table-overflow">
+                                    <table className="checkbox-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Features</th>
+                                                <th>Capabilities</th>
                                             </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
+                                        </thead>
+                                        <tbody>
+                                            {Array.from(new Set(permissions.map((p) => p.category))).map((category) => (
+                                                <tr key={category}>
+                                                    <td>{category}</td>
+                                                    <td>
+                                                        {permissions
+                                                            .filter((p) => p.category === category)
+                                                            .map((perm) => (
+                                                                <Checkbox
+                                                                    disable={selectedRole.label === "Admin"}
+                                                                    key={perm._id}
+                                                                    label={perm.name}
+                                                                    checked={checkedPermissions[perm.name] || false}
+                                                                    onChange={() => handlePermissionToggle(perm.name)}
+                                                                />
+                                                            ))}
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         }
                         {
@@ -580,7 +607,7 @@ const Staff = () => {
                                                 <Checkbox
                                                     key={index}
                                                     labelId={item._id}
-                                                    label={item.short_name}
+                                                    label={item.full_name}
                                                     checked={staffInfo.brands.includes(item._id)}
                                                     onChange={() => handleBrandSelection(item._id)}
                                                 />

@@ -10,6 +10,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
 }
 
 
@@ -21,6 +22,7 @@
 .user-info {
     display: flex;
     gap: 2rem;
+    flex-wrap: wrap;
 }
 
 .user-info>div {
@@ -38,12 +40,12 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 1rem;
+    gap: .5rem;
 }
 
 .profile-container h3 {
     margin-top: 2rem;
-    font-size: 1.25rem;
+    font-size: 15px;
     font-weight: 600;
 }
 
@@ -66,7 +68,7 @@
     background-color: #f1f1f1;
     padding: 0.4rem 0.75rem;
     border-radius: 8px;
-    font-size: 0.875rem;
+    font-size: 12px;
     color: #333;
     font-weight: 500;
     border: 1px solid #e0e0e0;
@@ -104,4 +106,27 @@
 .profile-container .card-section a:hover{
     text-decoration: underline;
     background-color: transparent;
+}
+
+.card-section > p{
+    font-size: 12px;
+}
+
+
+@media (max-width: 768px) {
+
+    .user-info{
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+
+    .user-info .status {
+        align-self: center !important;
+    }
+
+    .profile-header {
+        flex-direction: column;
+    }
 }

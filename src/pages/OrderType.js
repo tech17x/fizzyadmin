@@ -1,23 +1,21 @@
 // src/pages/OrderType.js
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useContext, useEffect, useState } from 'react';
 import CardAdd from '../components/CardAdd';
 import EditCard from '../components/EditCard';
-import HeadingText from '../components/HeadingText';
 import InputField from '../components/InputField';
-import Popup from '../components/Popup';
 import './Brand.css';
 import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
 import Checkbox from '../components/Checkbox';
 import SelectInput from '../components/SelectInput';
-import SearchFilterBar from '../components/SearchFilterBar';
 import { toast } from 'react-toastify';
 import axios from 'axios';
-import useFetchBrands from '../hooks/useFetchBrands';
-import useFetchOutlets from '../hooks/useFetchOutlets';
 import useFilteredData from '../hooks/filterData';
 import Loader from '../components/Loader';
+import TopBar from '../components/TopBar';
+import HeadingText from '../components/HeadingText';
+import AuthContext from '../context/AuthContext';
 
 const category = [
     { label: "Pickup", value: "pickup" },
@@ -29,8 +27,11 @@ const category = [
 
 const OrderType = () => {
     const API = process.env.REACT_APP_API_URL;
-    const { brands } = useFetchBrands();
-    const { outlets } = useFetchOutlets();
+    const { staff, logout } = useContext(AuthContext);
+
+    const [brands, setBrands] = useState([]);
+    const [outlets, setOutlets] = useState([]);
+
 
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
@@ -50,6 +51,15 @@ const OrderType = () => {
         brand_id: '',
         outlet_id: '',
     });
+
+    useEffect(() => {
+        if (staff.permissions?.includes('order_type_manage')) {
+            setOutlets(staff.outlets);
+            setBrands(staff.brands);
+        } else {
+            logout();
+        }
+    }, [staff, logout]);
 
     const fetchOrderTypes = useCallback(async () => {
         try {
@@ -101,7 +111,7 @@ const OrderType = () => {
             brand_id: type.brand_id?._id || '',
             outlet_id: type.outlet_id?._id || '',
         });
-        setSelectedBrand(brand);
+        setSelectedBrand({label: brand.full_name, value : brand._id});
         setFilteredOutlets(outletOptions);
         setSelectedOutlet(outlet ? { label: outlet.name, value: outlet._id } : null);
         setSelectedCategory(categoryOption);
@@ -115,7 +125,7 @@ const OrderType = () => {
 
     const handleBrandSelection = (brand) => {
         setSelectedBrand(brand);
-        const filtered = outlets.filter(outlet => outlet.brand_id === brand._id);
+        const filtered = outlets.filter(outlet => outlet.brand_id === brand.value);
         setFilteredOutlets(filtered);
         if (filtered.length === 0) {
             toast.error("Selected brand has no outlets.");
@@ -145,7 +155,7 @@ const OrderType = () => {
             setLoading(false);
             return;
         }
-        if (!selectedBrand?._id) {
+        if (!selectedBrand?.value) {
             toast.error("Please select a brand.");
             setLoading(false);
             return;
@@ -186,7 +196,7 @@ const OrderType = () => {
             name: orderTypeInfo.name.trim(),
             category: selectedCategory.value,
             status: orderTypeInfo.status,
-            brand_id: selectedBrand._id,
+            brand_id: selectedBrand.value,
             outlet_id: selectedOutlet.value,
         };
 
@@ -217,50 +227,31 @@ const OrderType = () => {
     };
 
 
+    const filteredData = useFilteredData({
+        data: orderTypes,
+        searchTerm: search,
+        searchKeys: ["name", "category", "brand_id.full_name", "outlet_id.name"],
+        filters: {
+            status: status,
+        },
+    });
+
     return (
         <>
             {
                 loading && <Loader />
             }
-            <HeadingText>Order Type</HeadingText>
-            <SearchFilterBar
-                placeholder="Search Brand, Outlet, Order Type..."
-                searchValue={search}
-                onSearchChange={setSearch}
-                statusValue={status}
-                onStatusChange={setStatus}
-            />
-            <div className="cards-container">
-                {
-                    useFilteredData({
-                        data: orderTypes,
-                        searchTerm: search,
-                        searchKeys: ["name", "category", "brand_id.full_name", "outlet_id.name"],
-                        filters: {
-                            status: status,
-                        },
-                    }).map(type => (
-                        <EditCard
-                            key={type._id}
-                            title={type.name}
-                            role={type.outlet_id?.name || "All Outlets"}
-                            status={type.status}
-                            handleEdit={() => handleEdit(type)}
-                        />
-                    ))
-                }
-                <CardAdd handleAdd={handleAdd} />
-            </div>
 
-            {showPopup && (
-                <Popup title={`${isEditing ? 'Edit' : "Add"} Order Type`} closePopup={() => setShowPopup(false)}>
+            {showPopup ? (
+                <div className='card'>
+                 <HeadingText title={`${isEditing ? "Edit" : "Add"} Order Type`} />
                     <div className="inputs-container">
                         <div className="inputs-row">
                             <SelectInput
                                 label="Select Brand"
                                 selectedOption={selectedBrand}
                                 onChange={handleBrandSelection}
-                                options={brands}
+                                options={brands.map(o=>({label: o.full_name, value : o._id}))}
                             />
                             <SelectInput
                                 disable={filteredOutlets.length === 0}
@@ -312,8 +303,32 @@ const OrderType = () => {
                         </GradientButton>
                         <Button clickAction={() => setShowPopup(false)}>Close</Button>
                     </div>
-                </Popup>
-            )}
+                </div>
+            ) :
+                <div className="order-type-container" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                    <TopBar
+                        title="Staff"
+                        searchText={search}
+                        setSearchText={setSearch}
+                        selectedFilter={status}
+                        setSelectedFilter={setStatus}
+                    />
+                    <div className="cards-container card">
+                        {
+                            filteredData.map(type => (
+                                <EditCard
+                                    key={type._id}
+                                    title={type.name}
+                                    role={type.outlet_id?.name || "All Outlets"}
+                                    status={type.status}
+                                    handleEdit={() => handleEdit(type)}
+                                />
+                            ))
+                        }
+                        <CardAdd handleAdd={handleAdd} />
+                    </div>
+                </div>
+            }
         </>
     );
 };

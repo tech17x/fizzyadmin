@@ -13,13 +13,13 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    font-size: 16px;
+    font-size: 14px;
     cursor: pointer;
 }
 
 .custom-checkbox {
-    width: 20px;
-    height: 20px;
+    width: 15px;
+    height: 15px;
     border: 2px solid #E4E4E4;
     border-radius: 4px;
     display: flex;

@@ -15,25 +15,26 @@
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .delivery-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .orders-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
+    gap: 1rem;
 }
 
 .popular-items-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    flex-wrap: wrap;
 }
 
 /* Select Inputs */
@@ -43,9 +44,9 @@
 
 .select-input {
     width: 100%;
-    padding: 0.75rem;
+    /* padding: 0.75rem; */
     background-color: white;
-    border: 1px solid #e5e7eb;
+    /* border: 1px solid #e5e7eb; */
     border-radius: 0.5rem;
     appearance: none;
 }
@@ -114,7 +115,7 @@
 .card {
     background-color: white;
     border-radius: 0.75rem;
-    padding: 1.5rem;
+    padding: .5rem;
 }
 
 /* Stat Card */
@@ -296,4 +297,48 @@
 
 .item-percentage {
     color: #6b7280;
+}
+
+
+@media (max-width: 1440px) {
+    .stats-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 1024px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 904px) {
+
+
+    .orders-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .popular-items-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+
+    .stats-grid {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .delivery-grid {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .orders-grid {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .popular-items-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }

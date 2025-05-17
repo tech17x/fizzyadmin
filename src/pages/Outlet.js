@@ -1,163 +1,146 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { countryOptions, countryCodeOptions } from '../constants/countryOptions';
 import CardAdd from '../components/CardAdd';
 import EditCard from '../components/EditCard';
-import HeadingText from '../components/HeadingText';
 import InputField from '../components/InputField';
-import Popup from '../components/Popup';
 import './Brand.css';
 import './Outlet.css';
 import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
 import SelectInput from '../components/SelectInput';
 import Checkbox from '../components/Checkbox';
-import useFetchBrands from '../hooks/useFetchBrands';
-import SearchFilterBar from '../components/SearchFilterBar';
-import timezones from '../data/timezones.json';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import Loader from '../components/Loader';
 import useFilteredData from '../hooks/filterData';
+import TopBar from '../components/TopBar';
+import { timezones } from '../constants/timezoneOptions';
+import AuthContext from '../context/AuthContext';
+import HeadingText from '../components/HeadingText';
+import PhoneNumberInput from '../components/PhoneNumberInput';
 
 const Outlet = () => {
     const API = process.env.REACT_APP_API_URL;
-    const { brands } = useFetchBrands();
+
+    const { staff, updateStaff, logout } = useContext(AuthContext);
+
     const [outlets, setOutlets] = useState([]);
+    const [brands, setBrands] = useState([]);
+
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
-    const [status, setStatus] = useState('');
+    const [filteredStatus, setFilteredStatus] = useState('');
+
     const [isEditing, setIsEditing] = useState(false);
     const [showPopup, setShowPopup] = useState(false);
-    const [selectedBrand, setSelectedBrand] = useState(null);
-    const [outletData, setOutletData] = useState({
-        _id: "",
-        brand_id: "",
-        name: "",
-        code: "",
-        email: "",
-        phone: "",
-        timezone: {
-            label: "",
-            value: "",
-        },
-        opening_time: "",
-        closing_time: "",
-        website: "",
-        street: "",
-        city: "",
-        state: "",
-        country: "",
-        postal_code: "",
-        status: true,
-    });
 
-    const fetchOutlets = useCallback(async () => {
-        try {
-            const response = await axios.get(`${API}/api/outlets`, {
-                withCredentials: true,
-            });
-            setOutlets(response.data);
-        } catch (error) {
-            toast.error(error.response?.data?.message || "Failed to fetch brands.");
-        } finally {
-            setLoading(false);
-        }
-    }, [API]);
+
+    const [selectedBrand, setSelectedBrand] = useState(null);
+    const [id, setId] = useState('');
+    const [name, setName] = useState('');
+    const [outletCode, setOutletCode] = useState('');
+    const [email, setEmail] = useState('');
+    const [phone, setPhone] = useState('');
+    const [selectedCountryCode, setSelectedCountryCode] = useState(countryCodeOptions[1]);
+    const [timezone, setTimezone] = useState(timezones[5]);
+    const [openingTime, setOpeningTime] = useState('');
+    const [closingTime, setClosingTime] = useState('');
+    const [website, setWebsite] = useState('');
+    const [address, setAddress] = useState('');
+    const [city, setCity] = useState('');
+    const [state, setState] = useState('');
+    const [selectedCountry, setSelectedCountry] = useState(countryOptions[1]);
+    const [postalCode, setPostalCode] = useState('');
+    const [status, setStatus] = useState('');
+
+
 
     useEffect(() => {
-        fetchOutlets();
-    }, [fetchOutlets]); // No warning, fetchBrands is memoized
+        if (staff.permissions?.includes('outlet_manage')) {
+            setOutlets(staff.outlets);
+            setBrands(staff.brands);
+            setLoading(false);
+        } else {
+            logout();
+        }
+    }, [staff, logout]);
 
     const handleOutletEdit = (outlet) => {
         setIsEditing(true);
-        setOutletData({
-            _id: outlet._id,
-            brand_id: outlet.brand_id._id,
-            name: outlet.name,
-            code: outlet.code,
-            email: outlet.email,
-            phone: outlet.phone,
-            timezone: outlet.timezone,
-            opening_time: outlet.opening_time,
-            closing_time: outlet.closing_time,
-            website: outlet.website,
-            street: outlet.street,
-            city: outlet.city,
-            state: outlet.state,
-            country: outlet.country,
-            postal_code: outlet.postal_code,
-            status: outlet.status,
-        });
-        setSelectedBrand(brands.find(brand => brand._id === outlet.brand_id._id));
-        setShowPopup(true);
-    }
+        setId(outlet._id);
+        const _brandInfo = brands.find(brand => brand._id === outlet.brand_id);
+        setSelectedBrand({ label: _brandInfo.full_name, value: _brandInfo._id });
+        setName(outlet.name);
+        setOutletCode(outlet.code);
+        setEmail(outlet.email);
+        setPhone(outlet.phone);
 
-    const handleTimezoneChange = (timezone) => {
-        const newTimezone = timezone;
-        setOutletData((prevData) => ({
-            ...prevData,
-            timezone: newTimezone
-        }));
+        // Set country code assuming value like "+1"
+        setSelectedCountryCode(countryCodeOptions.find(opt => opt.value === outlet.country_code) || null);
+
+        setTimezone(outlet.timezone); // Already an object with label/value
+
+        setOpeningTime(outlet.opening_time);
+        setClosingTime(outlet.closing_time);
+        setWebsite(outlet.website || '');
+        setAddress(outlet.street); // Assuming 'address' is stored in 'street'
+        setCity(outlet.city);
+        setState(outlet.state);
+
+        // Set selectedCountry from options
+        setSelectedCountry(countryOptions.find(opt => opt.label.toLowerCase() === outlet.country.toLowerCase()) || null);
+
+        setPostalCode(outlet.postal_code || '');
+        setStatus(outlet.status === "active" ? true : false);
+
+        setShowPopup(true);
     };
 
     const handleAddNewOutlet = async () => {
         setIsEditing(false);
-        try {
-            setOutletData({
-                _id: "",
-                brand_id: "",
-                name: "",
-                code: "",
-                email: "",
-                phone: "",
-                timezone: {
-                    label: "",
-                    value: "",
-                },
-                opening_time: "",
-                closing_time: "",
-                website: "",
-                street: "",
-                city: "",
-                state: "",
-                country: "",
-                postal_code: "",
-                status: true,
-            });
-            setSelectedBrand(null);
-            setShowPopup(true);
-        } catch (error) {
-            console.error("Error creating outlet:", error);
-        }
-    };
-
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-
-        setOutletData((prevData) => {
-            return {
-                ...prevData,
-                [name]: value,
-            };
-        });
-    };
-
-
-    const handleStatusChange = () => {
-        setOutletData((prevData) => ({
-            ...prevData,
-            status: prevData.status === "active" ? "inactive" : "active",
-        }));
+        setId('');
+        setName('');
+        setOutletCode('');
+        setEmail('');
+        setPhone('');
+        setSelectedCountryCode(countryCodeOptions[1]); // or set default like: countryCodeOptions[0]
+        setTimezone(timezones[5]);
+        setOpeningTime('');
+        setClosingTime('');
+        setWebsite('');
+        setAddress('');
+        setCity('');
+        setState('');
+        setSelectedCountry(countryOptions[1]);
+        setPostalCode('');
+        setStatus(true);
+        setSelectedBrand(null);
+        setShowPopup(true);
     };
 
     const handleSave = async () => {
         setLoading(true);
-        const formattedOutletData = {
-            ...outletData,
-            status: isEditing ? (outletData.status) : "active", // Always active for new brand
-            brand_id: selectedBrand?._id
+        const payload = {
+            _id: id,
+            brand_id: selectedBrand?._id || selectedBrand?.value, // Depending on how your brand select is structured
+            name,
+            code: outletCode,
+            email,
+            phone,
+            country_code: selectedCountryCode?.value || '',
+            timezone, // Assuming it's already in { label, value } format
+            opening_time: openingTime,
+            closing_time: closingTime,
+            website,
+            street: address,
+            city,
+            state,
+            country: selectedCountry?.label || '',
+            postal_code: postalCode,
+            status: status ? "active" : "inactive"
         };
 
-        const errors = validateOutletData(formattedOutletData, outlets);
+        const errors = validateOutletData(payload);
         if (Object.keys(errors).length > 0) {
             Object.values(errors).forEach((msg) => toast.error(msg));
             setTimeout(() => {
@@ -167,9 +150,9 @@ const Outlet = () => {
         }
 
         if (isEditing) {
-            await updateOutlet(outletData._id, formattedOutletData);
+            await updateOutlet(payload);
         } else {
-            createOutlet(formattedOutletData);
+            createOutlet(payload);
         }
     };
 
@@ -179,14 +162,11 @@ const Outlet = () => {
         return date.toLocaleString();
     }
 
-    const validateOutletData = (data, outlets) => {
-        console.log("Validating Outlet Data: ", data);
-        console.log("Existing Outlets: ", outlets);
+    const validateOutletData = (data) => {
 
         const errors = {};
 
         const timeRegex = /^([0-1][0-9]|2[0-3]):([0-5][0-9])$/;
-        const phoneRegex = /^\d{3}-\d{3}-\d{4}$/;
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
         // Basic required fields
@@ -194,7 +174,7 @@ const Outlet = () => {
         if (!data.name) errors.name = "Name is required.";
         if (!data.code) errors.code = "Code is required.";
         if (!data.email || !emailRegex.test(data.email)) errors.email = "Valid email is required.";
-        if (!data.phone || !phoneRegex.test(data.phone)) errors.phone = "Phone must be ###-###-####.";
+        if (!data.phone) errors.phone = "Phone is required.";
 
         if (!data.timezone?.label) errors.timezone_label = "Timezone label is required.";
         if (!data.timezone?.value) errors.timezone_value = "Timezone value is required.";
@@ -209,36 +189,6 @@ const Outlet = () => {
         if (!data.state) errors.state = "State is required.";
         if (!data.country) errors.country = "Country is required.";
 
-        // Uniqueness check
-        const isDuplicate = (field) => {
-            return outlets?.some((outlet) => {
-                // console.log(`Comparing ${field}:`, outlet[field], data[field]);
-                // Make sure comparison handles exact duplicates and only checks same brand
-                return (
-                    outlet.brand_id._id === data.brand_id &&
-                    outlet[field]?.trim().toLowerCase() === data[field]?.trim().toLowerCase() &&
-                    outlet._id !== data._id // exclude self if editing
-                );
-            });
-        };
-        
-
-        if (data.name && isDuplicate("name")) {
-            errors.name = "Name already exists for this brand.";
-        }
-
-        if (data.code && isDuplicate("code")) {
-            errors.code = "Code already exists for this brand.";
-        }
-
-        if (data.email && isDuplicate("email")) {
-            errors.email = "Email already exists for this brand.";
-        }
-
-        if (data.phone && isDuplicate("phone")) {
-            errors.phone = "Phone already exists for this brand.";
-        }
-
         return errors;
     };
 
@@ -250,7 +200,20 @@ const Outlet = () => {
             const response = await axios.post(`${API}/api/outlets`, outletData, {
                 withCredentials: true,
             });
-            setOutlets((prevOutlets) => [...prevOutlets, response.data.outlet]);
+
+            const newOutlet = response.data.outlet;
+
+            const updatedOutlets = [...outlets, newOutlet];
+
+            setOutlets(updatedOutlets);
+
+            const updatedStaff = {
+                ...staff,
+                outlets: updatedOutlets
+            };
+
+            updateStaff(updatedStaff);
+
             setShowPopup(false);
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to create outlet.");
@@ -260,16 +223,26 @@ const Outlet = () => {
     };
 
     // ✅ Update an existing outlet
-    const updateOutlet = async (outletId, updatedData) => {
+    const updateOutlet = async (updatedData) => {
         try {
-            const response = await axios.put(`${API}/api/outlets/${outletId}`, updatedData, {
+            const response = await axios.put(`${API}/api/outlets/${updatedData._id}`, updatedData, {
                 withCredentials: true,
             });
 
             const updatedOutlet = response.data.outlet;
-            setOutlets((prevOutlets) =>
-                prevOutlets.map((outlet) => (outlet._id === outletId ? updatedOutlet : outlet))
+
+            const updatedOutlets = outlets.map((outlet) =>
+                outlet._id === updatedData._id ? updatedOutlet : outlet
             );
+
+            setOutlets(updatedOutlets);
+
+            const updatedStaff = {
+                ...staff,
+                outlets: updatedOutlets
+            };
+
+            updateStaff(updatedStaff);
 
             setShowPopup(false);
         } catch (error) {
@@ -279,196 +252,197 @@ const Outlet = () => {
         }
     };
 
+    const filteredData = useFilteredData({
+        data: outlets,
+        searchTerm: search,
+        searchKeys: ["name", "code", "email", "phone", "website", "street", "city", "state", "country", "postal_code"],
+        filters: {
+            status: filteredStatus,
+        },
+    });
+
     return (
         <>
             {
                 loading && <Loader />
             }
-            <HeadingText>Outlet</HeadingText>
-            <SearchFilterBar
-                placeholder="Search Brand, Outlet..."
-                searchValue={search}
-                onSearchChange={setSearch}
-                statusValue={status}
-                onStatusChange={setStatus}
-            />
-            <div className="cards-container">
-                <>
-                    {useFilteredData({
-                        data: outlets,
-                        searchTerm: search,
-                        searchKeys: ["name", "code", "email", "phone", "website", "license_no", "food_license", "website", "city", "state", "country", "postal_code", "street_address", "brand_id.full_name", "brand_id.short_name"],
-                        filters: {
-                            status: status,
-                        },
-                    }).map((outlet) => (
-                        <EditCard
-                            key={outlet._id}
-                            firstLetter={outlet.name.charAt(0)}
-                            title={outlet.name}
-                            time={formatDate(outlet.updatedAt)}
-                            link={outlet.website}
-                            status={outlet.status}
-                            handleEdit={() => handleOutletEdit(outlet)}
-                        />
-                    ))}
-                    <CardAdd handleAdd={handleAddNewOutlet} />
-                </>
-            </div>
-            {showPopup && (
-                <Popup title={isEditing ? "Edit Outlet" : "Add Outlet"} closePopup={() => setShowPopup(false)}>
-                    <div className="inputs-row">
-                        <SelectInput
-                            selectedOption={selectedBrand}
-                            onChange={setSelectedBrand}
-                            options={brands}
-                            label="Select Brand"
-                        />
-                        <InputField
-                            label="Outlet Name"
-                            type="text"
-                            name="name"
-                            value={outletData.name}
-                            onChange={handleInputChange}
-                            required
-                        />
+            {showPopup ?
+                <div className="card">
+                    <HeadingText title={`${isEditing ? "Edit" : "Add"} Outlet`} />
+                    <div className="inputs-container">
+                        <div className="inputs-row">
+                            <SelectInput
+                                selectedOption={selectedBrand}
+                                onChange={setSelectedBrand}
+                                options={brands.map(o => ({ label: o.full_name, value: o._id }))}
+                                label="Select Brand"
+                            />
+                            <InputField
+                                label="Outlet Name"
+                                type="text"
+                                name="name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div className="inputs-row">
+                            <InputField
+                                label="Outlet Code"
+                                format={"####"}
+                                type="text"
+                                name="code"
+                                value={outletCode}
+                                onChange={(e) => setOutletCode(e.target.value)}
+                                required
+                            />
+                            <InputField
+                                label="Website"
+                                type="url"
+                                name="website"
+                                value={website}
+                                onChange={(e) => setWebsite(e.target.value)}
+                            />
+                        </div>
+
+                        <div className="inputs-row">
+                            <PhoneNumberInput
+                                phoneNumber={phone}
+                                onPhoneNumberChange={setPhone}
+                                selectedCountry={selectedCountryCode}
+                                onCountryChange={setSelectedCountryCode}
+                                countryOptions={countryCodeOptions}
+                            />
+                            <InputField
+                                label="Email"
+                                type="email"
+                                name="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div className="inputs-row">
+                            <SelectInput
+                                selectedOption={timezone}
+                                onChange={setTimezone}
+                                options={timezones}
+                                label="Timezone"
+                            />
+                            <InputField
+                                label="Opening Time"
+                                type="text"
+                                name="opening_time"
+                                value={openingTime}
+                                onChange={(e) => setOpeningTime(e.target.value)}
+                                format={"##:##"}
+                                required
+                            />
+                        </div>
+
+                        <div className="inputs-row">
+                            <InputField
+                                label="Closing Time"
+                                type="text"
+                                format={"##:##"}
+                                name="closing_time"
+                                value={closingTime}
+                                onChange={(e) => setClosingTime(e.target.value)}
+                                required
+                            />
+                            <InputField
+                                label="Street Address"
+                                type="text"
+                                name="street_address"
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div className="inputs-row">
+                            <InputField
+                                label="City"
+                                type="text"
+                                name="city"
+                                value={city}
+                                onChange={(e) => setCity(e.target.value)}
+                                required
+                            />
+                            <InputField
+                                label="State"
+                                type="text"
+                                name="state"
+                                value={state}
+                                onChange={(e) => setState(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        <div className="inputs-row">
+                            <SelectInput
+                                label={"Country"}
+                                selectedOption={selectedCountry}
+                                onChange={setSelectedCountry}
+                                options={countryOptions}
+                            />
+                            <InputField
+                                label="Pin Code"
+                                type="text"
+                                name="postal_code"
+                                value={postalCode}
+                                onChange={(e) => setPostalCode(e.target.value)}
+                                required
+                            />
+                        </div>
+
+                        {
+                            isEditing && (
+                                <div className="inputs-row checkbox-input">
+                                    <Checkbox
+                                        label="Active Status"
+                                        checked={status}
+                                        onChange={() => setStatus(!status)}
+                                    />
+                                </div>
+                            )
+                        }
                     </div>
-
-                    <div className="inputs-row">
-                        <InputField
-                            label="Outlet Code"
-                            format={"####"}
-                            type="text"
-                            name="code"
-                            value={outletData.code}
-                            onChange={handleInputChange}
-                            required
-                        />
-                        <InputField
-                            label="Website"
-                            type="url"
-                            name="website"
-                            value={outletData.website}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-
-                    <div className="inputs-row">
-                        <InputField
-                            label="Phone No"
-                            type="tel"
-                            name="phone"
-                            format={"###-###-####"}
-                            value={outletData.phone}
-                            onChange={handleInputChange}
-                            required
-                        />
-                        <InputField
-                            label="Email"
-                            type="email"
-                            name="email"
-                            value={outletData.email}
-                            onChange={handleInputChange}
-                            required
-                        />
-                    </div>
-
-                    <div className="inputs-row">
-                        <SelectInput
-                            selectedOption={outletData.timezone || timezones.find(tz => tz.value === outletData.timezone) || timezones[0]}
-                            onChange={handleTimezoneChange}
-                            options={timezones}
-                            label="Timezone"
-                        />
-                        <InputField
-                            label="Opening Time"
-                            type="text"
-                            name="opening_time"
-                            value={outletData.opening_time}
-                            onChange={handleInputChange}
-                            format={"##:##"}
-                            required
-                        />
-                    </div>
-
-                    <div className="inputs-row">
-                        <InputField
-                            label="Closing Time"
-                            type="text"
-                            format={"##:##"}
-                            name="closing_time"
-                            value={outletData.closing_time}
-                            onChange={handleInputChange}
-                            required
-                        />
-                        <InputField
-                            label="Street"
-                            type="text"
-                            name="street"
-                            value={outletData.street}
-                            onChange={handleInputChange}
-                            required
-                        />
-                    </div>
-
-                    <div className="inputs-row">
-                        <InputField
-                            label="City"
-                            type="text"
-                            name="city"
-                            value={outletData.city}
-                            onChange={handleInputChange}
-                            required
-                        />
-                        <InputField
-                            label="State"
-                            type="text"
-                            name="state"
-                            value={outletData.state}
-                            onChange={handleInputChange}
-                            required
-                        />
-                    </div>
-
-                    <div className="inputs-row">
-                        <InputField
-                            label="Country"
-                            type="text"
-                            name="country"
-                            value={outletData.country}
-                            onChange={handleInputChange}
-                            required
-                        />
-                        <InputField
-                            label="Pin Code"
-                            type="text"
-                            name="postal_code"
-                            value={outletData.postal_code}
-                            onChange={handleInputChange}
-                            required
-                        />
-                    </div>
-
-                    {
-                        isEditing && (
-                            <div className="inputs-row" style={{ padding: "10px", flexDirection: "column", gap: "5px" }}>
-                                <Checkbox
-                                    label="Active Status"
-                                    checked={outletData.status === "active"}
-                                    onChange={handleStatusChange}
-                                />
-                            </div>
-                        )
-                    }
-
                     <div className="action-btns-container">
                         <GradientButton clickAction={handleSave}>
                             {isEditing ? "Update" : "Save"}
                         </GradientButton>
                         <Button clickAction={() => setShowPopup(false)}>Close</Button>
                     </div>
-                </Popup>
-            )}
+                </div> :
+                <div className="outlet-container" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                    <TopBar
+                        title="Outlets"
+                        searchText={search}
+                        setSearchText={setSearch}
+                        selectedFilter={filteredStatus}
+                        setSelectedFilter={setFilteredStatus}
+                    />
+                    <div className="cards-container card">
+                        <>
+                            {filteredData.map((outlet) => (
+                                <EditCard
+                                    key={outlet._id}
+                                    firstLetter={outlet.name.charAt(0)}
+                                    title={outlet.name}
+                                    time={formatDate(outlet.updatedAt)}
+                                    link={outlet.website}
+                                    status={outlet.status}
+                                    handleEdit={() => handleOutletEdit(outlet)}
+                                />
+                            ))}
+                            <CardAdd handleAdd={handleAddNewOutlet} />
+                        </>
+                    </div>
+                </div>
+            }
 
         </>
     );

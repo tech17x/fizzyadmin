@@ -3,9 +3,9 @@ import axios from "axios";
 import SelectInput from "./SelectInput"; // Custom select input
 import GradientButton from "./GradientButton";
 import Button from "./Button";
-import Popup from "./Popup"; // Your reusable Popup component
 import { toast } from "react-toastify";
 import Loader from "./Loader";
+import HeadingText from "./HeadingText";
 
 const SMSPortal = ({ hideSMSModel, customer }) => {
     const API = process.env.REACT_APP_API_URL;
@@ -124,13 +124,9 @@ const SMSPortal = ({ hideSMSModel, customer }) => {
             }
 
             // Normalize phone number
-            let rawPhone = customer.phone;
-            let digitsOnly = rawPhone.replace(/\D/g, '');
-            const countryCode = "91";
-            if (!digitsOnly.startsWith(countryCode)) {
-                digitsOnly = countryCode + digitsOnly;
-            }
-            const customerPhone = digitsOnly;
+            const phone = customer.phone;
+            const countryCode = customer.country_code;
+            const customerPhone = countryCode + phone;
 
             // Collect only non-empty dynamic fields
             const changedFields = Object.entries(dynamicFields).reduce((acc, [key, value]) => {
@@ -259,7 +255,8 @@ const SMSPortal = ({ hideSMSModel, customer }) => {
                 loading && <Loader />
             }
 
-            <Popup title="Send WhatsApp Message" closePopup={hideSMSModel}>
+            <div className="card">
+                <HeadingText title="Send WhatsApp Message"/>
                 <div className="inputs-container">
                     <div className="inputs-row">
                         <SelectInput
@@ -352,9 +349,9 @@ const SMSPortal = ({ hideSMSModel, customer }) => {
                         }}>
                             <h4>Customer Info</h4>
                             {[
-                                { label: "Name", value: customer?.brand_id?.full_name },
-                                { label: "Email", value: customer?.outlet_id?.email },
-                                { label: "Phone", value: customer?.outlet_id?.phone },
+                                { label: "Name", value: customer?.name },
+                                { label: "Email", value: customer?.email },
+                                { label: "Phone", value: customer?.phone },
                                 { label: "Street", value: customer?.address?.street },
                                 { label: "City", value: customer?.address?.city },
                                 { label: "State", value: customer?.address?.state },
@@ -389,7 +386,7 @@ const SMSPortal = ({ hideSMSModel, customer }) => {
                     <GradientButton clickAction={sendMessage}>Send</GradientButton>
                     <Button clickAction={hideSMSModel}>Close</Button>
                 </div>
-            </Popup>
+            </div>
 
         </>
     );

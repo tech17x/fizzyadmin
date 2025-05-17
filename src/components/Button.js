@@ -6,9 +6,9 @@ import GradientText from './GradientText';
 const Button = ({ disable=false, clickAction, className, children }) => {
     return (
         <button disabled={disable} onClick={clickAction} className={className} style={{
-            fontSize: "16px",
+            fontSize: "12px",
             fontWeight: "bold",
-            padding: "12px 24px",
+            padding: "8px 15px",
             border: "2px solid transparent",
             borderRadius: "20px",
             letterSpacing: "1px",

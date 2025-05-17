@@ -43,7 +43,7 @@
   justify-content: center;
 }
 
-.search-input {
+.search-container .search-input {
   padding: 8px 14px;
   font-size: 14px;
   border-radius: 6px;

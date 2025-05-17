@@ -1,56 +1,66 @@
-import React from "react";
+import React, { useState } from "react";
+import { ChevronDown } from "lucide-react";
+import "./InputField.css";
 
 const SelectInput = ({ label, options, selectedOption, onChange, disable = false }) => {
 
-    const handleChange = (event) => {
-        const selectedId = event.target.value;
-        const selected = options.find((opt) => (opt._id === selectedId || opt.value === selectedId));
-        onChange(selected || null);
+    const [isOpen, setIsOpen] = useState(false);
+    const [selectedValue, setSelectedValue] = useState(selectedOption?.value || "");
+    const [selectedLabel, setSelectedLabel] = useState(selectedOption?.label || "");
+
+    const handleToggleDropdown = () => {
+        if (!disable) setIsOpen(!isOpen);
+    };
+
+    const handleSelectOption = (option) => {
+        setSelectedValue(option.value);
+        setSelectedLabel(option.label);
+        onChange(option);
+        setIsOpen(false);
     };
 
     return (
-        <div className="input-field">
+        <div className="select-input">
             {label && (
                 <label
-                    style={{
-                        fontSize: "16px",
-                        fontWeight: 500,
-                        color: disable ? "#aaa" : "#000",
-                    }}
+                    className="select-input__label"
+                    style={{ color: disable ? "#9ca3af" : "#374151" }}
                 >
                     {label}
                 </label>
             )}
 
-            <div className="input-container">
-                <select
-                    disabled={disable}
-                    value={selectedOption?._id || selectedOption?.value || ""}
-                    onChange={handleChange}
-                    style={{
-                        width: "100%",
-                        padding: "10px 35px 10px 10px", // Matches input padding
-                        border: "1px solid #ccc",
-                        borderRadius: "8px",
-                        fontSize: "16px",
-                        outline: "none",
-                        backgroundColor: disable ? "#f5f5f5" : "#fff",
-                        color: disable ? "#aaa" : "#000",
-                        opacity: disable ? 0.6 : 1,
-                        appearance: "none",
-                        background: `url("data:image/svg+xml;utf8,<svg fill='%23333' viewBox='0 0 24 24' width='16' height='16' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'></path></svg>") no-repeat right 10px center`,
-                        backgroundSize: "14px",
-                    }}
+            <div className="select-input__container">
+                <div
+                    className={`select-input__custom-select ${disable ? "select-input__custom-select--disabled" : ""}`}
+                    onClick={handleToggleDropdown}
+                    style={{ cursor: disable ? "not-allowed" : "pointer" }}
+                    role="button"
+                    aria-expanded={isOpen}
                 >
-                    <option value="" disabled>
-                        Select an option
-                    </option>
-                    {options.map((option) => (
-                        <option key={option._id || option.value} value={option._id || option.value}>
-                            {option.short_name || option.name || option.label}
-                        </option>
-                    ))}
-                </select>
+                    <span className="select-input__selected-option">
+                        {selectedLabel || "Select an option"}
+                    </span>
+                    <ChevronDown
+                        className={`select-input__icon ${isOpen ? "select-input__icon--open" : ""}`}
+                        size={12}
+                        strokeWidth={2.2}
+                    />
+                </div>
+
+                {isOpen && !disable && (
+                    <ul className="select-input__options-list">
+                        {options.map((option) => (
+                            <li
+                                key={option.value}
+                                className={`select-input__option ${option.value === selectedValue ? "select-input__option--selected" : ""}`}
+                                onClick={() => handleSelectOption(option)}
+                            >
+                                {option.label}
+                            </li>
+                        ))}
+                    </ul>
+                )}
             </div>
         </div>
     );

@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import './ProfilePage.css';
 import './Brand.css';
 import Loader from '../components/Loader';
 import HeadingText from '../components/HeadingText';
 import GradientButton from "../components/GradientButton";
-import { Pencil } from 'lucide-react';
+import { LogOut, Pencil } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import AuthContext from '../context/AuthContext';
 
 const user = {
     "_id": "67ed727fd16f702d39096410",
@@ -213,6 +214,8 @@ const user = {
 }
 
 const ProfilePage = () => {
+    const { staff, logout } = useContext(AuthContext);
+
     return (
         <>
             {
@@ -223,19 +226,19 @@ const ProfilePage = () => {
                 {/* user info */}
                 <div className="profile-header card">
                     <div className='user-info'>
-                        <img src={user.image} alt="Profile" className="profile-image" />
+                        <img src={staff.image} onError={(e) => e.target.src = "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png"} alt="Profile" className="profile-image" />
                         <div>
-                            <h2>{user.name}</h2>
+                            <h2>{staff.name}</h2>
                             <div>
-                                <p>{user.email}</p>
-                                <p>{user.phone}</p>
+                                <p>{staff.email}</p>
+                                <p>{staff.phone}</p>
                             </div>
-                            <span className="status active">{user.status.toUpperCase()}</span>
+                            <span className="status active">{staff.status.toUpperCase()}</span>
                         </div>
                     </div>
-                    <GradientButton className={"user-info-edit-btn"}>
-                        <Pencil size={16} />
-                        <span>Edit Info</span>
+                    <GradientButton clickAction={logout} className={"user-info-edit-btn"}>
+                        <LogOut size={16} />
+                        <span>Logout</span>
                     </GradientButton>
 
                 </div>
@@ -243,10 +246,10 @@ const ProfilePage = () => {
                 {/* user role & permissions */}
                 <h3>Role & Permissions</h3>
                 <div className="card role-permissions">
-                    <p><strong>Role:</strong> {user.role.name}</p>
+                    <p><strong>Role:</strong> {staff.role.name}</p>
                     <strong>Permissions:</strong>
                     <div className="permissions">
-                        {user.permissions.map((perm, index) => (
+                        {staff.permissions.map((perm, index) => (
                             <span key={index} className="permission">{perm}</span>
                         ))}
                     </div>
@@ -255,7 +258,7 @@ const ProfilePage = () => {
                 {/* Assigned brands */}
                 <h3>Assigned Brands</h3>
                 <div className="flex-section">
-                    {user.brands.map((brand) => (
+                    {staff.brands.map((brand) => (
                         <div key={brand._id} className="card card-section">
                             <p><strong>Name:</strong> {brand.name}</p>
                             <p><strong>Email:</strong> {brand.email}</p>
@@ -272,7 +275,7 @@ const ProfilePage = () => {
                 {/* Assigned Outlets */}
                 <h3>Assigned Outlets</h3>
                 <div className="flex-section">
-                    {user.outlets.map((outlet) => (
+                    {staff.outlets.map((outlet) => (
                         <div key={outlet._id} className="card card-section">
                             <p><strong>Name:</strong> {outlet.name}</p>
                             <p><strong>Code:</strong> {outlet.code}</p>

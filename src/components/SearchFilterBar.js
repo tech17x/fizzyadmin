@@ -1,8 +1,9 @@
 import React from 'react';
 import './SearchFilterBar.css';
+import InputField from './InputField';
+import SelectInput from './SelectInput';
 
 const SearchFilterBar = ({
-  placeholder,
   searchValue,
   onSearchChange,
   statusValue,
@@ -10,23 +11,25 @@ const SearchFilterBar = ({
 }) => {
   return (
     <div className="search-filter-bar">
-      <input
-        type="text"
-        placeholder={placeholder}
-        value={searchValue}
-        onChange={(e) => onSearchChange(e.target.value)}
-        className="search-input"
-      />
+      <h2>Brand</h2>
+      <div>
+        <InputField
+          type={'text'}
+          value={searchValue}
+          onChange={(e) => onSearchChange(e.target.value)}
+          placeholder={"Find what you're looking for..."}
+        />
 
-      <select
-        value={statusValue}
-        onChange={(e) => onStatusChange(e.target.value)}
-        className="filter-select"
-      >
-        <option value="">All Status</option>
-        <option value="active">Active</option>
-        <option value="inactive">Inactive</option>
-      </select>
+        <SelectInput
+          selectedOption={statusValue}
+          onChange={(value) => console.log(value)}
+          options={[
+            { label: "All Status", value: "" },
+            { label: "Active", value: "active" },
+            { label: "Inactive", value: "inactive" }
+          ]}
+        />
+      </div>
     </div>
   );
 };

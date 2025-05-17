@@ -22,10 +22,10 @@ const styles = {
         background: "linear-gradient(#EFA280 0%, #DF6229 100%)",
         color: "white",
         fontWeight: "bold",
-        padding: "12px 24px",
+        padding: "8px 15px",
         border: "none",
         borderRadius: "20px",
-        fontSize: "16px",
+        fontSize: "12px",
         transition: "opacity 0.3s",
     }
 };
