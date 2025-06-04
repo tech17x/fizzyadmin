@@ -9,7 +9,7 @@ const useFetchBrands = () => {
     useEffect(() => {
         const fetchBrandNames = async () => {
             try {
-                const response = await axios.get(`https://api.techseventeen.com/api/brands/assigned/short`, {
+                const response = await axios.get(`http://localhost:5002/api/brands/assigned/short`, {
                     withCredentials: true,
                 });
                 setBrands(response.data);

@@ -39,6 +39,7 @@ const Outlet = () => {
     const [id, setId] = useState('');
     const [name, setName] = useState('');
     const [outletCode, setOutletCode] = useState('');
+    const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
     const [phone, setPhone] = useState('');
     const [selectedCountryCode, setSelectedCountryCode] = useState(countryCodeOptions[1]);
@@ -72,6 +73,7 @@ const Outlet = () => {
         setSelectedBrand({ label: _brandInfo.full_name, value: _brandInfo._id });
         setName(outlet.name);
         setOutletCode(outlet.code);
+        setPassword("");
         setEmail(outlet.email);
         setPhone(outlet.phone);
 
@@ -101,6 +103,7 @@ const Outlet = () => {
         setId('');
         setName('');
         setOutletCode('');
+        setPassword('');
         setEmail('');
         setPhone('');
         setSelectedCountryCode(countryCodeOptions[1]); // or set default like: countryCodeOptions[0]
@@ -125,6 +128,7 @@ const Outlet = () => {
             brand_id: selectedBrand?._id || selectedBrand?.value, // Depending on how your brand select is structured
             name,
             code: outletCode,
+            password,
             email,
             phone,
             country_code: selectedCountryCode?.value || '',
@@ -298,11 +302,12 @@ const Outlet = () => {
                                 required
                             />
                             <InputField
-                                label="Website"
-                                type="url"
-                                name="website"
-                                value={website}
-                                onChange={(e) => setWebsite(e.target.value)}
+                                label="Outlet Password"
+                                type="text"
+                                name="password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                required
                             />
                         </div>
 
@@ -395,6 +400,16 @@ const Outlet = () => {
                                 value={postalCode}
                                 onChange={(e) => setPostalCode(e.target.value)}
                                 required
+                            />
+                        </div>
+
+                        <div className="inputs-row">
+                            <InputField
+                                label="Website"
+                                type="url"
+                                name="website"
+                                value={website}
+                                onChange={(e) => setWebsite(e.target.value)}
                             />
                         </div>
 
