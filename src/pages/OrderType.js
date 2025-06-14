@@ -111,7 +111,7 @@ const OrderType = () => {
             brand_id: type.brand_id?._id || '',
             outlet_id: type.outlet_id?._id || '',
         });
-        setSelectedBrand({label: brand.full_name, value : brand._id});
+        setSelectedBrand({ label: brand.full_name, value: brand._id });
         setFilteredOutlets(outletOptions);
         setSelectedOutlet(outlet ? { label: outlet.name, value: outlet._id } : null);
         setSelectedCategory(categoryOption);
@@ -177,12 +177,16 @@ const OrderType = () => {
             });
         };
 
-        // Check for category duplication
-        if (isDuplicate("category")) {
+        // Check for category duplication (skip if category is "third-party")
+        if (
+            selectedCategory?.value !== "third-party" &&
+            isDuplicate("category")
+        ) {
             toast.error("Category already exists for this outlet.");
             setLoading(false);
             return;
         }
+
 
         if (orderTypeInfo.name && isDuplicate("name")) {
             toast.error("Name already exists for this brand.");
@@ -244,14 +248,14 @@ const OrderType = () => {
 
             {showPopup ? (
                 <div className='card'>
-                 <HeadingText title={`${isEditing ? "Edit" : "Add"} Order Type`} />
+                    <HeadingText title={`${isEditing ? "Edit" : "Add"} Order Type`} />
                     <div className="inputs-container">
                         <div className="inputs-row">
                             <SelectInput
                                 label="Select Brand"
                                 selectedOption={selectedBrand}
                                 onChange={handleBrandSelection}
-                                options={brands.map(o=>({label: o.full_name, value : o._id}))}
+                                options={brands.map(o => ({ label: o.full_name, value: o._id }))}
                             />
                             <SelectInput
                                 disable={filteredOutlets.length === 0}
