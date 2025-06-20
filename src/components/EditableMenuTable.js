@@ -68,7 +68,7 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`https://api.techseventeen.com/api/items/delete/${id}`,{
+            await axios.delete(`https://api.techseventeen.com/api/items/delete/${id}`, {
                 withCredentials: true
             });
             setItems(items.filter((item) => item._id !== id));
@@ -143,12 +143,12 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
 
             const parsedItems = rows.map((row, index) => ({
                 _id: Date.now() + index,
-                name: row[0],
+                name: row[0]?.trim(),
                 price: row[1],
-                category_name: row[2],
-                food_type: row[3]?.toLowerCase(),
+                category_name: row[2]?.trim(),
+                food_type: row[3]?.toLowerCase()?.trim(),
                 image: row[4],
-                status: row[5]?.toLowerCase(),
+                status: row[5]?.toLowerCase()?.trim(),
             }));
 
             setItems((prev) => [...prev, ...parsedItems]);
@@ -171,7 +171,7 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
                 isValid = false;
                 errors.push("Name is required.");
             }
-            if (!item.price || isNaN(item.price) || item.price <= 0) {
+            if (!item.price || isNaN(item.price) || item.price < 0) {
                 isValid = false;
                 errors.push("Price should be a valid positive number.");
             }
@@ -183,7 +183,8 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
                 isValid = false;
                 errors.push("Food Type should is required");
             }
-            if (!item.status || !["active", "inactive"].includes(item.status)) {
+            const status = item.status?.trim().toLowerCase();
+            if (!["active", "inactive"].includes(status)) {
                 isValid = false;
                 errors.push("Status should be either 'active' or 'inactive'.");
             }
@@ -211,12 +212,7 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
 
             // If the item is new (not present in initialItems)
             if (!initialItem) {
-                console.log('==========')
-                console.log(initialItem);
-                console.log('==========')
                 newItems.push(item);
-            } else {
-                console.log(item);
             }
         });
 
@@ -240,19 +236,19 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
         console.log(payload);
 
         // Handle API request for saving changed and new items
-        // try {
-        //     const response = await axios.post("https://api.techseventeen.com/api/items/upsert", payload, {
-        //         withCredentials: true
-        //     });
-        //     if (response.data.successCount > 0) {
-        //         toast.success("Items updated successfully!");
-        //     } else {
-        //         toast.error("No items were updated or added.");
-        //     }
-        // } catch (error) {
-        //     console.error("Error saving items:", error);
-        //     toast.error("Error saving items");
-        // }
+        try {
+            const response = await axios.post("https://api.techseventeen.com/api/items/upsert", payload, {
+                withCredentials: true
+            });
+            if (response.data.successCount > 0) {
+                toast.success("Items updated successfully!");
+            } else {
+                toast.error("No items were updated or added.");
+            }
+        } catch (error) {
+            console.error("Error saving items:", error);
+            toast.error("Error saving items");
+        }
     };
 
 
