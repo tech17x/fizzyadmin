@@ -59,7 +59,7 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
             name: "",
             price: "",
             category_name: "",
-            food_type: "veg",
+            food_type: "Veg",
             status: "active",
             image: "",
         };
@@ -177,9 +177,9 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
                 isValid = false;
                 errors.push("Category is required.");
             }
-            if (!item.food_type || !["veg", "non-veg", "vegan"].includes(item.food_type)) {
+            if (!item.food_type) {
                 isValid = false;
-                errors.push("Food Type should be either 'veg', 'non-veg', or 'vegan'.");
+                errors.push("Food Type should is required");
             }
             if (!item.status || !["active", "inactive"].includes(item.status)) {
                 isValid = false;

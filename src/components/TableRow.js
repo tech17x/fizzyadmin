@@ -59,6 +59,7 @@ const TableRow = ({ item, index, onFieldChange, onImageChange, onDelete }) => {
           <option value="veg">Veg</option>
           <option value="non-veg">Non-Veg</option>
           <option value="vegan">Vegan</option>
+          <option value="other">Other</option>
         </select>
       </td>
       <td>
