@@ -211,7 +211,12 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
 
             // If the item is new (not present in initialItems)
             if (!initialItem) {
+                console.log('==========')
+                console.log(initialItem);
+                console.log('==========')
                 newItems.push(item);
+            } else {
+                console.log(item);
             }
         });
 
@@ -232,20 +237,22 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
             outlet_id: brandOutletIds.outlet, // Ensure to pass the correct outlet_id value
         };
 
+        console.log(payload);
+
         // Handle API request for saving changed and new items
-        try {
-            const response = await axios.post("https://api.techseventeen.com/api/items/upsert", payload, {
-                withCredentials: true
-            });
-            if (response.data.successCount > 0) {
-                toast.success("Items updated successfully!");
-            } else {
-                toast.error("No items were updated or added.");
-            }
-        } catch (error) {
-            console.error("Error saving items:", error);
-            toast.error("Error saving items");
-        }
+        // try {
+        //     const response = await axios.post("https://api.techseventeen.com/api/items/upsert", payload, {
+        //         withCredentials: true
+        //     });
+        //     if (response.data.successCount > 0) {
+        //         toast.success("Items updated successfully!");
+        //     } else {
+        //         toast.error("No items were updated or added.");
+        //     }
+        // } catch (error) {
+        //     console.error("Error saving items:", error);
+        //     toast.error("Error saving items");
+        // }
     };
 
 
