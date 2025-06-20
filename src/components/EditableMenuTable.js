@@ -68,7 +68,7 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`/api/items/delete/${id}`);
+            await axios.delete(`https://api.techseventeen.com/api/items/delete/${id}`);
             setItems(items.filter((item) => item._id !== id));
         } catch (error) {
             console.error("Error deleting item:", error);
