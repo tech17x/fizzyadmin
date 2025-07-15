@@ -170,21 +170,21 @@ const Addon = () => {
             return;
         }
 
-        const isDuplicate = (field) => {
-            return addons?.some((type) => {
-                return (
-                    type.outlet_id._id === selectedOutlet?.value &&
-                    type[field]?.trim().toLowerCase() === name?.trim().toLowerCase() &&
-                    type._id !== addonId // exclude self if editing
-                );
-            });
-        };
+        // const isDuplicate = (field) => {
+        //     return addons?.some((type) => {
+        //         return (
+        //             type.outlet_id._id === selectedOutlet?.value &&
+        //             type[field]?.trim().toLowerCase() === name?.trim().toLowerCase() &&
+        //             type._id !== addonId // exclude self if editing
+        //         );
+        //     });
+        // };
 
-        if (isDuplicate('name')) {
-            toast.error("Addon name already exists in this outlet.");
-            setLoading(false);
-            return;
-        }
+        // if (isDuplicate('name')) {
+        //     toast.error("Addon name already exists in this outlet.");
+        //     setLoading(false);
+        //     return;
+        // }
 
 
         const payload = {
