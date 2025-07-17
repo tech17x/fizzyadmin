@@ -59,7 +59,7 @@ const Login = () => {
             <div className="login-container">
                 <div className="login-form">
                     <div className="login-form-head">
-                        <h1>Dhindu Admin</h1>
+                        <h1>FIZZY ADMIN</h1>
                     </div>
 
                     {message && (
@@ -89,7 +89,7 @@ const Login = () => {
                             required
                         />
                         <button className="forgot-password">Forgot Password</button>
-                        <GradientButton type="submit">Login</GradientButton>
+                        <GradientButton className="login_cta" type="submit">Login</GradientButton>
                     </form>
                 </div>
                 <div className="contact-btn-container">

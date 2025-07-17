@@ -121,9 +121,6 @@ const Addon = () => {
         setAddonStatus(addon.status === "active" ? true : false);
         handleBrandSelection({label: addon.brand_id.full_name, value : addon.brand_id._id});
         const selectedOutlet = outlets.find(outlet => outlet._id === addon.outlet_id?._id);
-        const selectedCat = categories.find(cat => cat._id === addon.category_id?._id);
-        const selectedItem = items.find(i => i._id === addon.item?._id);
-
         if (selectedOutlet) {
             handleOutletSelection({
                 label: selectedOutlet.name,
@@ -141,6 +138,7 @@ const Addon = () => {
         } else {
             handleMenuSelection(null); // In case outlet not found
         }
+        const selectedCat = categories.find(cat => cat._id === addon.category_id?._id);
         if (selectedCat) {
             handleCatSelection({
                 label: selectedCat.name,
@@ -149,6 +147,7 @@ const Addon = () => {
         } else {
             handleCatSelection(null); // In case outlet not found
         }
+        const selectedItem = items.find(i => i._id === addon.item?._id);
         if (selectedItem) {
             handleItemSelection({
                 label: selectedItem.name,
@@ -191,7 +190,7 @@ const Addon = () => {
             brand_id: selectedBrand.value,
             outlet_id: selectedOutlet?.value,
             name: name,
-            menu_id: selectedMenu.value,
+            menu_id: selectedMenu?.value,
             category_id: selectedCat?.value,
             item: selectedItem?.value,
             price: addonPrice,
@@ -337,7 +336,7 @@ const Addon = () => {
                                     label="Item"
                                     selectedOption={selectedItem}
                                     onChange={(item) => handleItemSelection(item)}
-                                    options={items.map(o => ({ label: o.name, value: o._id }))}
+                                    options={items.filter(i=>i.category_name === selectedCat?.label).map(o => ({ label: o.name, value: o._id }))}
                                 />
                                 <InputField
                                     label="Addon Name"
@@ -406,6 +405,9 @@ const Addon = () => {
                                         <tr>
                                             <th>Sr No</th>
                                             <th>Addon Name</th>
+                                            <th>Item Name</th>
+                                            <th>Categorie Name</th>
+                                            <th>Menu Name</th>
                                             <th>Status</th>
                                             <th>Action</th>
                                         </tr>
@@ -416,6 +418,9 @@ const Addon = () => {
                                                 <tr key={index}>
                                                     <td>{index + 1}</td>
                                                     <td>{item.name}</td>
+                                                    <td>{item?.menu_id?.name}</td>
+                                                    <td>{item?.category_id?.name}</td>
+                                                    <td>{item?.item?.name}</td>
                                                     <td><div className={`status ${item.status}`}>{item.status}</div></td>
                                                     <td>
                                                         <div className="tax-action-btns">
