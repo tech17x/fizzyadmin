@@ -119,25 +119,29 @@ const Addon = () => {
         setAddonPrice(addon.price);
         setAllItem(addon.all_items);
         setAddonStatus(addon.status === "active" ? true : false);
-        handleBrandSelection({label: addon.brand_id.full_name, value : addon.brand_id._id});
+        handleBrandSelection({ label: addon.brand_id.full_name, value: addon.brand_id._id });
         const selectedOutlet = outlets.find(outlet => outlet._id === addon.outlet_id?._id);
         if (selectedOutlet) {
             handleOutletSelection({
                 label: selectedOutlet.name,
                 value: selectedOutlet._id,
-            }, {label: addon.brand_id.full_name, value : addon.brand_id._id});
+            }, { label: addon.brand_id.full_name, value: addon.brand_id._id });
         } else {
             handleOutletSelection(null); // In case outlet not found
         }
         const selectedMenu = menus.find(menu => menu._id === addon.menu_id?._id);
-        if (selectedMenu) {
-            handleMenuSelection({
-                label: selectedMenu.name,
-                value: selectedMenu._id,
-            }, selectedOutlet);
-        } else {
-            handleMenuSelection(null); // In case outlet not found
-        }
+        setSelectedMenu({
+            label: selectedMenu.name,
+            value: selectedMenu._id,
+        });
+        // if (selectedMenu) {
+        //     handleMenuSelection({
+        //         label: selectedMenu.name,
+        //         value: selectedMenu._id,
+        //     }, selectedOutlet);
+        // } else {
+        //     handleMenuSelection(null); // In case outlet not found
+        // }
         const selectedCat = categories.find(cat => cat._id === addon.category_id?._id);
         if (selectedCat) {
             handleCatSelection({
@@ -230,20 +234,20 @@ const Addon = () => {
         }
     };
 
-    const handleOutletSelection = (outlet, brand) => {
+    const handleOutletSelection = async (outlet, brand) => {
         if (outlet) {
             setSelectedOutlet(outlet);
-            fetchMenus(brand || selectedBrand, outlet);
+            await fetchMenus(brand || selectedBrand, outlet);
         }
     }
 
-    const handleMenuSelection = (menu, selectedOutlet) => {
+    const handleMenuSelection = async (menu, outlet) => {
         if (menu) {
             setSelectedMenu(menu);
-            if(selectedOutlet){
-                fetchCategories(selectedOutlet);
+            if (selectedOutlet) {
+                await fetchCategories(outlet || selectedOutlet);
             }
-            fetchItems(menu);
+            await fetchItems(menu);
         }
     }
 
@@ -310,7 +314,7 @@ const Addon = () => {
                                     label="Select Brand"
                                     selectedOption={selectedBrand}
                                     onChange={handleBrandSelection}
-                                    options={brands.map(o=>({label: o.full_name, value : o._id}))}
+                                    options={brands.map(o => ({ label: o.full_name, value: o._id }))}
                                 />
                                 <SelectInput
                                     label="Outlet"
@@ -338,7 +342,7 @@ const Addon = () => {
                                     label="Item"
                                     selectedOption={selectedItem}
                                     onChange={(item) => handleItemSelection(item)}
-                                    options={items.filter(i=>i.category_name === selectedCat?.label).map(o => ({ label: o.name, value: o._id }))}
+                                    options={items.filter(i => i.category_name === selectedCat?.label).map(o => ({ label: o.name, value: o._id }))}
                                 />
                                 <InputField
                                     label="Addon Name"
