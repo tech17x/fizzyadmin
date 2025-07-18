@@ -113,7 +113,7 @@ const Addon = () => {
         setShowPopup(true);
     }
 
-    const handleEditAddon = (addon) => {
+    const handleEditAddon = async (addon) => {
         setAddonId(addon._id);
         setName(addon.name);
         setAddonPrice(addon.price);
@@ -125,10 +125,20 @@ const Addon = () => {
             handleOutletSelection({
                 label: selectedOutlet.name,
                 value: selectedOutlet._id,
-            }, { label: addon.brand_id.full_name, value: addon.brand_id._id });
+            });
         } else {
-            handleOutletSelection(null); // In case outlet not found
+            handleOutletSelection(null);
         }
+        await fetchMenus(
+            {
+                label: addon.brand_id.full_name,
+                value: addon.brand_id._id
+            },
+            {
+                label: selectedOutlet.name,
+                value: selectedOutlet._id,
+            }
+        );
         const selectedMenu = menus.find(menu => menu._id === addon.menu_id?._id);
         console.log(menus);
         console.log(selectedMenu);
@@ -236,10 +246,9 @@ const Addon = () => {
         }
     };
 
-    const handleOutletSelection = async (outlet, brand) => {
+    const handleOutletSelection = async (outlet) => {
         if (outlet) {
             setSelectedOutlet(outlet);
-            await fetchMenus(brand || selectedBrand, outlet);
         }
     }
 
