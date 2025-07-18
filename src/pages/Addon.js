@@ -130,6 +130,7 @@ const Addon = () => {
             handleOutletSelection(null); // In case outlet not found
         }
         const selectedMenu = menus.find(menu => menu._id === addon.menu_id?._id);
+        console.log(menus);
         console.log(selectedMenu);
         setSelectedMenu({
             label: selectedMenu?.name,
