@@ -133,31 +133,38 @@ const Addon = () => {
                 return;
             }
 
-            // Set outlet & fetch menus
+            // Set outlet and filteredOutlets
+            const filtered = outlets.filter(o => o.brand_id === brand.value);
+            setFilteredOutlets(filtered);
             setSelectedOutlet(outletOption);
-            await fetchMenus(brand, outletOption);
 
-            // Select correct menu
-            const menu = (menus || []).find(m => m._id === addon.menu_id?._id);
+            // ✅ Fetch menus directly and set
+            const menusRes = await axios.get(`${API}/api/menus/by-brand-outlet`, {
+                params: { brand_id: brand.value, outlet_id: outletOption.value },
+                withCredentials: true
+            });
+            setMenus(menusRes.data.menus || []);
+            const menu = menusRes.data.menus.find(m => m._id === addon.menu_id?._id);
             const menuOption = menu ? { label: menu.name, value: menu._id } : null;
             setSelectedMenu(menuOption);
 
-            if (menuOption) {
-                await fetchItems(menuOption);
-            }
-
-            // Fetch categories AFTER outlet is set
-            await fetchCategories(outletOption);
-
-            // Select category
-            const category = (categories || []).find(cat => cat._id === addon.category_id?._id);
-            const catOption = category ? { label: category.name, value: category._id } : null;
-            setSelectedCat(catOption);
-
-            // Select item
-            const item = (items || []).find(i => i._id === addon.item?._id);
+            // ✅ Fetch items directly and set
+            const itemsRes = await axios.get(`${API}/api/items/menu/${addon.menu_id?._id}`, {
+                withCredentials: true
+            });
+            setItems(itemsRes.data.items || []);
+            const item = itemsRes.data.items.find(i => i._id === addon.item?._id);
             const itemOption = item ? { label: item.name, value: item._id } : null;
             setSelectedItem(itemOption);
+
+            // ✅ Fetch categories directly and set
+            const catsRes = await axios.get(`${API}/api/categories//by-outlet/${outletOption.value}`, {
+                withCredentials: true
+            });
+            setCategories(catsRes.data.categories || []);
+            const category = catsRes.data.categories.find(cat => cat._id === addon.category_id?._id);
+            const catOption = category ? { label: category.name, value: category._id } : null;
+            setSelectedCat(catOption);
 
             setShowPopup(true);
         } catch (err) {
