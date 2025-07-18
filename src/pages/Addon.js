@@ -113,52 +113,59 @@ const Addon = () => {
         setShowPopup(true);
     }
 
-    const handleEditAddon = (addon) => {
-        setAddonId(addon._id);
-        setName(addon.name);
-        setAddonPrice(addon.price);
-        setAllItem(addon.all_items);
-        setAddonStatus(addon.status === "active" ? true : false);
-        handleBrandSelection({ label: addon.brand_id.full_name, value: addon.brand_id._id });
-        const selectedOutlet = outlets.find(outlet => outlet._id === addon.outlet_id?._id);
-        if (selectedOutlet) {
-            handleOutletSelection({
-                label: selectedOutlet.name,
-                value: selectedOutlet._id,
-            }, { label: addon.brand_id.full_name, value: addon.brand_id._id });
-        } else {
-            handleOutletSelection(null); // In case outlet not found
+    const handleEditAddon = async (addon) => {
+        try {
+            setLoading(true);
+            setAddonId(addon._id);
+            setName(addon.name);
+            setAddonPrice(addon.price);
+            setAllItem(addon.all_items);
+            setAddonStatus(addon.status === "active");
+            setIsEditing(true);
+
+            const brand = { label: addon.brand_id.full_name, value: addon.brand_id._id };
+            const outlet = outlets.find(o => o._id === addon.outlet_id?._id);
+            const outletOption = outlet ? { label: outlet.name, value: outlet._id } : null;
+
+            setSelectedBrand(brand);
+            if (!outletOption) {
+                toast.error("Outlet not found for selected addon");
+                return;
+            }
+
+            // Set outlet & fetch menus
+            setSelectedOutlet(outletOption);
+            await fetchMenus(brand, outletOption);
+
+            // Select correct menu
+            const menu = (menus || []).find(m => m._id === addon.menu_id?._id);
+            const menuOption = menu ? { label: menu.name, value: menu._id } : null;
+            setSelectedMenu(menuOption);
+
+            if (menuOption) {
+                await fetchItems(menuOption);
+            }
+
+            // Fetch categories AFTER outlet is set
+            await fetchCategories(outletOption);
+
+            // Select category
+            const category = (categories || []).find(cat => cat._id === addon.category_id?._id);
+            const catOption = category ? { label: category.name, value: category._id } : null;
+            setSelectedCat(catOption);
+
+            // Select item
+            const item = (items || []).find(i => i._id === addon.item?._id);
+            const itemOption = item ? { label: item.name, value: item._id } : null;
+            setSelectedItem(itemOption);
+
+            setShowPopup(true);
+        } catch (err) {
+            toast.error("Failed to edit addon. Try again.");
+        } finally {
+            setLoading(false);
         }
-        const selectedMenu = menus.find(menu => menu._id === addon.menu_id?._id);
-        if (selectedMenu) {
-            handleMenuSelection({
-                label: selectedMenu.name,
-                value: selectedMenu._id,
-            }, selectedOutlet);
-        } else {
-            handleMenuSelection(null); // In case outlet not found
-        }
-        const selectedCat = categories.find(cat => cat._id === addon.category_id?._id);
-        if (selectedCat) {
-            handleCatSelection({
-                label: selectedCat.name,
-                value: selectedCat._id,
-            });
-        } else {
-            handleCatSelection(null); // In case outlet not found
-        }
-        const selectedItem = items.find(i => i._id === addon.item?._id);
-        if (selectedItem) {
-            handleItemSelection({
-                label: selectedItem.name,
-                value: selectedItem._id,
-            });
-        } else {
-            handleItemSelection(null); // In case outlet not found
-        }
-        setIsEditing(true);
-        setShowPopup(true);
-    }
+    };
 
 
     const handleSave = async () => {
