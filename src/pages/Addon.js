@@ -113,7 +113,7 @@ const Addon = () => {
         setShowPopup(true);
     }
 
-    const handleEditAddon = async (addon) => {
+    const handleEditAddon = (addon) => {
         setAddonId(addon._id);
         setName(addon.name);
         setAddonPrice(addon.price);
@@ -125,35 +125,19 @@ const Addon = () => {
             handleOutletSelection({
                 label: selectedOutlet.name,
                 value: selectedOutlet._id,
-            });
+            }, { label: addon.brand_id.full_name, value: addon.brand_id._id });
         } else {
-            handleOutletSelection(null);
+            handleOutletSelection(null); // In case outlet not found
         }
-        await fetchMenus(
-            {
-                label: addon.brand_id.full_name,
-                value: addon.brand_id._id
-            },
-            {
-                label: selectedOutlet.name,
-                value: selectedOutlet._id,
-            }
-        );
         const selectedMenu = menus.find(menu => menu._id === addon.menu_id?._id);
-        console.log(menus);
-        console.log(selectedMenu);
-        setSelectedMenu({
-            label: selectedMenu?.name,
-            value: selectedMenu._id,
-        });
-        // if (selectedMenu) {
-        //     handleMenuSelection({
-        //         label: selectedMenu.name,
-        //         value: selectedMenu._id,
-        //     }, selectedOutlet);
-        // } else {
-        //     handleMenuSelection(null); // In case outlet not found
-        // }
+        if (selectedMenu) {
+            handleMenuSelection({
+                label: selectedMenu.name,
+                value: selectedMenu._id,
+            }, selectedOutlet);
+        } else {
+            handleMenuSelection(null); // In case outlet not found
+        }
         const selectedCat = categories.find(cat => cat._id === addon.category_id?._id);
         if (selectedCat) {
             handleCatSelection({
@@ -246,9 +230,10 @@ const Addon = () => {
         }
     };
 
-    const handleOutletSelection = async (outlet) => {
+    const handleOutletSelection = async (outlet, brand) => {
         if (outlet) {
             setSelectedOutlet(outlet);
+            await fetchMenus(brand || selectedBrand, outlet);
         }
     }
 
