@@ -163,7 +163,7 @@ const Addon = () => {
 
     const handleSave = async () => {
         setLoading(true);
-        if (!selectedBrand || !name || (!selectedOutlet) || !addonPrice || addonPrice <= 0) {
+        if (!selectedBrand || !name || (!selectedOutlet)) {
             toast.error("Please fill all required fields.");
             setLoading(false);
             return;
@@ -193,7 +193,7 @@ const Addon = () => {
             menu_id: selectedMenu?.value,
             category_id: selectedCat?.value,
             item: selectedItem?.value,
-            price: addonPrice,
+            price: addonPrice || 0,
             all_items: allItem,
             status: addonStatus ? "active" : "inactive",
         };
