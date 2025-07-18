@@ -35,7 +35,7 @@ const Addon = () => {
     const [selectedOutlet, setSelectedOutlet] = useState(null);
     const [filteredOutlets, setFilteredOutlets] = useState([]);
     const [name, setName] = useState("");
-    const [addonPrice, setAddonPrice] = useState("");
+    const [addonPrice, setAddonPrice] = useState(0);
     const [addonStatus, setAddonStatus] = useState(false);
     const [addonId, setAddonId] = useState(null);
 
@@ -103,7 +103,7 @@ const Addon = () => {
         setSelectedOutlet(null);
         setAddonId(null);
         setName('');
-        setAddonPrice('');
+        setAddonPrice(0);
         setSelectedMenu('');
         setSelectedCat('');
         setSelectedItem([]);
@@ -134,7 +134,7 @@ const Addon = () => {
             handleMenuSelection({
                 label: selectedMenu.name,
                 value: selectedMenu._id,
-            });
+            }, selectedOutlet);
         } else {
             handleMenuSelection(null); // In case outlet not found
         }
@@ -237,10 +237,12 @@ const Addon = () => {
         }
     }
 
-    const handleMenuSelection = (menu) => {
+    const handleMenuSelection = (menu, selectedOutlet) => {
         if (menu) {
             setSelectedMenu(menu);
-            fetchCategories(selectedOutlet);
+            if(selectedOutlet){
+                fetchCategories(selectedOutlet);
+            }
             fetchItems(menu);
         }
     }
@@ -418,9 +420,9 @@ const Addon = () => {
                                                 <tr key={index}>
                                                     <td>{index + 1}</td>
                                                     <td>{item.name}</td>
-                                                    <td>{item?.menu_id?.name}</td>
-                                                    <td>{item?.category_id?.name}</td>
                                                     <td>{item?.item?.name}</td>
+                                                    <td>{item?.category_id?.name}</td>
+                                                    <td>{item?.menu_id?.name}</td>
                                                     <td><div className={`status ${item.status}`}>{item.status}</div></td>
                                                     <td>
                                                         <div className="tax-action-btns">

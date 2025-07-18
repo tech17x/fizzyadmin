@@ -84,7 +84,7 @@ const InputField = ({
         <input
           type={type === "password" ? (showPassword ? "text" : "password") : type}
           className="input-field__input"
-          value={value || ""}
+          value={value !== undefined && value !== null ? value : ""}
           name={name}
           onChange={handleInputChange}
           placeholder={placeholder}
