@@ -15,7 +15,7 @@ import PhoneNumberInput from "../components/PhoneNumberInput";
 import HeadingText from "../components/HeadingText";
 import SelectInput from "../components/SelectInput";
 import AuthContext from "../context/AuthContext";
-import { countryOptions, countryCodeOptions } from '../constants/countryOptions'; 
+import { countryOptions, countryCodeOptions } from '../constants/countryOptions';
 
 const Brand = () => {
     const API = process.env.REACT_APP_API_URL;
@@ -47,6 +47,34 @@ const Brand = () => {
     const [postalCode, setPostalCode] = useState('');
     const [address, setAddress] = useState('');
     const [status, setStatus] = useState("");
+    const [dayEndData, setDayEndData] = useState(null);
+    const [error, setError] = useState(null);
+
+    useEffect(() => {
+        const fetchDayEndData = async () => {
+            const time = Date.now();
+
+            try {
+                const response = await axios.get(`${API}/api/pos/day-end`, {
+                    params: { time },
+                    withCredentials: true, // include cookies if auth is cookie-based
+                    headers: {
+                        "Content-Type": "application/json",
+                        // If token is needed instead of cookie, uncomment this:
+                        // Authorization: `Bearer ${yourToken}`
+                    }
+                });
+
+                console.log("✅ Day-End Data:", response.data);
+                setDayEndData(response.data);
+            } catch (err) {
+                console.error("❌ Error fetching day-end:", err.response?.data?.message || err.message);
+                setError(err.response?.data?.message || "Failed to fetch day-end data");
+            }
+        };
+
+        fetchDayEndData();
+    }, [API]);
 
     useEffect(() => {
         if (staff.permissions?.includes('brand_manage')) {
@@ -246,6 +274,15 @@ const Brand = () => {
             {showPopup ? (
                 <div className="card">
                     <HeadingText title={`${isEditing ? "Edit" : "Add"} Brand`} />
+                    <div>
+                        <h2>Day-End Record</h2>
+                        {error && <p style={{ color: "red" }}>Error: {error}</p>}
+                        {dayEndData ? (
+                            <pre>{JSON.stringify(dayEndData, null, 2)}</pre>
+                        ) : (
+                            !error && <p>Loading...</p>
+                        )}
+                    </div>
                     <div className="inputs-container">
                         <div className="inputs-row">
                             <InputField
