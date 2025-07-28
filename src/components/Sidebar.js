@@ -33,6 +33,32 @@ import {
   Mail,
   CheckCircle,
   Trash2,
+  ChartBarStacked,
+  Warehouse,
+  FileBarChart2,
+  IndianRupee,
+  Star,
+  UsersRound,
+  CalendarDays,
+  CalendarRange,
+  Clock,
+  PercentCircle,
+  RotateCw,
+  PackageSearch,
+  ListOrdered,
+  UserRound,
+  Building2,
+  BriefcaseBusiness,
+  BarChart3,
+  FileTextIcon,
+  Package,
+  Tags,
+  Plus,
+  UsersIcon,
+  Calendar,
+  XCircle,
+  PieChart,
+  PieChartIcon,
 } from 'lucide-react';
 import Popup from './Popup';
 import FizzyLogo from './FizzyLogo';
@@ -40,10 +66,64 @@ import AuthContext from '../context/AuthContext';
 
 const menuItems = [
   {
-    title: 'Dashboard',
-    permission: 'dashboard_view',
-    icon: <LayoutDashboard color="#DF6229" size={15} />,
-    path: '/dashboard',
+    title: 'Reports',
+    icon: <PieChart color="#DF6229" size={15} />,
+    submenu: [
+      {
+        title: 'Sales Overview',
+        path: '/sales',
+        permission: 'dashboard_view',
+        icon: <BarChart3 size={15} color="#DF6229" />
+      },
+      {
+        title: 'Detailed Orders',
+        path: '/detail-orders',
+        permission: 'dashboard_view',
+        icon: <FileTextIcon size={15} color="#DF6229" />
+      },
+      {
+        title: 'Item-wise Sales',
+        path: '/item-wise-sales',
+        permission: 'dashboard_view',
+        icon: <Package size={15} color="#DF6229" />
+      },
+      {
+        title: 'Category Sales',
+        path: '/category-sales',
+        permission: 'dashboard_view',
+        icon: <Tags size={15} color="#DF6229" />
+      },
+      {
+        title: 'Add-on Sales',
+        path: '/add-on-sales',
+        permission: 'dashboard_view',
+        icon: <Plus size={15} color="#DF6229" />
+      },
+      {
+        title: 'Staff Performance',
+        path: '/staff-performance',
+        permission: 'dashboard_view',
+        icon: <UsersIcon size={15} color="#DF6229" />
+      },
+      {
+        title: 'Payment Summary',
+        path: '/payment-summary',
+        permission: 'dashboard_view',
+        icon: <CreditCard size={15} color="#DF6229" />
+      },
+      {
+        title: 'Day-end Summary',
+        path: '/day-end-summary',
+        permission: 'dashboard_view',
+        icon: <Calendar size={15} color="#DF6229" />
+      },
+      {
+        title: 'Cancel/Refund',
+        path: '/cancel-refund',
+        permission: 'dashboard_view',
+        icon: <XCircle size={15} color="#DF6229" />
+      }
+    ],
   },
   {
     title: 'Brand Configuration',
@@ -81,7 +161,6 @@ const menuItems = [
     icon: <Contact2 color="#DF6229" size={15} />,
     submenu: [
       { title: 'Customer', path: '/customer', icon: <User color="#DF6229" size={15} />, permission: 'customers_view' },
-      { title: 'Orders', path: '/orders', icon: <FileText color="#DF6229" size={15} />, permission: 'orders_view' },
       { title: 'Whatsapp Setup', path: '/whatsapp-setup', icon: <MessageCircle color="#DF6229" size={15} />, permission: 'whatsapp_manage' },
     ],
   },
@@ -161,23 +240,23 @@ const Sidebar = () => {
   };
 
   const filteredMenuItems = menuItems
-  .map((item) => {
-    if (item.submenu) {
-      const filteredSubmenu = item.submenu.filter(
-        (sub) => !sub.permission || staff.permissions.includes(sub.permission)
-      );
+    .map((item) => {
+      if (item.submenu) {
+        const filteredSubmenu = item.submenu.filter(
+          (sub) => !sub.permission || staff.permissions.includes(sub.permission)
+        );
 
-      // Only show parent if it has at least one allowed submenu
-      if (filteredSubmenu.length > 0) {
-        return { ...item, submenu: filteredSubmenu };
+        // Only show parent if it has at least one allowed submenu
+        if (filteredSubmenu.length > 0) {
+          return { ...item, submenu: filteredSubmenu };
+        }
+        return null;
+      } else if (!item.permission || staff.permissions.includes(item.permission)) {
+        return item;
       }
       return null;
-    } else if (!item.permission || staff.permissions.includes(item.permission)) {
-      return item;
-    }
-    return null;
-  })
-  .filter(Boolean);
+    })
+    .filter(Boolean);
 
 
 

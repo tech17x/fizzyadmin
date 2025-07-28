@@ -35,7 +35,7 @@ const Login = () => {
 
                 // ✅ Move setLoading(false) inside setTimeout after navigation
                 setTimeout(() => {
-                    navigate("/dashboard");
+                    navigate("/sales");
                     setLoading(false);
                 }, 1000);
             } else {

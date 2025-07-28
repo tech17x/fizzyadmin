@@ -47,34 +47,38 @@ const Brand = () => {
     const [postalCode, setPostalCode] = useState('');
     const [address, setAddress] = useState('');
     const [status, setStatus] = useState("");
-    const [dayEndData, setDayEndData] = useState(null);
-    const [error, setError] = useState(null);
+    // const [dayEndData, setDayEndData] = useState(null);
+    // const [error, setError] = useState(null);
 
-    useEffect(() => {
-        const fetchDayEndData = async () => {
-            const time = Date.now();
+    // useEffect(() => {
+    //     const fetchDayEndData = async () => {
+    //         const brand_id = "6822b72615fe200295fcb3f7";
+    //         const outlet_id = "6822c5424bd1d8d236d8a293";
+    //         const time = Date.now(); // or your custom timestamp
 
-            try {
-                const response = await axios.get(`${API}/api/pos/day-end`, {
-                    params: { time },
-                    withCredentials: true, // include cookies if auth is cookie-based
-                    headers: {
-                        "Content-Type": "application/json",
-                        // If token is needed instead of cookie, uncomment this:
-                        // Authorization: `Bearer ${yourToken}`
-                    }
-                });
+    //         try {
 
-                console.log("✅ Day-End Data:", response.data);
-                setDayEndData(response.data);
-            } catch (err) {
-                console.error("❌ Error fetching day-end:", err.response?.data?.message || err.message);
-                setError(err.response?.data?.message || "Failed to fetch day-end data");
-            }
-        };
+    //             // const response = await axios.get(`${API}/api/dashboard/day-end`, {
+    //             const response = await axios.get(`${API}/api/dashboard/day-end-summary`, {
+    //                 params: {
+    //                     brand_id,
+    //                     outlet_id,
+    //                     time
+    //                 },
+    //                 withCredentials: true,
+    //             });
 
-        fetchDayEndData();
-    }, [API]);
+
+    //             console.log("✅ Day-End Data:", response.data);
+    //             setDayEndData(response.data);
+    //         } catch (err) {
+    //             console.error("❌ Error fetching day-end:", err.response?.data?.message || err.message);
+    //             setError(err.response?.data?.message || "Failed to fetch day-end data");
+    //         }
+    //     };
+
+    //     fetchDayEndData();
+    // }, [API]);
 
     useEffect(() => {
         if (staff.permissions?.includes('brand_manage')) {
@@ -274,7 +278,7 @@ const Brand = () => {
             {showPopup ? (
                 <div className="card">
                     <HeadingText title={`${isEditing ? "Edit" : "Add"} Brand`} />
-                    <div>
+                    {/* <div>
                         <h2>Day-End Record</h2>
                         {error && <p style={{ color: "red" }}>Error: {error}</p>}
                         {dayEndData ? (
@@ -282,7 +286,7 @@ const Brand = () => {
                         ) : (
                             !error && <p>Loading...</p>
                         )}
-                    </div>
+                    </div> */}
                     <div className="inputs-container">
                         <div className="inputs-row">
                             <InputField

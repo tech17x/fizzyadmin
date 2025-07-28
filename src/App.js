@@ -2,7 +2,6 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext"; // Import Auth Context
 import PrivateRoute from "./components/PrivateRoute";
-import Dashboard from "./pages/Dashboard";
 import Brand from "./pages/Brand";
 import Login from "./pages/Login";
 import Outlet from "./pages/Outlet";
@@ -22,8 +21,16 @@ import Table from "./pages/Table";
 import Addon from "./pages/Addon";
 import Customer from "./pages/Customer";
 import WhatsAppSetupPage from "./pages/WhatsAppSetupPage";
-import Orders from "./pages/Orders";
 import ProfilePage from "./pages/ProfilePage";
+import SalesOverview from "./pages/SalesOverview";
+import DetailedOrders from "./pages/DetailedOrders";
+import ItemwiseSales from "./pages/ItemwiseSales";
+import CategorySales from "./pages/categorySales";
+import AddonSales from "./pages/AddonSales";
+import StaffPerformance from "./pages/StaffPerformance";
+import PaymentSummary from "./pages/PaymentSummary";
+import DayEndSummary from "./pages/DayEndSummary";
+import CancellationReport from "./pages/CancellationReport";
 
 function App() {
     return (
@@ -35,7 +42,6 @@ function App() {
 
                         {/* Private Routes */}
                         <Route element={<PrivateRoute />}>
-                            <Route path="/dashboard" element={<Dashboard />} />
                             <Route path="/brand" element={<Brand />} />
                             <Route path="/outlet" element={<Outlet />} />
                             <Route path="/staff" element={<Staff />} />
@@ -51,8 +57,16 @@ function App() {
                             <Route path="/addon" element={<Addon />} />
                             <Route path="/customer" element={<Customer />} />
                             <Route path="/whatsapp-setup" element={<WhatsAppSetupPage />} />
-                            <Route path="/orders" element={<Orders />} />
                             <Route path="/profile" element={<ProfilePage />} />
+                            <Route path="/sales" element={<SalesOverview />} />
+                            <Route path="/detail-orders" element={<DetailedOrders />} />
+                            <Route path="/item-wise-sales" element={<ItemwiseSales />} />
+                            <Route path="/category-sales" element={<CategorySales />} />
+                            <Route path="/add-on-sales" element={<AddonSales />} />
+                            <Route path="/staff-performance" element={<StaffPerformance />} />
+                            <Route path="/payment-summary" element={<PaymentSummary />} />
+                            <Route path="/day-end-summary" element={<DayEndSummary />} />
+                            <Route path="/cancel-refund" element={<CancellationReport />} />
                         </Route>
 
                         {/* Redirect unknown routes to login */}

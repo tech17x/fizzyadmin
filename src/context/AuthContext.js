@@ -18,7 +18,7 @@ export const AuthProvider = ({ children }) => {
             if (response.data.staff) {
                 setStaff(response.data.staff);
                 setLoading(false);
-                navigate("/dashboard");
+                navigate("/sales");
             }
         } catch (error) {
             setStaff(null);
