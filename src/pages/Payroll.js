@@ -34,8 +34,9 @@ export default function Payroll() {
                     params: {
                         brand_id: selectedBrand.value,
                         outlet_id: selectedOutlet.value,
-                        start_date: dateRange.start, // YYYY-MM-DD
-                        end_date: dateRange.end     // YYYY-MM-DD
+                        // Send plain YYYY-MM-DD (no new Date(), no toISOString())
+                        start_date: dateRange.start,
+                        end_date: dateRange.end
                     },
                     withCredentials: true,
                 });
