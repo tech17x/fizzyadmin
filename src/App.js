@@ -31,6 +31,7 @@ import StaffPerformance from "./pages/StaffPerformance";
 import PaymentSummary from "./pages/PaymentSummary";
 import DayEndSummary from "./pages/DayEndSummary";
 import CancellationReport from "./pages/CancellationReport";
+import Payroll from "./pages/Payroll";
 
 function App() {
     return (
@@ -67,6 +68,7 @@ function App() {
                             <Route path="/payment-summary" element={<PaymentSummary />} />
                             <Route path="/day-end-summary" element={<DayEndSummary />} />
                             <Route path="/cancel-refund" element={<CancellationReport />} />
+                            <Route path="/payroll" element={<Payroll />} />
                         </Route>
 
                         {/* Redirect unknown routes to login */}

@@ -66,6 +66,13 @@ import AuthContext from '../context/AuthContext';
 
 const menuItems = [
   {
+    title: 'Payroll',
+    icon: <Contact2 color="#DF6229" size={15} />,
+    submenu: [
+      { title: 'Overview', path: '/payroll', icon: <User color="#DF6229" size={15} />, permission: 'brand_manage' },
+    ],
+  },
+  {
     title: 'Reports',
     icon: <PieChart color="#DF6229" size={15} />,
     submenu: [
