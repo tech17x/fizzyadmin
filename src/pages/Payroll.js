@@ -62,18 +62,17 @@ export default function Payroll() {
                     params: {
                         brand_id: selectedBrand.value,
                         outlet_id: selectedOutlet.value,
-                        // Send plain YYYY-MM-DD (no new Date(), no toISOString())
-                        start_date: dateRange.start,
-                        end_date: dateRange.end
+                        start_date: dateRange.start, // YYYY-MM-DD
+                        end_date: dateRange.end      // YYYY-MM-DD
                     },
                     withCredentials: true,
                 });
 
-                if (res.data.success) {
-                    setPayrollData(res.data.data);
-                } else {
-                    toast.error("No payroll data found");
-                }
+                console.log("____________");
+                console.log(res.data);
+                console.log("____________");
+
+                setPayrollData(res.data.data)
             } catch (error) {
                 toast.error('Failed to fetch payroll data');
                 console.error(error);
