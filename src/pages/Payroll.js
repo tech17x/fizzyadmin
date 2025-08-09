@@ -130,7 +130,8 @@ export default function Payroll() {
         });
 
         return { staffHours, staffInfo };
-    }, []);
+    }, [payrollData]);
+
 
     const filteredStaffData = useMemo(() => {
         const { staffHours, staffInfo } = processedData;
