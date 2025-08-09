@@ -1,10 +1,9 @@
-import axios from "axios"
-import { useContext, useEffect, useState } from "react"
+import axios from "axios";
+import { useContext, useEffect, useState } from "react";
 import AuthContext from "../context/AuthContext";
 import SelectInput from "../components/SelectInput";
 import { toast } from "react-toastify";
 import DateRangeFilter from "./shared/DateRangeFilter";
-
 
 export default function Payroll() {
     const API = process.env.REACT_APP_API_URL;
@@ -15,6 +14,7 @@ export default function Payroll() {
     const [filteredOutlets, setFilteredOutlets] = useState([]);
     const [selectedOutlet, setSelectedOutlet] = useState(null);
     const [dateRange, setDateRange] = useState({ start: '', end: '' });
+    const [payrollData, setPayrollData] = useState([]);
 
     useEffect(() => {
         if (staff.permissions?.includes('tax_manage')) {
@@ -30,27 +30,23 @@ export default function Payroll() {
 
         const fetchData = async () => {
             try {
-                const start = new Date(dateRange.start);
-                const end = new Date(dateRange.end);
-
-                // Current data
                 const res = await axios.get(`${API}/api/payroll`, {
                     params: {
                         brand_id: selectedBrand.value,
                         outlet_id: selectedOutlet.value,
-                        start_date: start.toISOString(),
-                        end_date: end.toISOString()
+                        start_date: dateRange.start, // YYYY-MM-DD
+                        end_date: dateRange.end     // YYYY-MM-DD
                     },
                     withCredentials: true,
                 });
 
-                console.log('____________')
-
-                console.log(res);
-
-                console.log('____________');
+                if (res.data.success) {
+                    setPayrollData(res.data.data);
+                } else {
+                    toast.error("No payroll data found");
+                }
             } catch (error) {
-                toast.error('Failed to fetch sales data');
+                toast.error('Failed to fetch payroll data');
                 console.error(error);
             }
         };
@@ -90,6 +86,16 @@ export default function Payroll() {
                 />
                 <DateRangeFilter value={dateRange} onChange={setDateRange} />
             </div>
+
+            <div>
+                <h2>Results</h2>
+                {payrollData.length === 0 && <p>No records</p>}
+                {payrollData.map((item, idx) => (
+                    <div key={idx}>
+                        <strong>{item.date}</strong> – {item.outlet?.name}
+                    </div>
+                ))}
+            </div>
         </>
-    )
+    );
 }
