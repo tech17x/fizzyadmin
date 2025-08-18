@@ -311,7 +311,7 @@ const Sidebar = () => {
                 )}
 
                 {((openIndex === index && !collapsed) || (hoveredIndex === index && collapsed)) && item.submenu && (
-                  <ul className={`submenu card ${collapsed ? 'hover-submenu' : ''}`}>
+                  <ul className={`submenu ${collapsed ? 'card hover-submenu' : ''}`}>
                     {item.submenu.map((subItem, subIdx) => (
                       <li key={subIdx}>
                         <Link

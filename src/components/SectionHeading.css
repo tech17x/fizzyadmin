@@ -1,0 +1,19 @@
+/* SectionHeading.css */
+.section-heading {
+  display: flex;
+  align-items: center;
+  margin: 1.5rem 0;
+}
+
+.section-heading-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #333;
+  margin-right: 1rem;
+}
+
+.section-divider {
+  flex-grow: 1;
+  height: 1px;
+  background-color: #ddd;
+}
