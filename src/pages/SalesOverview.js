@@ -46,19 +46,31 @@ export default function SalesOverview() {
 
     const fetchData = async () => {
       try {
-        const start = new Date(dateRange.start);
-        const end = new Date(dateRange.end);
-        const diff = end.getTime() - start.getTime();
-        const prevStart = new Date(start.getTime() - diff);
-        const prevEnd = new Date(end.getTime() - diff);
+        // Normalize start to 00:00 local and end to 23:59:59.999 local
+        const startLocal = new Date(dateRange.start);
+        startLocal.setHours(0, 0, 0, 0);
+
+        const endLocal = new Date(dateRange.end);
+        endLocal.setHours(23, 59, 59, 999);
+
+        // Calculate previous period with same duration
+        const diff = endLocal.getTime() - startLocal.getTime();
+        const prevStartLocal = new Date(startLocal.getTime() - diff);
+        const prevEndLocal = new Date(endLocal.getTime() - diff);
+
+        // Convert local normalized dates to ISO strings (UTC)
+        const start = startLocal.toISOString();
+        const end = endLocal.toISOString();
+        const prevStart = prevStartLocal.toISOString();
+        const prevEnd = prevEndLocal.toISOString();
 
         // Current data
         const currentRes = await axios.get(`${API}/api/reports/sales`, {
           params: {
             brand_id: selectedBrand.value,
             outlet_id: selectedOutlet.value,
-            start_date: start.toISOString(),
-            end_date: end.toISOString()
+            start_date: start,
+            end_date: end,
           },
           withCredentials: true,
         });
@@ -68,8 +80,8 @@ export default function SalesOverview() {
           params: {
             brand_id: selectedBrand.value,
             outlet_id: selectedOutlet.value,
-            start_date: prevStart.toISOString(),
-            end_date: prevEnd.toISOString()
+            start_date: prevStart,
+            end_date: prevEnd,
           },
           withCredentials: true,
         });
