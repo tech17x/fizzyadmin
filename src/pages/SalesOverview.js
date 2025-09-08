@@ -46,25 +46,26 @@ export default function SalesOverview() {
 
     const fetchData = async () => {
       try {
-        // Normalize start to 00:00 local and end to 23:59:59.999 local
-        const startLocal = new Date(dateRange.start);
-        startLocal.setHours(0, 0, 0, 0);
-
-        const endLocal = new Date(dateRange.end);
-        endLocal.setHours(23, 59, 59, 999);
+        // Normalize selected date range
+        const start = toLocalISOString(dateRange.start, false);
+        const end = toLocalISOString(dateRange.end, true);
 
         // Calculate previous period with same duration
+        const startLocal = new Date(dateRange.start + "T00:00:00");
+        const endLocal = new Date(dateRange.end + "T23:59:59.999");
         const diff = endLocal.getTime() - startLocal.getTime();
-        const prevStartLocal = new Date(startLocal.getTime() - diff);
-        const prevEndLocal = new Date(endLocal.getTime() - diff);
 
-        // Convert local normalized dates to ISO strings (UTC)
-        const start = startLocal.toISOString();
-        const end = endLocal.toISOString();
-        const prevStart = prevStartLocal.toISOString();
-        const prevEnd = prevEndLocal.toISOString();
+        const prevStart = new Date(startLocal.getTime() - diff);
+        const prevEnd = new Date(endLocal.getTime() - diff);
 
-        // Current data
+        const prevStartISO = new Date(
+          prevStart.getTime() - prevStart.getTimezoneOffset() * 60000
+        ).toISOString();
+        const prevEndISO = new Date(
+          prevEnd.getTime() - prevEnd.getTimezoneOffset() * 60000
+        ).toISOString();
+
+        // Current sales data
         const currentRes = await axios.get(`${API}/api/reports/sales`, {
           params: {
             brand_id: selectedBrand.value,
@@ -75,32 +76,64 @@ export default function SalesOverview() {
           withCredentials: true,
         });
 
-        // Previous data
-        const previousRes = await axios.get(`${API}/api/reports/sales`, {
+        // Current orders data
+        const ordersResult = await axios.get(`${API}/api/reports/orders`, {
           params: {
             brand_id: selectedBrand.value,
             outlet_id: selectedOutlet.value,
-            start_date: prevStart,
-            end_date: prevEnd,
+            start_date: start,
+            end_date: end,
           },
           withCredentials: true,
         });
 
+        console.log(`
+    /*----------------------------
+          orders result here
+    -----------------------------*/`);
+        console.log(ordersResult.data);
+        console.log(`
+    /*----------------------------
+          orders result here
+    -----------------------------*/`);
+
+        // Previous sales data
+        const previousRes = await axios.get(`${API}/api/reports/sales`, {
+          params: {
+            brand_id: selectedBrand.value,
+            outlet_id: selectedOutlet.value,
+            start_date: prevStartISO,
+            end_date: prevEndISO,
+          },
+          withCredentials: true,
+        });
+
+        // Extract and update state
         const { metrics, orderTypes, paymentBreakdown } = currentRes.data.data;
         const salesTrends = currentRes.data.salesTrends;
+
         setMetrics(metrics);
         setOrderTypes(orderTypes);
         setPaymentBreakdown(paymentBreakdown);
         setSalesTrends(salesTrends);
         setPreviousMetrics(previousRes.data.data.metrics);
       } catch (error) {
-        toast.error('Failed to fetch sales data');
+        toast.error("Failed to fetch sales data");
         console.error(error);
       }
     };
 
     fetchData();
   }, [selectedBrand, selectedOutlet, dateRange, API]);
+
+  // Convert a local date string to ISO string in UTC, normalized to start or end of day
+  function toLocalISOString(dateString, endOfDay = false) {
+    const d = new Date(dateString + "T00:00:00"); // interpret as local midnight
+    if (endOfDay) d.setHours(23, 59, 59, 999);
+    // Shift to UTC so backend always gets the correct intended time range
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString();
+  }
+
 
   const handleBrandSelection = (brand) => {
     setSelectedBrand(brand);

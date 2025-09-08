@@ -1,115 +1,154 @@
-import React, { useState } from 'react';
-import { Eye, Download, Filter } from 'lucide-react';
+import React, { useEffect, useState, useContext } from 'react';
+import { Eye, Download } from 'lucide-react';
 import DateRangeFilter from './shared/DateRangeFilter.jsx';
+import SelectInput from '../components/SelectInput.js';
 import OrderDetailModal from './shared/OrderDetailModal.jsx';
 import { exportToCSV, exportToPDF } from '../utils/exportUtils.js';
+import AuthContext from '../context/AuthContext.js';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 import './Reports.css';
 
 export default function DetailedOrders() {
+  const API = process.env.REACT_APP_API_URL;
+  const { staff, logout } = useContext(AuthContext);
+
+  // Filter state
+  const [brands, setBrands] = useState([]);
+  const [outlets, setOutlets] = useState([]);
+  const [filteredOutlets, setFilteredOutlets] = useState([]);
+  const [selectedBrand, setSelectedBrand] = useState(null);
+  const [selectedOutlet, setSelectedOutlet] = useState(null);
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
-  const [statusFilter, setStatusFilter] = useState('all');
+
+  // Data/load state
+  const [orders, setOrders] = useState([]);
+  const [loadingOrders, setLoadingOrders] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
-  // Mock data
-  const orders = [
-    {
-      id: 'ORD-001',
-      date: '2025-01-15',
-      time: '14:30',
-      orderType: 'Dine In',
-      staff: 'Sarah Johnson',
-      customer: 'John Doe',
-      status: 'settle',
-      totalPaid: 45.50,
-      paymentMethods: ['Card']
-    },
-    {
-      id: 'ORD-002',
-      date: '2025-01-15',
-      time: '15:15',
-      orderType: 'Takeaway',
-      staff: 'Mike Chen',
-      customer: 'Jane Smith',
-      status: 'settle',
-      totalPaid: 28.75,
-      paymentMethods: ['Cash']
-    },
-    {
-      id: 'ORD-003',
-      date: '2025-01-15',
-      time: '16:00',
-      orderType: 'Delivery',
-      staff: 'Emily Davis',
-      customer: 'Bob Wilson',
-      status: 'cancel',
-      totalPaid: 0,
-      paymentMethods: []
+  // Initial filter seeding from context
+  useEffect(() => {
+    if (staff.permissions?.includes('tax_manage')) {
+      setOutlets(staff.outlets);
+      setBrands(staff.brands);
+    } else {
+      logout();
     }
-  ];
+  }, [staff, logout]);
 
-  const filteredOrders = orders.filter(order => 
-    statusFilter === 'all' || order.status === statusFilter
-  );
+  // Outlet options update on brand
+  const handleBrandSelection = (brand) => {
+    setSelectedBrand(brand);
+    const filtered = outlets.filter(o => o.brand_id === brand.value);
+    setSelectedOutlet(null);
+    setFilteredOutlets(filtered);
+    if (filtered.length === 0) toast.error("Selected brand has no outlets.");
+  };
+  const handleOutletSelection = (outlet) => setSelectedOutlet(outlet);
 
-  const getStatusBadge = (status) => {
-    const styles = {
+  // Fetch orders reactively
+  useEffect(() => {
+    if (!selectedBrand || !selectedOutlet || !dateRange.start || !dateRange.end) return;
+    const fetchOrders = async () => {
+      setLoadingOrders(true);
+      try {
+        // Normalize date range to ISO string local times
+        const startLocal = new Date(dateRange.start); startLocal.setHours(0, 0, 0, 0);
+        const endLocal = new Date(dateRange.end); endLocal.setHours(23, 59, 59, 999);
+        const ordersRes = await axios.get(`${API}/api/reports/orders`, {
+          params: {
+            brand_id: selectedBrand.value,
+            outlet_id: selectedOutlet.value,
+            start_date: startLocal.toISOString(),
+            end_date: endLocal.toISOString(),
+          },
+          withCredentials: true
+        });
+        setOrders(ordersRes.data.orders || []);
+      } catch (error) {
+        toast.error('Failed to fetch orders');
+        setOrders([]);
+      } finally {
+        setLoadingOrders(false);
+      }
+    };
+    fetchOrders();
+  }, [selectedBrand, selectedOutlet, dateRange, API]);
+
+  // Filter orders on search text
+  const filteredOrders = orders.filter(order => {
+    const text = searchTerm.toLowerCase();
+    return (
+      (order.order_id && order.order_id.toLowerCase().includes(text)) ||
+      (order.customer?.name && order.customer.name.toLowerCase().includes(text)) ||
+      (order.terminalStaff?.name && order.terminalStaff.name.toLowerCase().includes(text)) ||
+      (order.items?.some(item => item.name.toLowerCase().includes(text)))
+    );
+  });
+
+  const getStatusBadge = status => (
+    {
       settle: 'badge badge-success',
       cancel: 'badge badge-danger',
-      refund: 'badge badge-warning'
-    };
-    return styles[status] || 'badge';
-  };
+      refund: 'badge badge-warning',
+    }[status] || 'badge'
+  );
 
+  // Handles CSV/PDF export
   const handleExport = (format) => {
-    if (format === 'csv') {
-      exportToCSV(filteredOrders, 'detailed-orders');
-    } else {
-      exportToPDF(filteredOrders, 'detailed-orders');
-    }
+    const exportData = filteredOrders.map(order => ({
+      OrderID: order.order_id,
+      Date: order.orderDayAt,
+      Customer: order.customer?.name,
+      Staff: order.terminalStaff?.name || '',
+      OrderType: order.orderType?.name || '',
+      Status: order.status,
+      Paid: order.paymentInfo?.totalPaid,
+      PaymentMethods: order.paymentInfo?.payments?.map(p => p.typeName).join(', ')
+    }));
+    if (format === 'csv') exportToCSV(exportData, 'detailed-orders');
+    else exportToPDF(exportData, 'detailed-orders');
   };
 
   return (
     <div className="p-6 space-y-6">
-      {/* Filters */}
-      <div className="card p-6">
+      {/* Filters section */}
+      <div className="card p-6 space-y-4">
+        <h1 className="text-2xl font-semibold">Detailed Order Info</h1>
         <div className="flex flex-wrap items-center gap-4">
+          <SelectInput
+            label="Select Brand"
+            selectedOption={selectedBrand}
+            onChange={handleBrandSelection}
+            options={brands.map(o => ({ label: o.full_name, value: o._id }))}
+          />
+          <SelectInput
+            label="Outlet"
+            selectedOption={selectedOutlet}
+            onChange={handleOutletSelection}
+            options={filteredOutlets.map(o => ({ label: o.name, value: o._id }))}
+          />
           <DateRangeFilter value={dateRange} onChange={setDateRange} />
-          
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            className="select"
-          >
-            <option value="all">All Status</option>
-            <option value="settle">Settled</option>
-            <option value="cancel">Cancelled</option>
-            <option value="refund">Refunded</option>
-          </select>
-
-          <div className="flex items-center px-4 py-2 bg-gray-50 rounded-lg">
-            <Filter size={16} className="mr-2 text-gray-500" />
-            <span className="text-sm text-gray-600">{filteredOrders.length} orders found</span>
-          </div>
-
+          <input
+            type="text"
+            placeholder="Search orders..."
+            className="input input-bordered flex-grow max-w-sm"
+            value={searchTerm}
+            onChange={e => setSearchTerm(e.target.value)}
+          />
           <div className="ml-auto flex gap-2">
-            <button
-              onClick={() => handleExport('csv')}
-              className="button button-success"
-            >
+            <button onClick={() => handleExport('csv')} className="button button-success">
               <Download size={16} className="mr-2" />
-              CSV
+              Export CSV
             </button>
-            <button
-              onClick={() => handleExport('pdf')}
-              className="button button-danger"
-            >
+            <button onClick={() => handleExport('pdf')} className="button button-danger">
               <Download size={16} className="mr-2" />
-              PDF
+              Export PDF
             </button>
           </div>
         </div>
       </div>
-
       {/* Orders Table */}
       <div className="card overflow-hidden">
         <div className="table-container">
@@ -123,28 +162,42 @@ export default function DetailedOrders() {
                 <th>Customer</th>
                 <th>Status</th>
                 <th>Total Paid</th>
-                <th>Payment Method</th>
+                <th>Payment</th>
                 <th>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredOrders.map((order) => (
-                <tr key={order.id}>
-                  <td className="font-medium">{order.id}</td>
+              {loadingOrders ? (
+                <tr>
+                  <td colSpan={9} className="text-center p-8">Loading...</td>
+                </tr>
+              ) : filteredOrders.length === 0 ? (
+                <tr>
+                  <td colSpan={9} className="text-center p-8">No orders found.</td>
+                </tr>
+              ) : filteredOrders.map(order => (
+                <tr key={order.order_id}>
+                  <td className="font-medium">{order.order_id}</td>
                   <td>
-                    <div>{order.date}</div>
-                    <div className="text-sm text-gray-500">{order.time}</div>
+                    <div>{order.orderDayAt && new Date(order.orderDayAt).toLocaleDateString()}</div>
+                    <div className="text-sm text-gray-500">{order.orderDayAt && new Date(order.orderDayAt).toLocaleTimeString()}</div>
                   </td>
-                  <td>{order.orderType}</td>
-                  <td>{order.staff}</td>
-                  <td>{order.customer}</td>
+                  <td>{order.orderType?.name || 'N/A'}</td>
+                  <td>{order.terminalStaff?.name || 'N/A'}</td>
+                  <td>{order.customer?.name || 'N/A'}</td>
                   <td>
-                    <span className={getStatusBadge(order.status)}>
-                      {order.status}
-                    </span>
+                    <span className={getStatusBadge(order.status)}>{order.status}</span>
                   </td>
-                  <td className="font-medium">${order.totalPaid.toFixed(2)}</td>
-                  <td>{order.paymentMethods.join(', ') || 'N/A'}</td>
+                  <td className="font-medium">
+                    {order.paymentInfo?.totalPaid
+                      ? `₹${order.paymentInfo.totalPaid.toFixed(2)}`
+                      : '₹0.00'}
+                  </td>
+                  <td>
+                    {order.paymentInfo?.payments?.length
+                      ? order.paymentInfo.payments.map(p => p.typeName).join(', ')
+                      : 'N/A'}
+                  </td>
                   <td>
                     <button
                       onClick={() => setSelectedOrder(order)}

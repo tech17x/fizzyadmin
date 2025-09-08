@@ -1,97 +1,114 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { Download, Package } from 'lucide-react';
+import SelectInput from '../components/SelectInput';
+import { exportToCSV, exportToPDF } from '../utils/exportUtils';
+import AuthContext from '../context/AuthContext';
+import axios from 'axios';
 import DateRangeFilter from './shared/DateRangeFilter.jsx';
-import { exportToCSV, exportToPDF } from '../utils/exportUtils.js';
-import './Reports.css';
 
 export default function ItemwiseSales() {
+  const { staff, logout } = useContext(AuthContext);
+  const API = process.env.REACT_APP_API_URL;
+
+  const [brands, setBrands] = useState([]);
+  const [outlets, setOutlets] = useState([]);
+  const [filteredOutlets, setFilteredOutlets] = useState([]);
+
+  const [selectedBrand, setSelectedBrand] = useState(null);
+  const [selectedOutlet, setSelectedOutlet] = useState(null);
   const [dateRange, setDateRange] = useState({ start: '', end: '' });
+
+  const [items, setItems] = useState([]);
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [foodTypeFilter, setFoodTypeFilter] = useState('all');
 
-  const items = [
-    {
-      name: 'Margherita Pizza',
-      category: 'Main Course',
-      quantitySold: 45,
-      grossSales: 832.50,
-      addonRevenue: 67.50,
-      foodType: 'veg'
-    },
-    {
-      name: 'Chicken Tikka',
-      category: 'Appetizers',
-      quantitySold: 32,
-      grossSales: 576.00,
-      addonRevenue: 45.00,
-      foodType: 'non-veg'
-    },
-    {
-      name: 'Caesar Salad',
-      category: 'Salads',
-      quantitySold: 28,
-      grossSales: 350.00,
-      addonRevenue: 28.00,
-      foodType: 'veg'
-    }
-  ];
-
-  const filteredItems = items.filter(item => {
-    const categoryMatch = categoryFilter === 'all' || item.category === categoryFilter;
-    const foodTypeMatch = foodTypeFilter === 'all' || item.foodType === foodTypeFilter;
-    return categoryMatch && foodTypeMatch;
-  });
-
-  const categories = [...new Set(items.map(item => item.category))];
-
-  const handleExport = (format) => {
-    if (format === 'csv') {
-      exportToCSV(filteredItems, 'itemwise-sales');
+  useEffect(() => {
+    if (staff?.permissions.includes('tax_manage')) {
+      setBrands(staff.brands || []);
+      setOutlets(staff.outlets || []);
     } else {
-      exportToPDF(filteredItems, 'itemwise-sales');
+      logout();
     }
+  }, [staff, logout]);
+
+  useEffect(() => {
+    if (!selectedBrand) {
+      setFilteredOutlets([]);
+      setSelectedOutlet(null);
+      return;
+    }
+    // Filter outlets by selected brand
+    setFilteredOutlets(outlets.filter(o => o.brand_id === selectedBrand.value));
+    setSelectedOutlet(null);
+  }, [selectedBrand, outlets]);
+
+  useEffect(() => {
+    if (!selectedBrand || !selectedOutlet || !dateRange.start || !dateRange.end) return;
+
+    const fetchData = async () => {
+      try {
+        const params = {
+          brand_id: selectedBrand.value,
+          outlet_id: selectedOutlet.value,
+          start_date: new Date(dateRange.start).toISOString(),
+          end_date: new Date(dateRange.end).toISOString(),
+        };
+
+        const res = await axios.get(`${API}/api/reports/itemwise-sales`, { params, withCredentials: true });
+        if (res.data && res.data.success) {
+          setItems(res.data.data || []);
+        }
+      } catch (err) {
+        console.error('Failed to load itemwise sales', err);
+      }
+    };
+
+    fetchData();
+  }, [selectedBrand, selectedOutlet, dateRange, API]);
+
+  const categories = [...new Set(items.map(i => i.category))].sort();
+
+  const filteredItems = items.filter(item =>
+    (categoryFilter === 'all' || item.category === categoryFilter) &&
+    (foodTypeFilter === 'all' || item.foodType === foodTypeFilter)
+  );
+
+  const handleExport = format => {
+    if (format === 'csv') exportToCSV(filteredItems, 'itemwise-sales');
+    else exportToPDF(filteredItems, 'itemwise-sales');
   };
 
   return (
     <div className="p-6 space-y-6">
-      {/* Filters */}
+
+      {/* Use your provided filter UI here */}
       <div className="card p-6">
         <div className="flex flex-wrap items-center gap-4">
+          <SelectInput
+            label="Select Brand"
+            selectedOption={selectedBrand}
+            onChange={setSelectedBrand}
+            options={brands.map(b => ({ label: b.full_name, value: b._id }))}
+          />
+          <SelectInput
+            label="Select Outlet"
+            selectedOption={selectedOutlet}
+            onChange={setSelectedOutlet}
+            options={filteredOutlets.map(o => ({ label: o.name, value: o._id }))}
+          />
           <DateRangeFilter value={dateRange} onChange={setDateRange} />
-          
-          <select
-            value={categoryFilter}
-            onChange={(e) => setCategoryFilter(e.target.value)}
-            className="select"
-          >
-            <option value="all">All Categories</option>
-            {categories.map(category => (
-              <option key={category} value={category}>{category}</option>
-            ))}
-          </select>
 
-          <select
-            value={foodTypeFilter}
-            onChange={(e) => setFoodTypeFilter(e.target.value)}
-            className="select"
-          >
-            <option value="all">All Food Types</option>
-            <option value="veg">Vegetarian</option>
-            <option value="non-veg">Non-Vegetarian</option>
-          </select>
+          {/* Optional: Add more filters if needed */}
+          {/* <select disabled>
+              ... your other filters
+          </select> */}
 
           <div className="ml-auto flex gap-2">
-            <button
-              onClick={() => handleExport('csv')}
-              className="button button-success"
-            >
+            <button onClick={() => handleExport('csv')} className="button button-success">
               <Download size={16} className="mr-2" />
               CSV
             </button>
-            <button
-              onClick={() => handleExport('pdf')}
-              className="button button-danger"
-            >
+            <button onClick={() => handleExport('pdf')} className="button button-danger">
               <Download size={16} className="mr-2" />
               PDF
             </button>
@@ -99,51 +116,46 @@ export default function ItemwiseSales() {
         </div>
       </div>
 
+      {/* Category & Food Type filters */}
+      <div className="flex flex-wrap items-center gap-4 mt-4">
+        <select value={categoryFilter} onChange={e => setCategoryFilter(e.target.value)} className="select">
+          <option value="all">All Categories</option>
+          {categories.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        <select value={foodTypeFilter} onChange={e => setFoodTypeFilter(e.target.value)} className="select">
+          <option value="all">All Food Types</option>
+          <option value="veg">Vegetarian</option>
+          <option value="non-veg">Non-Vegetarian</option>
+        </select>
+      </div>
+
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="card p-6">
-          <div className="flex items-center">
-            <div className="metric-card-icon blue mr-3">
-              <Package />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Total Items</p>
-              <p className="text-2xl font-bold">{filteredItems.length}</p>
-            </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+        <div className="card p-6 flex items-center gap-4">
+          <Package className="metric-icon blue" />
+          <div>
+            <p className="text-sm text-gray-600">Total Items</p>
+            <p className="text-2xl font-bold">{filteredItems.length}</p>
           </div>
         </div>
-        
-        <div className="card p-6">
-          <div className="flex items-center">
-            <div className="metric-card-icon green mr-3">
-              <Package />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Total Quantity Sold</p>
-              <p className="text-2xl font-bold">
-                {filteredItems.reduce((sum, item) => sum + item.quantitySold, 0)}
-              </p>
-            </div>
+        <div className="card p-6 flex items-center gap-4">
+          <Package className="metric-icon green" />
+          <div>
+            <p className="text-sm text-gray-600">Total Quantity Sold</p>
+            <p className="text-2xl font-bold">{filteredItems.reduce((sum, i) => sum + (i.quantitySold || 0), 0)}</p>
           </div>
         </div>
-        
-        <div className="card p-6">
-          <div className="flex items-center">
-            <div className="metric-card-icon purple mr-3">
-              <Package />
-            </div>
-            <div>
-              <p className="text-sm text-gray-600">Total Revenue</p>
-              <p className="text-2xl font-bold">
-                ${filteredItems.reduce((sum, item) => sum + item.grossSales + item.addonRevenue, 0).toLocaleString()}
-              </p>
-            </div>
+        <div className="card p-6 flex items-center gap-4">
+          <Package className="metric-icon purple" />
+          <div>
+            <p className="text-sm text-gray-600">Total Revenue</p>
+            <p className="text-2xl font-bold">${filteredItems.reduce((sum, i) => sum + (i.grossSales || 0) + (i.addonRevenue || 0), 0).toFixed(2)}</p>
           </div>
         </div>
       </div>
 
       {/* Items Table */}
-      <div className="card overflow-hidden">
+      <div className="card overflow-hidden mt-6">
         <div className="table-container">
           <table className="table">
             <thead>
@@ -158,16 +170,12 @@ export default function ItemwiseSales() {
               </tr>
             </thead>
             <tbody>
-              {filteredItems.map((item, index) => (
-                <tr key={index}>
+              {filteredItems.map((item, idx) => (
+                <tr key={idx}>
                   <td className="font-medium">{item.name}</td>
                   <td>{item.category}</td>
                   <td>
-                    <span className={`badge ${
-                      item.foodType === 'veg' 
-                        ? 'badge-success' 
-                        : 'badge-danger'
-                    }`}>
+                    <span className={item.foodType === 'veg' ? 'badge badge-success' : 'badge badge-danger'}>
                       {item.foodType === 'veg' ? 'Veg' : 'Non-Veg'}
                     </span>
                   </td>
@@ -181,6 +189,7 @@ export default function ItemwiseSales() {
           </table>
         </div>
       </div>
+
     </div>
   );
 }
