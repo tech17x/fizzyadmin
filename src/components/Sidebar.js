@@ -59,6 +59,7 @@ import {
   XCircle,
   PieChart,
   PieChartIcon,
+  DollarSign,
 } from 'lucide-react';
 import Popup from './Popup';
 import FizzyLogo from './FizzyLogo';
@@ -69,7 +70,10 @@ const menuItems = [
     title: 'Payroll',
     icon: <Contact2 color="#DF6229" size={15} />,
     submenu: [
-      { title: 'Overview', path: '/payroll', icon: <User color="#DF6229" size={15} />, permission: 'brand_manage' },
+      { title: 'Overview', path: '/staff-overview', icon: <BarChart3 color="#DF6229" size={15} />, permission: 'brand_manage' },
+      { title: 'Daily Shifts', path: '/shifts', icon: <Calendar color="#DF6229" size={15} />, permission: 'brand_manage' },
+      { title: 'Payroll', path: '/payroll', icon: <DollarSign color="#DF6229" size={15} />, permission: 'brand_manage' },
+      { title: 'Timeline', path: '/timeline', icon: <Clock color="#DF6229" size={15} />, permission: 'brand_manage' },
     ],
   },
   {

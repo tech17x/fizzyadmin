@@ -32,6 +32,11 @@ import PaymentSummary from "./pages/PaymentSummary";
 import DayEndSummary from "./pages/DayEndSummary";
 import CancellationReport from "./pages/CancellationReport";
 import Payroll from "./pages/Payroll";
+import { StaffOverview } from "./pages/StaffOverview";
+import { ShiftTimeline } from "./pages/ShiftTimeline";
+import { PayrollSummary } from "./pages/PayrollSummary";
+import { DailyShifts } from "./pages/DailyShifts";
+import { payrollData } from "./data/payrollData";
 
 function App() {
     return (
@@ -68,7 +73,10 @@ function App() {
                             <Route path="/payment-summary" element={<PaymentSummary />} />
                             <Route path="/day-end-summary" element={<DayEndSummary />} />
                             <Route path="/cancel-refund" element={<CancellationReport />} />
-                            <Route path="/payroll" element={<Payroll />} />
+                            <Route path="/staff-overview" element={<StaffOverview data={payrollData}/>} />
+                            <Route path="/shifts" element={<ShiftTimeline data={payrollData}/>} />
+                            <Route path="/payroll" element={<PayrollSummary data={payrollData}/>} />
+                            <Route path="/timeline" element={<DailyShifts data={payrollData}/>} />
                         </Route>
 
                         {/* Redirect unknown routes to login */}
