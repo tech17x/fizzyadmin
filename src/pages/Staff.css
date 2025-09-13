@@ -1,112 +1,80 @@
-.brand-filter {
-    width: 80%;
-}
-
-.two-col-row {
-    display: flex;
-    gap: 1rem;
-}
-
 .step-links {
-    display: flex;
-    gap: 1rem;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: flex-start;
+    @apply flex gap-4 mb-8 flex-wrap items-center justify-start bg-gray-50 p-4 rounded-xl;
 }
 
 .profile-info {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    @apply flex flex-col gap-6;
 }
 
 .profile-info input {
-    width: 50%;
+    @apply w-full md:w-1/2;
 }
 
 .permissions {
-    width: 100%;
+    @apply w-full;
 }
 
-.table-overflow{
-    width: 100% !important;
-    overflow-x: scroll;
+.table-overflow {
+    @apply w-full overflow-x-auto;
 }
 
 .checkbox-table {
-    width: 100%;
-    border-collapse: collapse;
-    border: 2px solid #E4E4E4;
+    @apply w-full border-collapse border-2 border-gray-200 rounded-xl overflow-hidden shadow-sm;
 }
 
 .checkbox-table th,
 .checkbox-table td {
-    border: 2px solid #E4E4E4;
-    padding: 15px;
-    text-align: left;
-    font-size: 14px;
+    @apply border border-gray-200 p-6 text-left text-sm;
 }
 
 .checkbox-table th {
-    font-weight: 600;
+    @apply font-bold bg-gray-50 text-gray-800;
 }
 
 .checkbox-table td .checkbox {
-    margin-top: .5rem;
+    @apply mt-2;
 }
 
 .box {
-    border: 2px solid #E4E4E4;
-    margin-top: 1rem;
+    @apply border-2 border-gray-200 mt-6 rounded-xl overflow-hidden shadow-sm;
 }
 
 .box-head {
-    padding: .5rem;
-    border-bottom: 2px solid #E4E4E4;
+    @apply p-4 border-b-2 border-gray-200 bg-gray-50 font-semibold text-gray-800;
 }
 
 .box-body {
-    padding: .5rem;
-    padding-top: 1rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
+    @apply p-6 pt-6 flex flex-col gap-4 bg-white;
 }
 
 .brand-permissions {
-    width: 50%;
+    @apply w-full lg:w-1/2;
 }
 
 .sections-action-btns-container {
-    display: flex;
-    justify-content: end;
-    gap: 10px;
-    margin-top: 1rem;
+    @apply flex justify-end gap-4 mt-8 pt-6 border-t border-gray-200;
 }
 
 .profile-info .phone-input__row {
-    width: 50%;
+    @apply w-full md:w-1/2;
 }
 
-.profile-info .phone-input__row .input-field__container>input {
-    width: 100%;
+.profile-info .phone-input__row .input-field__container > input {
+    @apply w-full;
 }
 
 @media (max-width: 768px) {
-
-    .profile-info input, .brand-permissions {
-        width: 100%;
+    .profile-info input, 
+    .brand-permissions {
+        @apply w-full;
     }
 
     .profile-info .phone-input__row {
-        width: 100%;
+        @apply w-full;
     }
 
     .checkbox-table th,
     .checkbox-table td {
-        padding: 10px;
+        @apply p-4;
     }
-
 }

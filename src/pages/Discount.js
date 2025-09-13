@@ -650,21 +650,41 @@ const Discount = () => {
                         </div>
                     </div>
                     :
-                    <div className="table-section-container" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                    <div className="space-y-6 animate-fade-in">
                         <TopBar
-                            title="Floor"
+                            title="Discounts & Charges"
                             searchText={search}
                             setSearchText={setSearch}
                             selectedFilter={filterStatus}
                             setSelectedFilter={setFilterStatus}
                         />
-                        <div className="add-new-staff-info card">
-                            <GradientButton clickAction={() => handleAddData()}>Add Discount/Charge</GradientButton>
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                            <div className="flex items-center justify-between mb-8">
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-800">Discount & Charge Management</h2>
+                                    <p className="text-gray-600 mt-1">Configure discounts, coupons, and extra charges</p>
+                                </div>
+                                <button 
+                                    onClick={() => handleAddData()}
+                                    className="bg-gradient-to-r from-indigo-400 to-indigo-500 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center gap-2"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Add Discount/Charge
+                                </button>
+                            </div>
                             {
                                 filteredData.length === 0 ?
-                                    <>
-                                        <p>No discounts or coupons found.</p>
-                                    </> :
+                                    <div className="text-center py-12">
+                                        <div className="text-gray-400 mb-4">
+                                            <svg className="w-16 h-16 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                            </svg>
+                                        </div>
+                                        <p className="text-gray-500 text-lg">No discounts or coupons found.</p>
+                                        <p className="text-gray-400 text-sm mt-2">Create your first discount to get started</p>
+                                    </div> :
                                     <div className="table-container">
                                         <table>
                                             <thead>

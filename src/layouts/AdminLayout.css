@@ -1,32 +1,20 @@
 /* src/layouts/AdminLayout.css */
 
 .admin-layout {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  width: 100vw;
-  overflow: hidden;
+  @apply flex flex-col h-screen w-screen overflow-hidden;
 }
-
 
 .admin-body {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
+  @apply flex flex-1 overflow-hidden;
 }
-
 
 .admin-main-content {
-  flex: 1;
-  background-color: #f0f0f0;
-  padding: 20px;
-  overflow-y: scroll;
+  @apply flex-1 bg-gray-50 p-6 overflow-y-auto;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
 }
 
-
 @media (max-width: 768px) {
-
   .admin-main-content {
-    padding: 10px;
+    @apply p-4;
   }
 }

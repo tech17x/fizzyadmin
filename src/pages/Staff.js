@@ -416,7 +416,7 @@ const Staff = () => {
             }
             {
                 !showSecondScreen ?
-                    <div className="current-staff-info" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                    <div className="space-y-6 animate-fade-in">
                         <TopBar
                             title="Staff"
                             searchText={search}
@@ -424,19 +424,34 @@ const Staff = () => {
                             selectedFilter={status}
                             setSelectedFilter={setStatus}
                         />
-                        <div className="cards-container card">
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                            <div className="flex items-center justify-between mb-8">
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-800">Staff Management</h2>
+                                    <p className="text-gray-600 mt-1">Manage your team members and their permissions</p>
+                                </div>
+                                <button 
+                                    onClick={handleAddNewStaff}
+                                    className="bg-gradient-to-r from-orange-400 to-orange-500 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center gap-2"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Add Staff
+                                </button>
+                            </div>
+                            <div className="cards-container">
                             <>
                                 {
                                     filteredData.map(staff => (
                                         <EditCard key={staff._id} firstLetter={staff.name.charAt(0)} title={staff.name} role={staff.role.name} time={formatDate(staff.createdAt)} status={staff.status} handleEdit={() => handleStaffEdit(staff)} />
                                     ))
                                 }
-                                <CardAdd handleAdd={handleAddNewStaff} />
                             </>
+                            </div>
                         </div>
-
                     </div> :
-                    <div className="add-new-staff-info card">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 animate-slide-in">
                         <div className="step-links">
                             <div className="step-btns">
                                 {

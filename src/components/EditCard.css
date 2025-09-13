@@ -1,77 +1,40 @@
 .edit-card {
-    background-color: #FFE8E1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: .5rem;
-    text-align: center;
-    min-width: 12rem;
-    min-height: 12rem;
-    position: relative;
-    border-radius: 0.75rem;
-    padding: 1rem;
+    @apply bg-gradient-to-br from-orange-50 to-orange-100 flex flex-col items-center justify-center gap-3 text-center min-w-72 min-h-72 relative rounded-2xl p-6 transition-all duration-300 hover:shadow-xl hover:scale-105 border border-orange-200;
 }
 
 .truncate-link {
-    display: inline-block;
-    max-width: 13rem;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    text-decoration: none;
-    font-size: 12px;
-    font-weight: 400;
-    color: #7D5EDB;
+    @apply inline-block max-w-52 whitespace-nowrap overflow-hidden truncate no-underline text-sm font-medium text-purple-600 hover:text-purple-800 transition-colors duration-200;
 }
 
 .timing {
-    font-size: 10px;
-    font-weight: 400;
-    color: #4b5563;
+    @apply text-xs font-medium text-gray-500;
 }
 
 .edit-btn {
-    position: absolute;
-    top: .5rem;
-    right: .5rem;
-    border: none;
-    cursor: pointer;
+    @apply absolute top-3 right-3 border-none cursor-pointer p-2 rounded-lg bg-white shadow-md hover:shadow-lg transition-all duration-200 hover:scale-110;
 }
 
 .first-letter {
-    background: linear-gradient(#EFA280, #DF6229);
-    height: 4rem;
-    width: 4rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
+    @apply h-20 w-20 flex items-center justify-center rounded-full shadow-lg;
+    background: linear-gradient(135deg, #EFA280, #DF6229);
 }
 
-.first-letter>span {
-    font-size: 2rem;
-    font-weight: 400;
-    color: #ffffff;
-    text-transform: uppercase;
+.first-letter > span {
+    @apply text-3xl font-semibold text-white uppercase;
 }
 
 .title {
-    color: #333;
-    font-size: 16px;
-    font-weight: 600;
+    @apply text-gray-800 text-lg font-bold;
 }
 
 .sub-title {
-    font-size: 12px;
-    font-weight: 400;
+    @apply text-sm font-medium text-gray-600;
 }
 
 /* Responsive design */
 @media (max-width: 521px) {
-
     .edit-card,
     .card-add {
-        width: 100%;
+        @apply w-full min-w-full;
     }
 }

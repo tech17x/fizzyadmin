@@ -1,160 +1,81 @@
 
 /* Toolbar Layout */
-.topbar{
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+.topbar {
+    @apply flex items-center justify-between bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-6;
 }
 
-
 .toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
-    /* Reduced gap for compact layout */
-    position: relative;
+    @apply flex justify-between items-center gap-4 relative;
 }
 
 /* Page Heading */
 .toolbar .page-heading {
-    font-size: 18px;
-    color: #333;
-    font-weight: bolder;
-    letter-spacing: 0.4px;
-    text-transform: capitalize;
-    /* Push search and filter to the right */
+    @apply text-2xl font-bold text-gray-800 tracking-tight;
+    background: linear-gradient(135deg, #1f2937 0%, #374151 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
 }
 
-/* Permanent Search Input */
+/* Search Input */
 .toolbar .search-input {
-    padding: 8px 10px;
-    border: 1px solid #ddd;
-    border-radius: 30px;
-    font-size: 13px;
-    outline: none;
-    color: #333;
-    background-color: #fff;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-    flex: 1;
+    @apply px-4 py-3 border border-gray-200 rounded-xl text-sm outline-none text-gray-700 bg-white transition-all duration-300 flex-1 shadow-sm;
+    min-width: 300px;
 }
 
 .toolbar .search-input:focus {
-    border-color: #4caf50;
-    /* Green border on focus */
-    box-shadow: 0 2px 6px rgba(76, 175, 80, 0.2);
-    /* Soft green shadow on focus */
+    @apply border-orange-400 shadow-lg;
+    box-shadow: 0 0 0 3px rgba(239, 162, 128, 0.1);
 }
 
 .toolbar .search-input::placeholder {
-    color: #aaa;
-    /* Lighter placeholder text */
-}
-
-/* Icon Styles */
-.toolbar .icon {
-    cursor: pointer;
-    stroke: #333;
-    transition: stroke 0.3s ease;
-}
-
-.toolbar .icon:hover {
-    stroke: #4caf50;
-    /* Hover effect */
+    @apply text-gray-400;
 }
 
 /* Filter Container */
 .toolbar .filter-container {
-    position: relative;
+    @apply relative;
 }
 
 /* Filter Wrapper */
 .toolbar .filter-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    /* Reduced gap for compact filter */
-    cursor: pointer;
-    background-color: #fff;
-    padding: 8px 10px;
-    /* Reduced padding */
-    border-radius: 30px;
-    border: 1px solid #ddd;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-    font-size: 13px;
-    /* Smaller font size */
-}
-
-.toolbar .filter-wrapper:hover {
-    background-color: #f9f9f9;
-    border-color: #4caf50;
+    @apply flex items-center gap-2 cursor-pointer bg-white px-4 py-3 rounded-xl border border-gray-200 transition-all duration-200 text-sm shadow-sm hover:shadow-md hover:border-orange-300;
 }
 
 /* Filter Name */
 .toolbar .filter-name {
-    color: #333;
-    font-weight: 400;
-    font-size: 12px;
+    @apply text-gray-700 font-medium text-sm;
 }
 
 /* Filter Dropdown */
 .toolbar .filter-dropdown {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-    background-color: #fff;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
-    min-width: 150px;
-    z-index: 20;
-    font-size: 13px;
-    transition: opacity 0.2s ease;
+    @apply absolute top-full right-0 mt-2 bg-white border border-gray-200 rounded-xl shadow-xl min-w-48 z-50 text-sm;
 }
 
 /* Filter Options */
 .toolbar .filter-option {
-    padding: 8px 12px;
-    /* Smaller padding for options */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    cursor: pointer;
-    transition: background-color 0.2s ease;
-}
-
-.toolbar .filter-option:hover {
-    background-color: #f5f5f5;
-    /* Subtle hover effect */
+    @apply px-4 py-3 flex justify-between items-center cursor-pointer transition-colors duration-200 hover:bg-gray-50 first:rounded-t-xl last:rounded-b-xl;
 }
 
 .toolbar .filter-option.selected {
-    font-weight: 600;
-    color: #4caf50;
-    /* Green highlight for selected filter */
+    @apply font-semibold text-orange-600 bg-orange-50;
 }
 
 .toolbar .check-icon {
-    stroke: #4caf50;
+    @apply text-orange-600;
 }
-
-/* Subtle animations */
-.toolbar .filter-option:hover .check-icon,
-.icon:hover {
-    stroke: #4caf50;
-}
-
 
 /* Responsive design */
 @media (max-width: 768px) {
-    .topbar{
-        flex-direction: column;
-        align-items: baseline;
-        gap: 10px;
+    .topbar {
+        @apply flex-col items-start gap-4 p-4;
     }
 
-    .toolbar{
-        width: 100%;
+    .toolbar {
+        @apply w-full flex-col gap-4;
+    }
+    
+    .toolbar .search-input {
+        min-width: 100%;
     }
 }

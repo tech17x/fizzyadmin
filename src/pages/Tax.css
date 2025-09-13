@@ -1,24 +1,20 @@
-.add-new-staff-info{
-    padding-top: 1rem;
+.add-new-staff-info {
+    @apply pt-6;
 }
 
-.table-container td, .table-container th{
-    padding: .8rem;
-    text-align: center;
-    font-size: 14px;
+.table-container td, 
+.table-container th {
+    @apply p-4 text-center text-sm;
 }
 
-.table-container td{
-    font-size: 12px;
+.table-container td {
+    @apply text-sm;
 }
 
-.table-container .tax-action-btns{
-    display: flex;
-    gap: .5rem;
-    align-items: center;
+.table-container .tax-action-btns {
+    @apply flex gap-2 items-center justify-center;
 }
 
-.table-container button{
-    background: transparent;
-    cursor: pointer;
+.table-container button {
+    @apply bg-transparent cursor-pointer p-2 rounded-lg hover:bg-gray-100 transition-colors duration-200;
 }

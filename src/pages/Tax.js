@@ -284,16 +284,30 @@ const Tax = () => {
                             <Button clickAction={() => setShowPopup(false)}>Close</Button>
                         </div>
                     </div> :
-                    <div className="add-new-staff-info-container" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                    <div className="space-y-6 animate-fade-in">
                         <TopBar
-                            title="Brands"
+                            title="Tax Management"
                             searchText={search}
                             setSearchText={setSearch}
                             selectedFilter={status}
                             setSelectedFilter={setStatus}
                         />
-                        <div className="add-new-staff-info card">
-                            <GradientButton clickAction={handleAddTax}>Add Tax</GradientButton>
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                            <div className="flex items-center justify-between mb-8">
+                                <div>
+                                    <h2 className="text-xl font-bold text-gray-800">Tax Configuration</h2>
+                                    <p className="text-gray-600 mt-1">Configure tax rates for your outlets</p>
+                                </div>
+                                <button 
+                                    onClick={handleAddTax}
+                                    className="bg-gradient-to-r from-orange-400 to-orange-500 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center gap-2"
+                                >
+                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Add Tax
+                                </button>
+                            </div>
                             <div className="table-container">
                                 <table>
                                     <thead>

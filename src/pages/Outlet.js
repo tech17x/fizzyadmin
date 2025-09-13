@@ -432,7 +432,7 @@ const Outlet = () => {
                         <Button clickAction={() => setShowPopup(false)}>Close</Button>
                     </div>
                 </div> :
-                <div className="outlet-container" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <div className="space-y-6 animate-fade-in">
                     <TopBar
                         title="Outlets"
                         searchText={search}
@@ -440,7 +440,23 @@ const Outlet = () => {
                         selectedFilter={filteredStatus}
                         setSelectedFilter={setFilteredStatus}
                     />
-                    <div className="cards-container card">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8">
+                        <div className="flex items-center justify-between mb-8">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-800">Outlet Management</h2>
+                                <p className="text-gray-600 mt-1">Manage your outlet locations and configurations</p>
+                            </div>
+                            <button 
+                                onClick={handleAddNewOutlet}
+                                className="bg-gradient-to-r from-orange-400 to-orange-500 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 hover:scale-105 flex items-center gap-2"
+                            >
+                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                </svg>
+                                Add Outlet
+                            </button>
+                        </div>
+                        <div className="cards-container">
                         <>
                             {filteredData.map((outlet) => (
                                 <EditCard
@@ -453,8 +469,8 @@ const Outlet = () => {
                                     handleEdit={() => handleOutletEdit(outlet)}
                                 />
                             ))}
-                            <CardAdd handleAdd={handleAddNewOutlet} />
                         </>
+                        </div>
                     </div>
                 </div>
             }

@@ -1,33 +1,23 @@
 .checkbox {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    cursor: pointer;
+    @apply flex items-center gap-3 cursor-pointer;
 }
 
 .checkbox input {
-    display: none; /* Hide default checkbox */
+    @apply hidden;
 }
 
 .checkbox label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 14px;
-    cursor: pointer;
+    @apply flex items-center gap-3 text-sm font-medium cursor-pointer text-gray-700;
 }
 
 .custom-checkbox {
-    width: 15px;
-    height: 15px;
-    border: 2px solid #E4E4E4;
-    border-radius: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s ease-in-out;
+    @apply w-5 h-5 border-2 border-gray-300 rounded-md flex items-center justify-center transition-all duration-200 bg-white shadow-sm;
 }
 
 .checkbox input:checked + label .custom-checkbox {
-    background: white;
+    @apply bg-orange-500 border-orange-500;
+}
+
+.checkbox:hover .custom-checkbox {
+    @apply border-orange-400 shadow-md;
 }
