@@ -24,7 +24,7 @@ const Login = () => {
 
         try {
             const response = await axios.post(
-                "https://api.techseventeen.com/api/staff/login",
+                "http://localhost:5002/api/staff/login",
                 { email: username, password },
                 { withCredentials: true }
             );
