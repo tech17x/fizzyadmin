@@ -1,296 +1,253 @@
 import React, { useContext } from 'react';
-import './ProfilePage.css';
-import './Brand.css';
+import { LogOut, User, Mail, Phone, MapPin, Shield, Building, Store, Calendar } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import Loader from '../components/Loader';
 import HeadingText from '../components/HeadingText';
 import GradientButton from "../components/GradientButton";
-import { LogOut, Pencil } from 'lucide-react';
-import { Link } from 'react-router-dom';
 import AuthContext from '../context/AuthContext';
-
-const user = {
-    "_id": "67ed727fd16f702d39096410",
-    "name": "Karan Rao",
-    "email": "admin@sector17.com",
-    "phone": "555-555-5555",
-    "pos_login_pin": "$2b$10$v5Ldsf.7AmYmanChx0ZJx.I134Pon.1uEukZ7uOtkSHb839CiSzTa",
-    "status": "active",
-    "role": {
-        "_id": "67ed727fd16f702d390963f2",
-        "name": "Admin",
-        "default_permissions": [
-            "dashboard_view",
-            "orders_view",
-            "orders_edit",
-            "orders_delete",
-            "sales_view",
-            "sales_create",
-            "sales_edit",
-            "sales_delete",
-            "customers_view",
-            "customers_edit",
-            "customers_delete",
-            "inventory_view",
-            "inventory_edit",
-            "inventory_delete",
-            "settings_manage",
-            "reports_view",
-            "reports_edit",
-            "reports_delete",
-            "staff_manage"
-        ],
-        "createdAt": "2025-04-02T17:23:11.437Z",
-        "updatedAt": "2025-04-02T17:23:11.437Z",
-        "__v": 0
-    },
-    "permissions": [
-        "dashboard_view",
-        "orders_view",
-        "orders_edit",
-        "orders_delete",
-        "sales_view",
-        "sales_create",
-        "sales_edit",
-        "sales_delete",
-        "customers_view",
-        "customers_edit",
-        "customers_delete",
-        "inventory_view",
-        "inventory_edit",
-        "inventory_delete",
-        "settings_manage",
-        "reports_view",
-        "reports_edit",
-        "reports_delete",
-        "staff_manage"
-    ],
-    "brands": [
-        {
-            "_id": "67ed727fd16f702d39096404",
-            "name": "Sector 17",
-            "short_name": "17sector2",
-            "email": "sector17@example.com",
-            "phone": "320-948-0932",
-            "owner_id": "67ed727fd16f702d39096401",
-            "status": "active",
-            "gst_no": "GST123456789",
-            "license_no": "LIC987654321",
-            "food_license": "FSSAI123456",
-            "website": "https://sector17.com",
-            "city": "Toronto",
-            "state": "Ontario",
-            "country": "Canada",
-            "postal_code": "M5H 2N2",
-            "street_address": "123 Queen Street W",
-            "createdAt": "2025-04-02T17:23:11.456Z",
-            "updatedAt": "2025-04-22T04:23:44.430Z",
-            "__v": 0,
-            "full_name": "Simran"
-        },
-        {
-            "_id": "680485860fb4f631e475204f",
-            "full_name": "Sector 17",
-            "short_name": "17sector",
-            "email": "sahilyadav9704@gmail.com",
-            "phone": "090-509-6264",
-            "owner_id": "67ed727fd16f702d39096410",
-            "status": "active",
-            "gst_no": "GST123456780",
-            "license_no": "LIC987654323",
-            "food_license": "FSSAI123453",
-            "website": "https://sector17.in",
-            "city": "Hisar",
-            "state": "Haryana",
-            "country": "India",
-            "postal_code": "125001",
-            "street_address": "H. No. 659-A",
-            "createdAt": "2025-04-20T05:26:30.794Z",
-            "updatedAt": "2025-04-22T04:25:35.649Z",
-            "__v": 0
-        }
-    ],
-    "outlets": [
-        {
-            "timezone": {
-                "label": "(UTC-11:00) Samoa, Midway Atoll",
-                "value": "Pacific/Midway"
-            },
-            "_id": "67f0d4d4960492b41f279d8c",
-            "brand_id": "67ed727fd16f702d39096404",
-            "name": "Sahil",
-            "code": "2342",
-            "email": "sahilyadav97042@gmail.com",
-            "phone": "230-948-2093",
-            "opening_time": "12:12",
-            "closing_time": "12:12",
-            "website": "https://sector17.com",
-            "street": "H. No. 659-A",
-            "city": "Hisar",
-            "state": "Haryana",
-            "country": "India",
-            "postal_code": "125001",
-            "status": "active",
-            "createdAt": "2025-04-05T06:59:32.463Z",
-            "updatedAt": "2025-04-22T05:53:53.270Z",
-            "__v": 0
-        },
-        {
-            "timezone": {
-                "label": "(UTC-11:00) Samoa, Midway Atoll",
-                "value": "Pacific/Midway"
-            },
-            "_id": "680720384d7af658018580ed",
-            "brand_id": "67ed727fd16f702d39096404",
-            "name": "Sahil 2",
-            "code": "2343",
-            "email": "sahilyadav9704@gmail.com",
-            "phone": "090-509-6264",
-            "opening_time": "12:12",
-            "closing_time": "12:12",
-            "website": "https://outletA.com",
-            "street": "H. No. 659-A",
-            "city": "Hisar",
-            "state": "Haryana",
-            "country": "India",
-            "postal_code": "125001",
-            "status": "active",
-            "createdAt": "2025-04-22T04:51:04.102Z",
-            "updatedAt": "2025-04-22T05:58:48.376Z",
-            "__v": 0
-        },
-        {
-            "timezone": {
-                "label": "(UTC-12:00) Baker Island",
-                "value": "Etc/GMT+12"
-            },
-            "_id": "680721bccce8c05a4a2ce24c",
-            "brand_id": "680485860fb4f631e475204f",
-            "name": "Simran",
-            "code": "2343",
-            "email": "sahilyadav9704@gmail.com",
-            "phone": "090-509-6264",
-            "opening_time": "12:12",
-            "closing_time": "12:12",
-            "website": "https://sector17.com",
-            "street": "H. No. 659-A",
-            "city": "Hisar",
-            "state": "Haryana",
-            "country": "India",
-            "postal_code": "125001",
-            "status": "active",
-            "createdAt": "2025-04-22T04:57:32.414Z",
-            "updatedAt": "2025-04-22T05:52:54.578Z",
-            "__v": 0
-        },
-        {
-            "timezone": {
-                "label": "(UTC-12:00) Baker Island",
-                "value": "Etc/GMT+12"
-            },
-            "_id": "68072726a4e3235ef38a3f03",
-            "brand_id": "680485860fb4f631e475204f",
-            "name": "Simran 2",
-            "code": "2321",
-            "email": "sahilyadav970422@gmail.com",
-            "phone": "090-509-6263",
-            "opening_time": "12:12",
-            "closing_time": "12:12",
-            "website": "https://outletA.com",
-            "street": "H. No. 659-A",
-            "city": "Hisar",
-            "state": "Haryana",
-            "country": "India",
-            "postal_code": "125001",
-            "status": "active",
-            "createdAt": "2025-04-22T05:20:38.144Z",
-            "updatedAt": "2025-04-22T05:53:34.435Z",
-            "__v": 0
-        }
-    ],
-    "createdAt": "2025-04-02T17:23:11.624Z",
-    "updatedAt": "2025-04-22T07:13:49.697Z",
-    "__v": 0,
-    "image": "https://images.pexels.com/photos/31225680/pexels-photo-31225680/free-photo-of-outdoor-basketball-hoop-under-blue-sky.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2"
-}
 
 const ProfilePage = () => {
     const { staff, logout } = useContext(AuthContext);
 
+    if (!staff) {
+        return <Loader message="Loading profile..." />;
+    }
+
     return (
-        <>
-            {
-                false && <Loader />
-            }
-            <HeadingText title={"Profile"} />
-            <div className="profile-container">
-                {/* user info */}
-                <div className="profile-header card">
-                    <div className='user-info'>
-                        <img src={staff.image} onError={(e) => e.target.src = "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png"} alt="Profile" className="profile-image" />
-                        <div>
-                            <h2>{staff.name}</h2>
-                            <div>
-                                <p>{staff.email}</p>
-                                <p>{staff.phone}</p>
+        <div className="max-w-6xl mx-auto space-y-6">
+            <HeadingText 
+                title="Profile" 
+                subtitle="Manage your account information and view your access permissions"
+                icon={User}
+            />
+            
+            {/* Profile Header */}
+            <div className="card">
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+                    <div className="flex flex-col sm:flex-row items-center sm:items-start gap-6">
+                        <div className="relative">
+                            <img 
+                                src={staff.image} 
+                                onError={(e) => e.target.src = "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png"} 
+                                alt="Profile" 
+                                className="w-24 h-24 rounded-xl object-cover border-4 border-orange-100"
+                            />
+                            <div className="absolute -bottom-2 -right-2 w-8 h-8 bg-green-500 rounded-full border-4 border-white flex items-center justify-center">
+                                <div className="w-2 h-2 bg-white rounded-full"></div>
                             </div>
-                            <span className="status active">{staff.status.toUpperCase()}</span>
+                        </div>
+                        
+                        <div className="text-center sm:text-left">
+                            <h2 className="text-2xl font-bold text-gray-900">{staff.name}</h2>
+                            <p className="text-lg text-orange-600 font-medium">{staff.role.name}</p>
+                            
+                            <div className="mt-4 space-y-2">
+                                <div className="flex items-center justify-center sm:justify-start text-gray-600">
+                                    <Mail className="h-4 w-4 mr-2" />
+                                    <span className="text-sm">{staff.email}</span>
+                                </div>
+                                <div className="flex items-center justify-center sm:justify-start text-gray-600">
+                                    <Phone className="h-4 w-4 mr-2" />
+                                    <span className="text-sm">{staff.phone}</span>
+                                </div>
+                            </div>
+                            
+                            <div className="mt-4">
+                                <span className="status-badge status-active">
+                                    {staff.status.toUpperCase()}
+                                </span>
+                            </div>
                         </div>
                     </div>
-                    <GradientButton clickAction={logout} className={"user-info-edit-btn"}>
-                        <LogOut size={16} />
-                        <span>Logout</span>
-                    </GradientButton>
-
+                    
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <GradientButton clickAction={logout} className="justify-center">
+                            <LogOut size={16} className="mr-2" />
+                            Logout
+                        </GradientButton>
+                    </div>
                 </div>
+            </div>
 
-                {/* user role & permissions */}
-                <h3>Role & Permissions</h3>
-                <div className="card role-permissions">
-                    <p><strong>Role:</strong> {staff.role.name}</p>
-                    <strong>Permissions:</strong>
-                    <div className="permissions">
+            {/* Role & Permissions */}
+            <div className="card">
+                <div className="flex items-center mb-6">
+                    <div className="p-2 bg-orange-100 rounded-lg mr-3">
+                        <Shield className="h-5 w-5 text-orange-600" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-900">Role & Permissions</h3>
+                        <p className="text-sm text-gray-600">Your access level and system permissions</p>
+                    </div>
+                </div>
+                
+                <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="font-medium text-gray-900">Current Role</p>
+                            <p className="text-2xl font-bold text-orange-600">{staff.role.name}</p>
+                        </div>
+                        <div className="text-right">
+                            <p className="text-sm text-gray-600">Total Permissions</p>
+                            <p className="text-xl font-semibold text-gray-900">{staff.permissions.length}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div>
+                    <h4 className="font-medium text-gray-900 mb-3">System Permissions</h4>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                         {staff.permissions.map((perm, index) => (
-                            <span key={index} className="permission">{perm}</span>
+                            <div key={index} className="bg-white border border-gray-200 rounded-lg px-3 py-2">
+                                <span className="text-xs font-medium text-gray-700">
+                                    {perm.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                </span>
+                            </div>
                         ))}
                     </div>
                 </div>
+            </div>
 
-                {/* Assigned brands */}
-                <h3>Assigned Brands</h3>
-                <div className="flex-section">
-                    {staff.brands.map((brand) => (
-                        <div key={brand._id} className="card card-section">
-                            <p><strong>Name:</strong> {brand.name}</p>
-                            <p><strong>Email:</strong> {brand.email}</p>
-                            <p><strong>Phone:</strong> {brand.phone}</p>
-                            <p><strong>Location:</strong> {brand.city}, {brand.state}, {brand.country}</p>
-                            <p><strong>GST:</strong> {brand.gst_no}</p>
-                            <p><strong>License:</strong> {brand.license_no}</p>
-                            <p><strong>Food License:</strong> {brand.food_license}</p>
-                            <p><strong>Website:</strong> <Link to={brand.website} target="_blank">{brand.website}</Link></p>
-                        </div>
-                    ))}
+            {/* Assigned Brands */}
+            <div className="card">
+                <div className="flex items-center mb-6">
+                    <div className="p-2 bg-orange-100 rounded-lg mr-3">
+                        <Building className="h-5 w-5 text-orange-600" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-900">Assigned Brands</h3>
+                        <p className="text-sm text-gray-600">Brands you have access to manage</p>
+                    </div>
                 </div>
-
-                {/* Assigned Outlets */}
-                <h3>Assigned Outlets</h3>
-                <div className="flex-section">
-                    {staff.outlets.map((outlet) => (
-                        <div key={outlet._id} className="card card-section">
-                            <p><strong>Name:</strong> {outlet.name}</p>
-                            <p><strong>Code:</strong> {outlet.code}</p>
-                            <p><strong>Email:</strong> {outlet.email}</p>
-                            <p><strong>Phone:</strong> {outlet.phone}</p>
-                            <p><strong>Website:</strong> <Link to={outlet.website} target="_blank">{outlet.website}</Link></p>
-                            <p><strong>Address:</strong> {outlet.street}, {outlet.city}, {outlet.state}, {outlet.country} - {outlet.postal_code}</p>
-                            <p><strong>Opening Time:</strong> {outlet.opening_time}</p>
-                            <p><strong>Closing Time:</strong> {outlet.closing_time}</p>
-                            <p><strong>Timezone:</strong> {outlet.timezone.label}</p>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {staff.brands.map((brand) => (
+                        <div key={brand._id} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200">
+                            <div className="flex items-start justify-between mb-3">
+                                <div>
+                                    <h4 className="font-semibold text-gray-900">{brand.full_name || brand.name}</h4>
+                                    <p className="text-sm text-gray-600">{brand.short_name}</p>
+                                </div>
+                                <span className="status-badge status-active">Active</span>
+                            </div>
+                            
+                            <div className="space-y-2 text-sm">
+                                <div className="flex items-center text-gray-600">
+                                    <Mail className="h-3 w-3 mr-2" />
+                                    <span>{brand.email}</span>
+                                </div>
+                                <div className="flex items-center text-gray-600">
+                                    <Phone className="h-3 w-3 mr-2" />
+                                    <span>{brand.phone}</span>
+                                </div>
+                                <div className="flex items-center text-gray-600">
+                                    <MapPin className="h-3 w-3 mr-2" />
+                                    <span>{brand.city}, {brand.state}, {brand.country}</span>
+                                </div>
+                                {brand.website && (
+                                    <div className="flex items-center">
+                                        <Link 
+                                            to={brand.website} 
+                                            target="_blank"
+                                            className="text-orange-600 hover:text-orange-700 text-sm font-medium"
+                                        >
+                                            Visit Website →
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            <div className="mt-3 pt-3 border-t border-gray-200">
+                                <div className="grid grid-cols-3 gap-4 text-xs text-gray-500">
+                                    <div>
+                                        <span className="block font-medium">GST</span>
+                                        <span>{brand.gst_no}</span>
+                                    </div>
+                                    <div>
+                                        <span className="block font-medium">License</span>
+                                        <span>{brand.license_no}</span>
+                                    </div>
+                                    <div>
+                                        <span className="block font-medium">Food License</span>
+                                        <span>{brand.food_license}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     ))}
                 </div>
             </div>
-        </>
+
+            {/* Assigned Outlets */}
+            <div className="card">
+                <div className="flex items-center mb-6">
+                    <div className="p-2 bg-orange-100 rounded-lg mr-3">
+                        <Store className="h-5 w-5 text-orange-600" />
+                    </div>
+                    <div>
+                        <h3 className="text-lg font-semibold text-gray-900">Assigned Outlets</h3>
+                        <p className="text-sm text-gray-600">Outlet locations you can manage and access</p>
+                    </div>
+                </div>
+                
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    {staff.outlets.map((outlet) => (
+                        <div key={outlet._id} className="bg-gray-50 rounded-lg p-4 hover:bg-gray-100 transition-colors duration-200">
+                            <div className="flex items-start justify-between mb-3">
+                                <div>
+                                    <h4 className="font-semibold text-gray-900">{outlet.name}</h4>
+                                    <p className="text-sm text-gray-600">Code: {outlet.code}</p>
+                                </div>
+                                <span className="status-badge status-active">Active</span>
+                            </div>
+                            
+                            <div className="space-y-2 text-sm">
+                                <div className="flex items-center text-gray-600">
+                                    <Mail className="h-3 w-3 mr-2" />
+                                    <span>{outlet.email}</span>
+                                </div>
+                                <div className="flex items-center text-gray-600">
+                                    <Phone className="h-3 w-3 mr-2" />
+                                    <span>{outlet.phone}</span>
+                                </div>
+                                <div className="flex items-center text-gray-600">
+                                    <MapPin className="h-3 w-3 mr-2" />
+                                    <span>{outlet.street}, {outlet.city}, {outlet.state}</span>
+                                </div>
+                                {outlet.website && (
+                                    <div className="flex items-center">
+                                        <Link 
+                                            to={outlet.website} 
+                                            target="_blank"
+                                            className="text-orange-600 hover:text-orange-700 text-sm font-medium"
+                                        >
+                                            Visit Website →
+                                        </Link>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            <div className="mt-3 pt-3 border-t border-gray-200">
+                                <div className="grid grid-cols-2 gap-4 text-xs text-gray-500">
+                                    <div>
+                                        <span className="block font-medium">Opening</span>
+                                        <span>{outlet.opening_time}</span>
+                                    </div>
+                                    <div>
+                                        <span className="block font-medium">Closing</span>
+                                        <span>{outlet.closing_time}</span>
+                                    </div>
+                                </div>
+                                <div className="mt-2">
+                                    <span className="block font-medium text-xs text-gray-500">Timezone</span>
+                                    <span className="text-xs text-gray-600">{outlet.timezone.label}</span>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </div>
     );
 };
 

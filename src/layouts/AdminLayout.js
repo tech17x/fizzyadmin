@@ -1,22 +1,25 @@
-// src/layouts/AdminLayout.js
-
 import React from 'react';
 import Sidebar from '../components/Sidebar';
 import { Outlet } from 'react-router-dom';
-import './AdminLayout.css';
 
-const AdminLayout = () => {
+const AdminLayout = ({ children }) => {
   return (
-    <div className="admin-layout">
-
-      {/* Container for sidebar and main content */}
-      <div className="admin-body">
-        <aside className="admin-sidebar">
+    <div className="min-h-screen bg-gray-50 flex">
+      {/* Sidebar */}
+      <div className="hidden lg:flex lg:flex-shrink-0">
+        <div className="flex flex-col w-64">
           <Sidebar />
-        </aside>
-        
-        <main className="admin-main-content">
-          <Outlet /> {/* Nested route components go here */}
+        </div>
+      </div>
+
+      {/* Mobile sidebar overlay would go here */}
+      
+      {/* Main content */}
+      <div className="flex-1 flex flex-col overflow-hidden">
+        <main className="flex-1 overflow-y-auto">
+          <div className="p-6">
+            {children || <Outlet />}
+          </div>
         </main>
       </div>
     </div>

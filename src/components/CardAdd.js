@@ -1,18 +1,24 @@
 import React from "react";
-import "./CardAdd.css";
+import { Plus } from "lucide-react";
 
-const CardAdd = ({handleAdd}) => {
+const CardAdd = ({ handleAdd }) => {
     return (
-        <button className="card-add" onClick={handleAdd}>
-            <svg className="plus-icon" viewBox="0 0 24 24">
-                <defs>
-                    <linearGradient id="plusGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stopColor="#EFA280" />
-                        <stop offset="100%" stopColor="#DF6229" />
-                    </linearGradient>
-                </defs>
-                <path d="M12 5v14M5 12h14" stroke="url(#plusGradient)" strokeWidth="2" strokeLinecap="round" />
-            </svg>
+        <button 
+            onClick={handleAdd}
+            className="group bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-dashed border-orange-200 rounded-xl p-6 hover:from-orange-100 hover:to-orange-200 hover:border-orange-300 transition-all duration-300 flex flex-col items-center justify-center min-h-[200px] focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+        >
+            <div className="w-16 h-16 rounded-full bg-white shadow-sm flex items-center justify-center mb-4 group-hover:shadow-md transition-shadow duration-300">
+                <Plus 
+                    size={24} 
+                    className="text-orange-600 group-hover:text-orange-700 transition-colors duration-200" 
+                />
+            </div>
+            <span className="text-sm font-medium text-orange-700 group-hover:text-orange-800 transition-colors duration-200">
+                Add New Item
+            </span>
+            <span className="text-xs text-orange-600 mt-1 opacity-75">
+                Click to create
+            </span>
         </button>
     );
 };

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "./InputField.css";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
 
 const applyFormat = (value, format) => {
   if (!format) return value;
@@ -35,7 +35,6 @@ const applyFormat = (value, format) => {
       }
       valueIndex++;
     } else {
-      // Static characters in the format (like dashes or spaces)
       formatted += formatChar;
       if (inputChar === formatChar) valueIndex++;
       formatIndex++;
@@ -46,7 +45,7 @@ const applyFormat = (value, format) => {
 };
 
 const InputField = ({
-  type,
+  type = "text",
   label,
   name,
   value,
@@ -55,6 +54,10 @@ const InputField = ({
   required = false,
   disabled = false,
   format = null,
+  error = null,
+  helpText = null,
+  icon: Icon = null,
+  className = ""
 }) => {
   const [showPassword, setShowPassword] = useState(false);
 
@@ -70,20 +73,31 @@ const InputField = ({
   };
 
   return (
-    <div className="input-field">
+    <div className={`space-y-1 ${className}`}>
       {label && (
-        <label
-          className="input-field__label"
-          style={{ color: disabled ? "#9ca3af" : "#374151" }}
-        >
+        <label className="block text-sm font-medium text-gray-700">
           {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
         </label>
       )}
 
-      <div className="input-field__container">
+      <div className="relative">
+        {Icon && (
+          <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+            <Icon className="h-4 w-4 text-gray-400" />
+          </div>
+        )}
+        
         <input
           type={type === "password" ? (showPassword ? "text" : "password") : type}
-          className="input-field__input"
+          className={`
+            w-full px-3 py-2 border rounded-lg transition-colors duration-200
+            focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500
+            disabled:bg-gray-50 disabled:text-gray-500 disabled:cursor-not-allowed
+            ${Icon ? 'pl-10' : ''}
+            ${type === 'password' ? 'pr-10' : ''}
+            ${error ? 'border-red-300 focus:ring-red-500 focus:border-red-500' : 'border-gray-300'}
+          `}
           value={value !== undefined && value !== null ? value : ""}
           name={name}
           onChange={handleInputChange}
@@ -91,21 +105,38 @@ const InputField = ({
           required={required}
           disabled={disabled}
         />
+
         {type === "password" && (
-          <span className="input-field__toggle-password" onClick={togglePasswordVisibility}>
+          <button
+            type="button"
+            className="absolute inset-y-0 right-0 pr-3 flex items-center"
+            onClick={togglePasswordVisibility}
+          >
             {showPassword ? (
-              <svg width="18" height="16" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 8C1 8 5 1 12 1C19 1 23 8 23 8C23 8 19 15 12 15C5 15 1 8 1 8Z" stroke="#4B5563" strokeWidth="2" />
-                <circle cx="12" cy="8" r="3" stroke="#4B5563" strokeWidth="2" />
-              </svg>
+              <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
             ) : (
-              <svg width="18" height="18" viewBox="0 0 24 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 3L21 21M1 8C1 8 5 1 12 1C14.7 1 17 2.1 19 3.8M23 8C23 8 19 15 12 15C9.3 15 7 13.9 5 12.2M12 12C11.2044 12 10.4413 11.6839 9.87868 11.1213C9.31607 10.5587 9 9.79565 9 9C9 8.20435 9.31607 7.44129 9.87868 6.87868C10.4413 6.31607 11.2044 6 12 6C12.7956 6 13.5587 6.31607 14.1213 6.87868C14.6839 7.44129 15 8.20435 15 9" stroke="#4B5563" strokeWidth="2" />
-              </svg>
+              <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
             )}
-          </span>
+          </button>
+        )}
+
+        {error && (
+          <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+            <AlertCircle className="h-4 w-4 text-red-500" />
+          </div>
         )}
       </div>
+
+      {error && (
+        <p className="text-sm text-red-600 flex items-center">
+          <AlertCircle className="h-3 w-3 mr-1" />
+          {error}
+        </p>
+      )}
+
+      {helpText && !error && (
+        <p className="text-xs text-gray-500">{helpText}</p>
+      )}
     </div>
   );
 };

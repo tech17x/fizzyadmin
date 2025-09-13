@@ -1,8 +1,8 @@
 import { useContext, useEffect, useState } from "react";
+import { Building2, Globe, Mail, Phone, MapPin } from "lucide-react";
 import CardAdd from "../components/CardAdd";
 import EditCard from "../components/EditCard";
 import InputField from "../components/InputField";
-import "./Brand.css";
 import GradientButton from "../components/GradientButton";
 import Button from "../components/Button";
 import Loader from "../components/Loader";
@@ -46,39 +46,7 @@ const Brand = () => {
     const [selectedCountry, setSelectedCountry] = useState(countryOptions[1]);
     const [postalCode, setPostalCode] = useState('');
     const [address, setAddress] = useState('');
-    const [status, setStatus] = useState("");
-    // const [dayEndData, setDayEndData] = useState(null);
-    // const [error, setError] = useState(null);
-
-    // useEffect(() => {
-    //     const fetchDayEndData = async () => {
-    //         const brand_id = "6822b72615fe200295fcb3f7";
-    //         const outlet_id = "6822c5424bd1d8d236d8a293";
-    //         const time = Date.now(); // or your custom timestamp
-
-    //         try {
-
-    //             // const response = await axios.get(`${API}/api/dashboard/day-end`, {
-    //             const response = await axios.get(`${API}/api/dashboard/day-end-summary`, {
-    //                 params: {
-    //                     brand_id,
-    //                     outlet_id,
-    //                     time
-    //                 },
-    //                 withCredentials: true,
-    //             });
-
-
-    //             console.log("✅ Day-End Data:", response.data);
-    //             setDayEndData(response.data);
-    //         } catch (err) {
-    //             console.error("❌ Error fetching day-end:", err.response?.data?.message || err.message);
-    //             setError(err.response?.data?.message || "Failed to fetch day-end data");
-    //         }
-    //     };
-
-    //     fetchDayEndData();
-    // }, [API]);
+    const [status, setStatus] = useState(true);
 
     useEffect(() => {
         if (staff.permissions?.includes('brand_manage')) {
@@ -271,183 +239,243 @@ const Brand = () => {
 
     return (
         <>
-            {
-                loading && <Loader />
-            }
+            {loading && <Loader />}
 
             {showPopup ? (
-                <div className="card">
-                    <HeadingText title={`${isEditing ? "Edit" : "Add"} Brand`} />
-                    {/* <div>
-                        <h2>Day-End Record</h2>
-                        {error && <p style={{ color: "red" }}>Error: {error}</p>}
-                        {dayEndData ? (
-                            <pre>{JSON.stringify(dayEndData, null, 2)}</pre>
-                        ) : (
-                            !error && <p>Loading...</p>
-                        )}
-                    </div> */}
-                    <div className="inputs-container">
-                        <div className="inputs-row">
-                            <InputField
-                                label="Brand Name"
-                                type="text"
-                                name="full_name"
-                                value={fullName}
-                                onChange={(e) => setFullName(e.target.value)}
-                                required
-                            />
-                            <InputField
-                                label="Short Name"
-                                type="text"
-                                name="short_name"
-                                value={shortName}
-                                onChange={(e) => setShortName(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="inputs-row">
-                            <InputField
-                                label="GST No"
-                                type="text"
-                                name="gst_no"
-                                value={gstNo}
-                                onChange={(e) => setGstNo(e.target.value)}
-                                required
-                            />
-                            <InputField
-                                label="License No"
-                                type="text"
-                                name="license_no"
-                                value={licenseNo}
-                                onChange={(e) => setLicenseNo(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="inputs-row">
-                            <InputField
-                                label="Food License"
-                                type="text"
-                                name="food_license"
-                                value={foodLicense}
-                                onChange={(e) => setFoodLicense(e.target.value)}
-                                required
-                            />
-                            <PhoneNumberInput
-                                phoneNumber={phone}
-                                onPhoneNumberChange={setPhone}
-                                selectedCountry={selectedCountryCode}
-                                onCountryChange={setSelectedCountryCode}
-                                countryOptions={countryCodeOptions}
-                            />
-                        </div>
-                        <div className="inputs-row">
-                            <InputField
-                                label="Email"
-                                type="email"
-                                name="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                            <InputField
-                                label="Website"
-                                type="url"
-                                name="website"
-                                value={website}
-                                onChange={(e) => setWebsite(e.target.value)}
-                                required
-                            />
-
-                        </div>
-                        <div className="inputs-row">
-                            <InputField
-                                label="Street Address"
-                                type="text"
-                                name="street_address"
-                                value={address}
-                                onChange={(e) => setAddress(e.target.value)}
-                                required
-                            />
-                            <InputField
-                                label="City"
-                                type="text"
-                                name="city"
-                                value={city}
-                                onChange={(e) => setCity(e.target.value)}
-                                required
-                            />
-
-                        </div>
-                        <div className="inputs-row">
-                            <InputField
-                                label="State"
-                                type="text"
-                                name="state"
-                                value={state}
-                                onChange={(e) => setState(e.target.value)}
-                                required
-                            />
-                            <SelectInput
-                                label={"Country"}
-                                selectedOption={selectedCountry}
-                                onChange={setSelectedCountry}
-                                options={countryOptions}
-                            />
-                        </div>
-                        <div className="inputs-row">
-                            <InputField
-                                label="Postal Code"
-                                type="text"
-                                name="postal_code"
-                                value={postalCode}
-                                onChange={(e) => setPostalCode(e.target.value)}
-                                required
-                            />
-
-                        </div>
-                        {isEditing && (
-                            <div className="inputs-row checkbox-input">
-                                <Checkbox
-                                    label="Active Status"
-                                    checked={status}
-                                    onChange={() => setStatus(!status)}
-                                />
+                <div className="max-w-4xl mx-auto">
+                    <div className="card">
+                        <HeadingText 
+                            title={`${isEditing ? "Edit" : "Add"} Brand`}
+                            subtitle={`${isEditing ? "Update" : "Create"} brand information and business details`}
+                            icon={Building2}
+                        />
+                        
+                        <div className="space-y-6">
+                            {/* Basic Information */}
+                            <div>
+                                <h3 className="section-title">Basic Information</h3>
+                                <div className="form-grid">
+                                    <InputField
+                                        label="Brand Name"
+                                        type="text"
+                                        name="full_name"
+                                        value={fullName}
+                                        onChange={(e) => setFullName(e.target.value)}
+                                        placeholder="Enter your brand name"
+                                        helpText="This will be displayed as your main brand identity"
+                                        icon={Building2}
+                                        required
+                                    />
+                                    <InputField
+                                        label="Short Name"
+                                        type="text"
+                                        name="short_name"
+                                        value={shortName}
+                                        onChange={(e) => setShortName(e.target.value)}
+                                        placeholder="Enter abbreviated name"
+                                        helpText="Used for quick identification and displays"
+                                        required
+                                    />
+                                </div>
                             </div>
-                        )}
-                    </div>
 
-                    <div className="action-btns-container">
-                        <GradientButton clickAction={handleSave}>
-                            {isEditing ? "Update" : "Save"}
-                        </GradientButton>
-                        <Button clickAction={() => setShowPopup(false)}>Close</Button>
+                            {/* Legal Information */}
+                            <div>
+                                <h3 className="section-title">Legal Information</h3>
+                                <div className="form-grid">
+                                    <InputField
+                                        label="GST Number"
+                                        type="text"
+                                        name="gst_no"
+                                        value={gstNo}
+                                        onChange={(e) => setGstNo(e.target.value)}
+                                        placeholder="Enter GST registration number"
+                                        helpText="Required for tax compliance and invoicing"
+                                        required
+                                    />
+                                    <InputField
+                                        label="Business License Number"
+                                        type="text"
+                                        name="license_no"
+                                        value={licenseNo}
+                                        onChange={(e) => setLicenseNo(e.target.value)}
+                                        placeholder="Enter business license number"
+                                        helpText="Official business registration number"
+                                        required
+                                    />
+                                </div>
+                                <div className="form-grid mt-4">
+                                    <InputField
+                                        label="Food License"
+                                        type="text"
+                                        name="food_license"
+                                        value={foodLicense}
+                                        onChange={(e) => setFoodLicense(e.target.value)}
+                                        placeholder="Enter food safety license"
+                                        helpText="FSSAI or equivalent food safety certification"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Contact Information */}
+                            <div>
+                                <h3 className="section-title">Contact Information</h3>
+                                <div className="form-grid">
+                                    <PhoneNumberInput
+                                        phoneNumber={phone}
+                                        onPhoneNumberChange={setPhone}
+                                        selectedCountry={selectedCountryCode}
+                                        onCountryChange={setSelectedCountryCode}
+                                        countryOptions={countryCodeOptions}
+                                    />
+                                    <InputField
+                                        label="Email Address"
+                                        type="email"
+                                        name="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="Enter business email"
+                                        helpText="Primary contact email for business communications"
+                                        icon={Mail}
+                                        required
+                                    />
+                                </div>
+                                <div className="form-grid mt-4">
+                                    <InputField
+                                        label="Website URL"
+                                        type="url"
+                                        name="website"
+                                        value={website}
+                                        onChange={(e) => setWebsite(e.target.value)}
+                                        placeholder="https://yourbrand.com"
+                                        helpText="Your brand's official website"
+                                        icon={Globe}
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Address Information */}
+                            <div>
+                                <h3 className="section-title">Address Information</h3>
+                                <div className="space-y-4">
+                                    <InputField
+                                        label="Street Address"
+                                        type="text"
+                                        name="street_address"
+                                        value={address}
+                                        onChange={(e) => setAddress(e.target.value)}
+                                        placeholder="Enter complete street address"
+                                        helpText="Include building number, street name, and any apartment/suite details"
+                                        icon={MapPin}
+                                        required
+                                    />
+                                    <div className="form-grid">
+                                        <InputField
+                                            label="City"
+                                            type="text"
+                                            name="city"
+                                            value={city}
+                                            onChange={(e) => setCity(e.target.value)}
+                                            placeholder="Enter city name"
+                                            required
+                                        />
+                                        <InputField
+                                            label="State/Province"
+                                            type="text"
+                                            name="state"
+                                            value={state}
+                                            onChange={(e) => setState(e.target.value)}
+                                            placeholder="Enter state or province"
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-grid">
+                                        <SelectInput
+                                            label="Country"
+                                            selectedOption={selectedCountry}
+                                            onChange={setSelectedCountry}
+                                            options={countryOptions}
+                                            helpText="Select your business location country"
+                                        />
+                                        <InputField
+                                            label="Postal Code"
+                                            type="text"
+                                            name="postal_code"
+                                            value={postalCode}
+                                            onChange={(e) => setPostalCode(e.target.value)}
+                                            placeholder="Enter postal/ZIP code"
+                                            required
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Status */}
+                            {isEditing && (
+                                <div>
+                                    <h3 className="section-title">Status Settings</h3>
+                                    <Checkbox
+                                        label="Active Status"
+                                        checked={status}
+                                        onChange={() => setStatus(!status)}
+                                        helpText="Enable this brand for operations and outlet creation"
+                                    />
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="form-actions">
+                            <Button clickAction={() => setShowPopup(false)}>
+                                Cancel
+                            </Button>
+                            <GradientButton clickAction={handleSave}>
+                                {isEditing ? "Update Brand" : "Create Brand"}
+                            </GradientButton>
+                        </div>
                     </div>
                 </div>
-            ) :
-                <div className="brand-container" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            ) : (
+                <div className="space-y-6">
                     <TopBar
-                        title="Brands"
+                        title="Brand Management"
                         searchText={search}
                         setSearchText={setSearch}
                         selectedFilter={filteredStatus}
                         setSelectedFilter={setFilteredStatus}
                     />
-                    <div className="cards-container card">
-                        {filteredData.map((brand) => (
-                            <EditCard
-                                key={brand._id}
-                                firstLetter={brand.short_name.charAt(0)}
-                                title={brand.short_name}
-                                link={brand.website}
-                                status={brand.status}
-                                handleEdit={() => handleEditBrand(brand)}
-                            />
-                        ))}
-                        <CardAdd handleAdd={handleAddNewBrand} />
+                    
+                    <div className="card">
+                        <div className="flex items-center justify-between mb-6">
+                            <div>
+                                <h2 className="text-lg font-semibold text-gray-900">Your Brands</h2>
+                                <p className="text-sm text-gray-600 mt-1">
+                                    Manage your brand portfolio and business information
+                                </p>
+                            </div>
+                            <GradientButton clickAction={handleAddNewBrand}>
+                                Add New Brand
+                            </GradientButton>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {filteredData.map((brand) => (
+                                <EditCard
+                                    key={brand._id}
+                                    firstLetter={brand.short_name.charAt(0)}
+                                    title={brand.full_name}
+                                    link={brand.website}
+                                    status={brand.status}
+                                    location={`${brand.city}, ${brand.state}`}
+                                    handleEdit={() => handleEditBrand(brand)}
+                                />
+                            ))}
+                            <CardAdd handleAdd={handleAddNewBrand} />
+                        </div>
                     </div>
                 </div>
-            }
+            )}
         </>
     );
 };

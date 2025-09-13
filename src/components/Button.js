@@ -1,37 +1,49 @@
-// src/components/Button.js
-
 import React from 'react';
-import GradientText from './GradientText';
 
-const Button = ({ disable=false, clickAction, className, children }) => {
-    return (
-        <button disabled={disable} onClick={clickAction} className={className} style={{
-            fontSize: "12px",
-            fontWeight: "bold",
-            padding: "8px 15px",
-            border: "2px solid transparent",
-            borderRadius: "20px",
-            letterSpacing: "1px",
-            color: "white",
-            backgroundColor: "transparent",
-            cursor: disable ? "not-allowed" : "pointer",
-            position: "relative",
-            overflow: "hidden",
-            transition: "all 0.3s ease",
-        }}>
-            <span style={{
-                position: "absolute",
-                inset: 0,
-                borderRadius: "20px",
-                padding: "2px",
-                background: "linear-gradient(90deg, #EFA280 0%, #DF6229 100%)",
-                WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
-                WebkitMaskComposite: "destination-out",
-                maskComposite: "exclude"
-            }}></span>
-            <GradientText>{children}</GradientText>
-        </button>
-    );
+const Button = ({ 
+  disable = false, 
+  clickAction, 
+  className = "", 
+  children,
+  size = "md",
+  variant = "secondary"
+}) => {
+  const sizeClasses = {
+    sm: "px-3 py-1.5 text-xs",
+    md: "px-4 py-2 text-sm", 
+    lg: "px-6 py-3 text-base"
+  };
+
+  const baseClasses = `
+    inline-flex items-center justify-center font-medium rounded-lg
+    transition-all duration-200 focus:outline-none focus:ring-2 
+    focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-50 
+    disabled:cursor-not-allowed ${sizeClasses[size]}
+  `;
+
+  const variantClasses = {
+    secondary: `
+      text-gray-700 bg-white border border-gray-300 hover:bg-gray-50
+      shadow-sm hover:shadow-md
+    `,
+    outline: `
+      text-orange-600 bg-transparent border-2 border-orange-200 
+      hover:bg-orange-50 hover:border-orange-300
+    `,
+    ghost: `
+      text-gray-600 bg-transparent hover:bg-gray-100
+    `
+  };
+
+  return (
+    <button 
+      disabled={disable} 
+      className={`${baseClasses} ${variantClasses[variant]} ${className}`}
+      onClick={clickAction}
+    >
+      {children}
+    </button>
+  );
 };
 
 export default Button;
