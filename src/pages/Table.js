@@ -87,7 +87,7 @@ const Table = () => {
 
     const fetchFloorsShort = async () => {
         try {
-            const response = await axios.get("http://localhost:5002/api/floors/staff-floors/shorts", {
+            const response = await axios.get("https://api.techseventeen.com/api/floors/staff-floors/shorts", {
                 withCredentials: true,
             });
             setFloors(response.data.floors || []);
