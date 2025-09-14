@@ -36,6 +36,7 @@ import { StaffOverview } from "./pages/StaffOverview";
 import { ShiftTimeline } from "./pages/ShiftTimeline";
 import { PayrollSummary } from "./pages/PayrollSummary";
 import { DailyShifts } from "./pages/DailyShifts";
+import NewVsRepeatCustomers from "./pages/NewVsRepeatCustomers";
 // import { payrollData } from "./data/payrollData";
 
 function App() {
@@ -65,6 +66,7 @@ function App() {
                             <Route path="/whatsapp-setup" element={<WhatsAppSetupPage />} />
                             <Route path="/profile" element={<ProfilePage />} />
                             <Route path="/sales" element={<SalesOverview />} />
+                            <Route path="/new-vs-repeat-customers" element={<NewVsRepeatCustomers />} />
                             <Route path="/detail-orders" element={<DetailedOrders />} />
                             <Route path="/item-wise-sales" element={<ItemwiseSales />} />
                             <Route path="/category-sales" element={<CategorySales />} />

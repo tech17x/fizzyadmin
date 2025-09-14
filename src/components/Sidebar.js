@@ -87,6 +87,12 @@ const menuItems = [
         icon: <BarChart3 size={15} color="#DF6229" />
       },
       {
+        title: 'Customer Insights',
+        path: '/new-vs-repeat-customers',
+        permission: 'dashboard_view',
+        icon: <Users size={15} color="#DF6229" />
+      },
+      {
         title: 'Detailed Orders',
         path: '/detail-orders',
         permission: 'dashboard_view',
