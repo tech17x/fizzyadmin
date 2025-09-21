@@ -450,8 +450,7 @@ const Outlet = () => {
                         </table>
                     </div>
                 </div>
-            )
-            }
+            )}
             </div>
         </>
     );

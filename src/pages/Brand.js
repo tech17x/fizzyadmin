@@ -13,7 +13,7 @@ import HeadingText from "../components/HeadingText";
 import SelectInput from "../components/SelectInput";
 import AuthContext from "../context/AuthContext";
 import { countryCodeOptions, countryOptions } from "../constants/countryOptions";
-import { Building, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 
 const Brand = () => {
     const API = process.env.REACT_APP_API_URL;

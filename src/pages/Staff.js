@@ -12,7 +12,7 @@ import AuthContext from '../context/AuthContext';
 import TopBar from '../components/TopBar';
 import PhoneNumberInput from '../components/PhoneNumberInput';
 import { countryCodeOptions } from '../constants/countryOptions';
-import { Users, Plus, User, Shield, Building, Store } from 'lucide-react';
+import { Plus, User, Shield, Building } from 'lucide-react';
 import HeadingText from '../components/HeadingText';
 
 const Staff = () => {
