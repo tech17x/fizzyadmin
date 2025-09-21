@@ -72,17 +72,16 @@ const InputField = ({
   return (
     <div className="space-y-2">
       {label && (
-        <label className={`block text-sm font-semibold ${disabled ? 'text-slate-400' : 'text-slate-700'}`}>
+        <label className={`block text-sm font-medium ${disabled ? 'text-gray-400' : 'text-gray-700'}`}>
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
-          }
         </label>
       )}
 
       <div className="relative">
         <input
           type={type === "password" ? (showPassword ? "text" : "password") : type}
-          className={`w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 disabled:bg-slate-50 disabled:text-slate-500 hover:border-slate-300 ${className}`}
+          className={`input ${className}`}
           value={value !== undefined && value !== null ? value : ""}
           name={name}
           onChange={handleInputChange}
@@ -93,10 +92,10 @@ const InputField = ({
         {type === "password" && (
           <button
             type="button"
-            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors"
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
             onClick={togglePasswordVisibility}
           >
-            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
         )}
       </div>

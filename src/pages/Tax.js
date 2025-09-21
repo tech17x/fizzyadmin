@@ -1,5 +1,3 @@
-// src/pages/Tax.js
-
 import { useCallback, useContext, useEffect, useState } from 'react';
 import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
@@ -49,7 +47,6 @@ const Tax = () => {
         }
     }, [staff, logout]);
 
-
     const fetchTaxes = useCallback(async () => {
         try {
             const res = await axios.get(`${API}/api/taxes/accessible`, {
@@ -61,7 +58,7 @@ const Tax = () => {
         } finally {
             setLoading(false);
         }
-    }, [API]); // include dependencies here if any
+    }, [API]);
 
     useEffect(() => {
         fetchTaxes();
@@ -77,8 +74,7 @@ const Tax = () => {
         setSelectedOutlet(null);
         setSelectedBrand(null);
         setShowPopup(true);
-        setShowPopup(true);
-    }
+    };
 
     const handleEditTax = (tax) => {
         setIsEditing(true);
@@ -96,9 +92,9 @@ const Tax = () => {
                 value: selectedOutlet._id,
             });
         } else {
-            handleOutletSelection(null); // In case outlet not found
+            handleOutletSelection(null);
         }
-    }
+    };
 
     const handleSave = async () => {
         setLoading(true);
@@ -128,8 +124,6 @@ const Tax = () => {
         }
 
         const existingTaxForOutlet = taxes.find(tax => tax.outlet_id?._id === selectedOutlet.value);
-
-        console.log(existingTaxForOutlet)
 
         if (existingTaxForOutlet && !isEditing) {
             toast.error("This outlet already has a tax assigned.");
@@ -183,7 +177,7 @@ const Tax = () => {
 
     const handleOutletSelection = (outlet) => {
         setSelectedOutlet(outlet);
-    }
+    };
 
     const handleDelete = async (tax) => {
         if (!window.confirm(`Are you sure you want to delete tax "${tax.tax_name}"?`)) return;
@@ -214,15 +208,15 @@ const Tax = () => {
 
     return (
         <>
-            {
-                loading && <Loader />
-            }
-            {
-                showPopup ?
-                    <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+            {loading && <Loader />}
+            
+            {showPopup ? (
+                <div className="max-w-4xl mx-auto">
+                    <div className="card p-8">
                         <HeadingText title={`${isEditing ? "Edit" : "Add"} Tax Information`} />
+                        
                         <div className="space-y-6">
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div className="form-grid form-grid-2">
                                 <SelectInput
                                     label="Select Brand"
                                     selectedOption={selectedBrand}
@@ -236,7 +230,8 @@ const Tax = () => {
                                     options={filteredOutlets.map(o => ({ label: o.name, value: o._id }))}
                                 />
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            
+                            <div className="form-grid form-grid-2">
                                 <InputField
                                     label="Tax Name"
                                     type="text"
@@ -254,18 +249,18 @@ const Tax = () => {
                                     required
                                 />
                             </div>
-                            <div className="grid grid-cols-1 gap-6">
-                                <InputField
-                                    label="Tax Value"
-                                    type="text"
-                                    value={taxValue}
-                                    onChange={(e) => setTaxValue(e.target.value)}
-                                    placeholder="Enter tax value"
-                                    required
-                                />
-                            </div>
+                            
+                            <InputField
+                                label="Tax Value (%)"
+                                type="number"
+                                value={taxValue}
+                                onChange={(e) => setTaxValue(e.target.value)}
+                                placeholder="Enter tax percentage"
+                                required
+                            />
+
                             {isEditing && (
-                                <div className="pt-6 border-t border-slate-200">
+                                <div className="pt-6 border-t border-gray-200">
                                     <Checkbox
                                         label="Active Status"
                                         checked={taxStatus}
@@ -274,78 +269,81 @@ const Tax = () => {
                                 </div>
                             )}
                         </div>
-                        <div className="flex justify-end gap-4 pt-8 border-t border-slate-200 mt-8">
-                            <GradientButton clickAction={handleSave}>Update</GradientButton>
+                        
+                        <div className="flex justify-end gap-4 pt-8 border-t border-gray-200 mt-8">
+                            <GradientButton clickAction={handleSave}>
+                                {isEditing ? "Update" : "Create"}
+                            </GradientButton>
                             <Button clickAction={() => setShowPopup(false)}>Close</Button>
                         </div>
-                    </div> :
-                    <div className="space-y-6">
-                        <TopBar
-                            title="Tax Configuration"
-                            searchText={search}
-                            setSearchText={setSearch}
-                            selectedFilter={status}
-                            setSelectedFilter={setStatus}
-                        />
-                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-                            <div className="flex justify-between items-center mb-6">
-                                <h2 className="text-xl font-bold text-slate-900">Tax Settings</h2>
-                                <GradientButton clickAction={handleAddTax}>Add Tax</GradientButton>
-                            </div>
-                            <div className="overflow-x-auto">
-                                <table className="w-full divide-y divide-slate-200">
-                                    <thead className="bg-slate-50">
-                                        <tr>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Sr No</th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Tax Name</th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Brand Name</th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Tax Rate</th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
+                    </div>
+                </div>
+            ) : (
+                <div className="space-y-6">
+                    <TopBar
+                        title="Tax Configuration"
+                        searchText={search}
+                        setSearchText={setSearch}
+                        selectedFilter={status}
+                        setSelectedFilter={setStatus}
+                    />
+                    
+                    <div className="card p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-gray-900">Tax Settings</h2>
+                            <GradientButton clickAction={handleAddTax}>Add Tax</GradientButton>
+                        </div>
+                        
+                        <div className="overflow-x-auto">
+                            <table className="table">
+                                <thead>
+                                    <tr>
+                                        <th>Sr No</th>
+                                        <th>Tax Name</th>
+                                        <th>Brand Name</th>
+                                        <th>Tax Rate</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredData.map((tax, index) => (
+                                        <tr key={index}>
+                                            <td className="font-medium">{index + 1}</td>
+                                            <td className="font-semibold">{tax.display_tax_name}</td>
+                                            <td>{tax.brand_id.short_name}</td>
+                                            <td className="font-bold text-blue-600">{tax.tax_value}%</td>
+                                            <td>
+                                                <span className={`status-badge ${tax.status === 'active' ? 'status-active' : 'status-inactive'}`}>
+                                                    {tax.status}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <div className="flex items-center gap-2">
+                                                    <button 
+                                                        onClick={() => handleEditTax(tax)}
+                                                        className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                                                    >
+                                                        <Edit size={16} />
+                                                    </button>
+                                                    <button 
+                                                        onClick={() => handleDelete(tax)}
+                                                        className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                </div>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody className="bg-white divide-y divide-slate-200">
-                                        {filteredData.map((tax, index) => (
-                                            <tr key={index} className="hover:bg-slate-50 transition-colors">
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-900 font-medium">{index + 1}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">{tax.display_tax_name}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{tax.brand_id.short_name}</td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">{tax.tax_value}%</td>
-                                                <td className="px-6 py-4 whitespace-nowrap">
-                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                                        tax.status === 'active' 
-                                                            ? 'bg-emerald-100 text-emerald-800' 
-                                                            : 'bg-red-100 text-red-800'
-                                                    }`}>
-                                                        {tax.status.charAt(0).toUpperCase() + tax.status.slice(1)}
-                                                    </span>
-                                                </td>
-                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                    <div className="flex items-center gap-3">
-                                                        <button 
-                                                            onClick={() => handleEditTax(tax)}
-                                                            className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                                                        >
-                                                            <Edit size={18} />
-                                                        </button>
-                                                        <button 
-                                                            onClick={() => handleDelete(tax)}
-                                                            className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
-                                                        >
-                                                            <Trash2 size={18} />
-                                                        </button>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
+                                    ))}
+                                </tbody>
+                            </table>
                         </div>
                     </div>
-            }
+                </div>
+            )}
         </>
-    )
-}
+    );
+};
 
 export default Tax;

@@ -46,38 +46,6 @@ const Brand = () => {
     const [postalCode, setPostalCode] = useState('');
     const [address, setAddress] = useState('');
     const [status, setStatus] = useState("");
-    // const [dayEndData, setDayEndData] = useState(null);
-    // const [error, setError] = useState(null);
-
-    // useEffect(() => {
-    //     const fetchDayEndData = async () => {
-    //         const brand_id = "6822b72615fe200295fcb3f7";
-    //         const outlet_id = "6822c5424bd1d8d236d8a293";
-    //         const time = Date.now(); // or your custom timestamp
-
-    //         try {
-
-    //             // const response = await axios.get(`${API}/api/dashboard/day-end`, {
-    //             const response = await axios.get(`${API}/api/dashboard/day-end-summary`, {
-    //                 params: {
-    //                     brand_id,
-    //                     outlet_id,
-    //                     time
-    //                 },
-    //                 withCredentials: true,
-    //             });
-
-
-    //             console.log("✅ Day-End Data:", response.data);
-    //             setDayEndData(response.data);
-    //         } catch (err) {
-    //             console.error("❌ Error fetching day-end:", err.response?.data?.message || err.message);
-    //             setError(err.response?.data?.message || "Failed to fetch day-end data");
-    //         }
-    //     };
-
-    //     fetchDayEndData();
-    // }, [API]);
 
     useEffect(() => {
         if (staff.permissions?.includes('brand_manage')) {
@@ -151,7 +119,6 @@ const Brand = () => {
             status: status ? "active" : "inactive",
         };
 
-
         const errors = validateBrandData(payload);
         if (Object.keys(errors).length > 0) {
             Object.values(errors).forEach((msg) => toast.error(msg));
@@ -166,13 +133,11 @@ const Brand = () => {
         } else {
             createBrand(payload);
         }
-
     };
 
     const validateBrandData = (brandData) => {
         const errors = {};
 
-        // Required fields
         if (!brandData.full_name) errors.full_name = "Brand name is required.";
         if (!brandData.short_name) errors.short_name = "Short name is required.";
         if (!brandData.email) errors.email = "Email is required.";
@@ -187,7 +152,6 @@ const Brand = () => {
         if (!brandData.postal_code) errors.postal_code = "Postal code is required.";
         if (!brandData.street_address) errors.street_address = "Street address is required.";
 
-        // Format validations
         const emailRegex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
         if (brandData.email && !emailRegex.test(brandData.email)) {
             errors.email = "Invalid email format.";
@@ -195,7 +159,6 @@ const Brand = () => {
 
         return errors;
     };
-
 
     const createBrand = async (brandData) => {
         try {
@@ -206,16 +169,14 @@ const Brand = () => {
 
             const updatedBrands = [...brands, newBrand];
 
-            // ✅ Update local brands state
             setBrands(updatedBrands);
 
-            // ✅ Update staff context with new brands array
             const updatedStaff = {
                 ...staff,
                 brands: updatedBrands
             };
 
-            updateStaff(updatedStaff); // Comes from AuthContext
+            updateStaff(updatedStaff);
             setShowPopup(false);
         } catch (error) {
             toast.error(error.response?.data?.message || "Failed to create brand.");
@@ -238,17 +199,14 @@ const Brand = () => {
                 brand._id === updatedData._id ? updatedBrand : brand
             );
 
-            // ✅ Update brands state
             setBrands(updatedBrands);
 
-            // ✅ Safely update staff using a new object
             const updatedStaff = {
                 ...staff,
                 brands: updatedBrands
             };
 
-            updateStaff(updatedStaff); // ✅ from AuthContext
-
+            updateStaff(updatedStaff);
 
             setShowPopup(false);
         } catch (error) {
@@ -257,6 +215,11 @@ const Brand = () => {
             setLoading(false);
         }
     };
+
+    function formatDate(timestamp) {
+        const date = new Date(timestamp);
+        return date.toLocaleString();
+    }
 
     const filteredData = useFilteredData({
         data: brands,
@@ -267,126 +230,127 @@ const Brand = () => {
         },
     });
 
-
     return (
         <>
-            {
-                loading && <Loader />
-            }
+            {loading && <Loader />}
 
             {showPopup ? (
-                <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-8">
-                    <HeadingText title={`${isEditing ? "Edit" : "Add"} Brand`} />
-                    
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <InputField
-                                label="Brand Name"
-                                type="text"
-                                name="full_name"
-                                value={fullName}
-                                onChange={(e) => setFullName(e.target.value)}
-                                required
-                            />
-                            <InputField
-                                label="Short Name"
-                                type="text"
-                                name="short_name"
-                                value={shortName}
-                                onChange={(e) => setShortName(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <InputField
-                                label="GST No"
-                                type="text"
-                                name="gst_no"
-                                value={gstNo}
-                                onChange={(e) => setGstNo(e.target.value)}
-                                required
-                            />
-                            <InputField
-                                label="License No"
-                                type="text"
-                                name="license_no"
-                                value={licenseNo}
-                                onChange={(e) => setLicenseNo(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <InputField
-                                label="Food License"
-                                type="text"
-                                name="food_license"
-                                value={foodLicense}
-                                onChange={(e) => setFoodLicense(e.target.value)}
-                                required
-                            />
-                            <PhoneNumberInput
-                                phoneNumber={phone}
-                                onPhoneNumberChange={setPhone}
-                                selectedCountry={selectedCountryCode}
-                                onCountryChange={setSelectedCountryCode}
-                                countryOptions={countryCodeOptions}
-                            />
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <InputField
-                                label="Email"
-                                type="email"
-                                name="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                required
-                            />
-                            <InputField
-                                label="Website"
-                                type="url"
-                                name="website"
-                                value={website}
-                                onChange={(e) => setWebsite(e.target.value)}
-                                required
-                            />
-
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <InputField
-                                label="Street Address"
-                                type="text"
-                                name="street_address"
-                                value={address}
-                                onChange={(e) => setAddress(e.target.value)}
-                                required
-                            />
-                            <InputField
-                                label="City"
-                                type="text"
-                                name="city"
-                                value={city}
-                                onChange={(e) => setCity(e.target.value)}
-                                required
-                            />
-
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <InputField
-                                label="State"
-                                type="text"
-                                name="state"
-                                value={state}
-                                onChange={(e) => setState(e.target.value)}
-                                required
-                            />
-                            <SelectInput
-                                label={"Country"}
-                                selectedOption={selectedCountry}
-                                onChange={setSelectedCountry}
-                                options={countryOptions}
-                            />
-                        </div>
-                        <div className="grid grid-cols-1 gap-6">
+                <div className="max-w-4xl mx-auto">
+                    <div className="card p-8">
+                        <HeadingText title={`${isEditing ? "Edit" : "Add"} Brand`} />
+                        
+                        <div className="space-y-6">
+                            <div className="form-grid form-grid-2">
+                                <InputField
+                                    label="Brand Name"
+                                    type="text"
+                                    name="full_name"
+                                    value={fullName}
+                                    onChange={(e) => setFullName(e.target.value)}
+                                    required
+                                />
+                                <InputField
+                                    label="Short Name"
+                                    type="text"
+                                    name="short_name"
+                                    value={shortName}
+                                    onChange={(e) => setShortName(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            
+                            <div className="form-grid form-grid-2">
+                                <InputField
+                                    label="GST No"
+                                    type="text"
+                                    name="gst_no"
+                                    value={gstNo}
+                                    onChange={(e) => setGstNo(e.target.value)}
+                                    required
+                                />
+                                <InputField
+                                    label="License No"
+                                    type="text"
+                                    name="license_no"
+                                    value={licenseNo}
+                                    onChange={(e) => setLicenseNo(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            
+                            <div className="form-grid form-grid-2">
+                                <InputField
+                                    label="Food License"
+                                    type="text"
+                                    name="food_license"
+                                    value={foodLicense}
+                                    onChange={(e) => setFoodLicense(e.target.value)}
+                                    required
+                                />
+                                <PhoneNumberInput
+                                    phoneNumber={phone}
+                                    onPhoneNumberChange={setPhone}
+                                    selectedCountry={selectedCountryCode}
+                                    onCountryChange={setSelectedCountryCode}
+                                    countryOptions={countryCodeOptions}
+                                />
+                            </div>
+                            
+                            <div className="form-grid form-grid-2">
+                                <InputField
+                                    label="Email"
+                                    type="email"
+                                    name="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                                <InputField
+                                    label="Website"
+                                    type="url"
+                                    name="website"
+                                    value={website}
+                                    onChange={(e) => setWebsite(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            
+                            <div className="form-grid form-grid-2">
+                                <InputField
+                                    label="Street Address"
+                                    type="text"
+                                    name="street_address"
+                                    value={address}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                    required
+                                />
+                                <InputField
+                                    label="City"
+                                    type="text"
+                                    name="city"
+                                    value={city}
+                                    onChange={(e) => setCity(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            
+                            <div className="form-grid form-grid-2">
+                                <InputField
+                                    label="State"
+                                    type="text"
+                                    name="state"
+                                    value={state}
+                                    onChange={(e) => setState(e.target.value)}
+                                    required
+                                />
+                                <SelectInput
+                                    label="Country"
+                                    selectedOption={selectedCountry}
+                                    onChange={setSelectedCountry}
+                                    options={countryOptions}
+                                />
+                            </div>
+                            
                             <InputField
                                 label="Postal Code"
                                 type="text"
@@ -396,26 +360,26 @@ const Brand = () => {
                                 required
                             />
 
+                            {isEditing && (
+                                <div className="pt-6 border-t border-gray-200">
+                                    <Checkbox
+                                        label="Active Status"
+                                        checked={status}
+                                        onChange={() => setStatus(!status)}
+                                    />
+                                </div>
+                            )}
                         </div>
-                        {isEditing && (
-                            <div className="pt-6 border-t border-slate-200">
-                                <Checkbox
-                                    label="Active Status"
-                                    checked={status}
-                                    onChange={() => setStatus(!status)}
-                                />
-                            </div>
-                        )}
-                    </div>
 
-                    <div className="flex justify-end gap-4 pt-8 border-t border-slate-200 mt-8">
-                        <GradientButton clickAction={handleSave}>
-                            {isEditing ? "Update" : "Save"}
-                        </GradientButton>
-                        <Button clickAction={() => setShowPopup(false)}>Close</Button>
+                        <div className="flex justify-end gap-4 pt-8 border-t border-gray-200 mt-8">
+                            <GradientButton clickAction={handleSave}>
+                                {isEditing ? "Update" : "Save"}
+                            </GradientButton>
+                            <Button clickAction={() => setShowPopup(false)}>Close</Button>
+                        </div>
                     </div>
                 </div>
-            ) :
+            ) : (
                 <div className="space-y-6">
                     <TopBar
                         title="Brands"
@@ -424,8 +388,8 @@ const Brand = () => {
                         selectedFilter={filteredStatus}
                         setSelectedFilter={setFilteredStatus}
                     />
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <div className="card p-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                             {filteredData.map((brand) => (
                                 <EditCard
                                     key={brand._id}
@@ -440,7 +404,7 @@ const Brand = () => {
                         </div>
                     </div>
                 </div>
-            }
+            )}
         </>
     );
 };

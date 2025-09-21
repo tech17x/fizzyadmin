@@ -3,15 +3,15 @@ import Sidebar from '../components/Sidebar';
 
 const AdminLayout = ({ children }) => {
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="min-h-screen bg-gray-50 flex">
       <Sidebar />
-      <main className="flex-1 overflow-hidden">
-        <div className="h-full overflow-y-auto custom-scrollbar">
-          <div className="p-8">
+      <div className="flex-1 flex flex-col min-w-0">
+        <main className="flex-1 overflow-auto">
+          <div className="p-8 max-w-7xl mx-auto w-full">
             {children}
           </div>
-        </div>
-      </main>
+        </main>
+      </div>
     </div>
   );
 };

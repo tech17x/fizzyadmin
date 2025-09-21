@@ -51,19 +51,16 @@ const Login = () => {
     return (
         <>
             {loading && <Loader />}
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-6">
+            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center p-6">
                 <div className="w-full max-w-md">
-                    <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
+                    <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
                         {/* Header */}
-                        <div className="px-8 py-10 bg-gradient-to-br from-blue-600 to-indigo-700 text-center relative overflow-hidden">
-                            <div className="absolute inset-0 bg-black opacity-10"></div>
-                            <div className="relative z-10">
-                                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-sm">
-                                    <span className="text-3xl font-bold text-white">F</span>
-                                </div>
-                                <h1 className="text-3xl font-bold text-white mb-2">FIZZY ADMIN</h1>
-                                <p className="text-blue-100 text-sm">Restaurant Management System</p>
+                        <div className="px-8 py-12 bg-gradient-to-br from-blue-600 to-indigo-700 text-center">
+                            <div className="w-16 h-16 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mx-auto mb-6">
+                                <span className="text-2xl font-bold text-white">F</span>
                             </div>
+                            <h1 className="text-2xl font-bold text-white mb-2">FIZZY ADMIN</h1>
+                            <p className="text-blue-100 text-sm">Restaurant Management System</p>
                         </div>
 
                         {/* Form */}
@@ -102,13 +99,13 @@ const Login = () => {
                                     <label className="flex items-center">
                                         <input 
                                             type="checkbox" 
-                                            className="w-4 h-4 text-blue-600 border-2 border-slate-300 rounded focus:ring-blue-500 focus:ring-2" 
+                                            className="w-4 h-4 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500 focus:ring-2" 
                                         />
-                                        <span className="ml-3 text-sm text-slate-600 font-medium">Remember me</span>
+                                        <span className="ml-3 text-sm text-gray-600 font-medium">Remember me</span>
                                     </label>
                                     <button 
                                         type="button"
-                                        className="text-sm text-blue-600 hover:text-blue-700 font-semibold transition-colors"
+                                        className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
                                     >
                                         Forgot Password?
                                     </button>
@@ -122,7 +119,7 @@ const Login = () => {
                     </div>
                     
                     <div className="text-center mt-8">
-                        <p className="text-sm text-slate-600 mb-4">Need assistance?</p>
+                        <p className="text-sm text-gray-600 mb-4">Need assistance?</p>
                         <Button className="mx-auto">Contact Support Team</Button>
                     </div>
                 </div>
