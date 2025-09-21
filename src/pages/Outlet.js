@@ -271,10 +271,10 @@ const Outlet = () => {
                 loading && <Loader />
             }
             {showPopup ?
-                <div className="card">
+                <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-8">
                     <HeadingText title={`${isEditing ? "Edit" : "Add"} Outlet`} />
-                    <div className="inputs-container">
-                        <div className="inputs-row">
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <SelectInput
                                 selectedOption={selectedBrand}
                                 onChange={setSelectedBrand}
@@ -291,7 +291,7 @@ const Outlet = () => {
                             />
                         </div>
 
-                        <div className="inputs-row">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <InputField
                                 label="Outlet Code"
                                 format={"####"}
@@ -311,7 +311,7 @@ const Outlet = () => {
                             />
                         </div>
 
-                        <div className="inputs-row">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <PhoneNumberInput
                                 phoneNumber={phone}
                                 onPhoneNumberChange={setPhone}
@@ -329,7 +329,7 @@ const Outlet = () => {
                             />
                         </div>
 
-                        <div className="inputs-row">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <SelectInput
                                 selectedOption={timezone}
                                 onChange={setTimezone}
@@ -347,7 +347,7 @@ const Outlet = () => {
                             />
                         </div>
 
-                        <div className="inputs-row">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <InputField
                                 label="Closing Time"
                                 type="text"
@@ -367,7 +367,7 @@ const Outlet = () => {
                             />
                         </div>
 
-                        <div className="inputs-row">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <InputField
                                 label="City"
                                 type="text"
@@ -386,7 +386,7 @@ const Outlet = () => {
                             />
                         </div>
 
-                        <div className="inputs-row">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <SelectInput
                                 label={"Country"}
                                 selectedOption={selectedCountry}
@@ -403,7 +403,7 @@ const Outlet = () => {
                             />
                         </div>
 
-                        <div className="inputs-row">
+                        <div className="grid grid-cols-1 gap-4">
                             <InputField
                                 label="Website"
                                 type="url"
@@ -415,7 +415,7 @@ const Outlet = () => {
 
                         {
                             isEditing && (
-                                <div className="inputs-row checkbox-input">
+                                <div className="pt-4">
                                     <Checkbox
                                         label="Active Status"
                                         checked={status}
@@ -425,14 +425,14 @@ const Outlet = () => {
                             )
                         }
                     </div>
-                    <div className="action-btns-container">
+                    <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
                         <GradientButton clickAction={handleSave}>
                             {isEditing ? "Update" : "Save"}
                         </GradientButton>
                         <Button clickAction={() => setShowPopup(false)}>Close</Button>
                     </div>
                 </div> :
-                <div className="outlet-container" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <div className="space-y-6">
                     <TopBar
                         title="Outlets"
                         searchText={search}
@@ -440,8 +440,8 @@ const Outlet = () => {
                         selectedFilter={filteredStatus}
                         setSelectedFilter={setFilteredStatus}
                     />
-                    <div className="cards-container card">
-                        <>
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                             {filteredData.map((outlet) => (
                                 <EditCard
                                     key={outlet._id}
@@ -454,7 +454,7 @@ const Outlet = () => {
                                 />
                             ))}
                             <CardAdd handleAdd={handleAddNewOutlet} />
-                        </>
+                        </div>
                     </div>
                 </div>
             }

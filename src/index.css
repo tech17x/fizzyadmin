@@ -2,10 +2,50 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Your existing styles below */
-
-
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+
+/* Custom Tailwind Components */
+@layer components {
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-100 p-6;
+  }
+  
+  .btn-primary {
+    @apply px-4 py-2 bg-gradient-to-r from-orange-300 to-orange-600 text-white font-medium rounded-full text-sm transition-all duration-200 hover:shadow-lg hover:scale-105;
+  }
+  
+  .btn-secondary {
+    @apply px-4 py-2 border-2 border-transparent bg-transparent text-orange-600 font-medium rounded-full text-sm transition-all duration-200 hover:bg-orange-50;
+  }
+  
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors;
+  }
+  
+  .status-badge {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .status-active {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  .status-inactive {
+    @apply bg-red-100 text-red-800;
+  }
+  
+  .table-container {
+    @apply overflow-x-auto bg-white rounded-lg shadow-sm border border-gray-200;
+  }
+  
+  .table-header {
+    @apply bg-gray-50 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider;
+  }
+  
+  .table-cell {
+    @apply px-6 py-4 whitespace-nowrap text-sm text-gray-900;
+  }
+}
 
 * {
   margin: 0;
@@ -13,42 +53,28 @@
   box-sizing: border-box;
 }
 
-/* All scrollbars */
 ::-webkit-scrollbar {
   width: 3px;
-  /* Vertical scrollbar width */
   height: 3px;
-  /* Horizontal scrollbar height */
 }
 
-/* Scrollbar thumb (the draggable part) */
 ::-webkit-scrollbar-thumb {
   background-color: #F05756;
 }
 
-/* Only horizontal scrollbar */
 ::-webkit-scrollbar:horizontal {
   height: 3px;
 }
 
-/* Optional: style the track (the background of the scrollbar) */
 ::-webkit-scrollbar-track {
   background-color: transparent;
 }
-
-
-/* html {
-  transform: scale(0.8);
-  transform-origin: top left;
-  width: 125%;
-  height: 125%;
-  overflow: hidden;
-} */
 
 body {
   font-family: "Poppins", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  @apply bg-gray-50;
 }
 
 code {
@@ -58,69 +84,4 @@ code {
 
 .hide-scrollbar::-webkit-scrollbar {
   display: none !important;
-}
-
-
-.status {
-  border-radius: 20px;
-  color: white;
-  font-size: 10px;
-  font-weight: 400;
-  padding: 6px 8px;
-}
-
-.active {
-  background-color: #01CE56 !important;
-  text-transform: uppercase !important;
-}
-
-.inactive {
-  background-color: red;
-  text-transform: uppercase;
-}
-
-.inputs-container {
-  display: flex;
-  width: 100%;
-  margin-top: 1rem;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.inputs-row {
-  display: flex;
-  gap: 1%;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.inputs-row>.input-field,
-.inputs-row>.select-input {
-  width: 49%;
-}
-
-.action-btns-container {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  justify-content: flex-end;
-  margin-top: 1rem;
-}
-
-.checkbox-container{
-  display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-@media (max-width: 768px) {
-
-  .inputs-row>.input-field,
-  .inputs-row>.select-input {
-    width: 100%;
-  }
-
-  .inputs-row {
-    gap: 1rem;
-  }
 }

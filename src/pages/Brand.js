@@ -276,19 +276,11 @@ const Brand = () => {
             }
 
             {showPopup ? (
-                <div className="card">
+                <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-8">
                     <HeadingText title={`${isEditing ? "Edit" : "Add"} Brand`} />
-                    {/* <div>
-                        <h2>Day-End Record</h2>
-                        {error && <p style={{ color: "red" }}>Error: {error}</p>}
-                        {dayEndData ? (
-                            <pre>{JSON.stringify(dayEndData, null, 2)}</pre>
-                        ) : (
-                            !error && <p>Loading...</p>
-                        )}
-                    </div> */}
-                    <div className="inputs-container">
-                        <div className="inputs-row">
+                    
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <InputField
                                 label="Brand Name"
                                 type="text"
@@ -306,7 +298,7 @@ const Brand = () => {
                                 required
                             />
                         </div>
-                        <div className="inputs-row">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <InputField
                                 label="GST No"
                                 type="text"
@@ -324,7 +316,7 @@ const Brand = () => {
                                 required
                             />
                         </div>
-                        <div className="inputs-row">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <InputField
                                 label="Food License"
                                 type="text"
@@ -341,7 +333,7 @@ const Brand = () => {
                                 countryOptions={countryCodeOptions}
                             />
                         </div>
-                        <div className="inputs-row">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <InputField
                                 label="Email"
                                 type="email"
@@ -360,7 +352,7 @@ const Brand = () => {
                             />
 
                         </div>
-                        <div className="inputs-row">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <InputField
                                 label="Street Address"
                                 type="text"
@@ -379,7 +371,7 @@ const Brand = () => {
                             />
 
                         </div>
-                        <div className="inputs-row">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <InputField
                                 label="State"
                                 type="text"
@@ -395,7 +387,7 @@ const Brand = () => {
                                 options={countryOptions}
                             />
                         </div>
-                        <div className="inputs-row">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <InputField
                                 label="Postal Code"
                                 type="text"
@@ -407,7 +399,7 @@ const Brand = () => {
 
                         </div>
                         {isEditing && (
-                            <div className="inputs-row checkbox-input">
+                            <div className="pt-4">
                                 <Checkbox
                                     label="Active Status"
                                     checked={status}
@@ -417,7 +409,7 @@ const Brand = () => {
                         )}
                     </div>
 
-                    <div className="action-btns-container">
+                    <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
                         <GradientButton clickAction={handleSave}>
                             {isEditing ? "Update" : "Save"}
                         </GradientButton>
@@ -425,7 +417,7 @@ const Brand = () => {
                     </div>
                 </div>
             ) :
-                <div className="brand-container" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                <div className="space-y-6">
                     <TopBar
                         title="Brands"
                         searchText={search}
@@ -433,7 +425,8 @@ const Brand = () => {
                         selectedFilter={filteredStatus}
                         setSelectedFilter={setFilteredStatus}
                     />
-                    <div className="cards-container card">
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         {filteredData.map((brand) => (
                             <EditCard
                                 key={brand._id}
@@ -445,6 +438,7 @@ const Brand = () => {
                             />
                         ))}
                         <CardAdd handleAdd={handleAddNewBrand} />
+                        </div>
                     </div>
                 </div>
             }

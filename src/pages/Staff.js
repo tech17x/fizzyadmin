@@ -1,12 +1,9 @@
-// src/pages/Brand.js
+// src/pages/Staff.js
 
 import { useCallback, useContext, useEffect, useState } from 'react';
 import CardAdd from '../components/CardAdd';
 import EditCard from '../components/EditCard';
 import InputField from '../components/InputField';
-import './Brand.css';
-import './Outlet.css';
-import './Staff.css';
 import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
 import SelectInput from '../components/SelectInput';
@@ -416,7 +413,7 @@ const Staff = () => {
             }
             {
                 !showSecondScreen ?
-                    <div className="current-staff-info" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                    <div className="space-y-6">
                         <TopBar
                             title="Staff"
                             searchText={search}
@@ -424,32 +421,31 @@ const Staff = () => {
                             selectedFilter={status}
                             setSelectedFilter={setStatus}
                         />
-                        <div className="cards-container card">
-                            <>
+                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                 {
                                     filteredData.map(staff => (
                                         <EditCard key={staff._id} firstLetter={staff.name.charAt(0)} title={staff.name} role={staff.role.name} time={formatDate(staff.createdAt)} status={staff.status} handleEdit={() => handleStaffEdit(staff)} />
                                     ))
                                 }
                                 <CardAdd handleAdd={handleAddNewStaff} />
-                            </>
+                            </div>
                         </div>
-
                     </div> :
-                    <div className="add-new-staff-info card">
-                        <div className="step-links">
-                            <div className="step-btns">
+                    <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+                        <div className="flex flex-wrap gap-2 mb-8 border-b border-gray-200 pb-4">
+                            <div>
                                 {
                                     showSecondScreenSection === 'PROFILE' ?
-                                        <GradientButton>Profile</GradientButton>
+                                        <GradientButton>Profile Information</GradientButton>
                                         :
-                                        <Button clickAction={() => setShowSecondScreenSection("PROFILE")}>Profile</Button>
+                                        <Button clickAction={() => setShowSecondScreenSection("PROFILE")}>Profile Information</Button>
                                 }
                             </div>
                             {
                                 (selectedRole && selectedRole.label === "Admin" && isEditing) ? null :
                                     <>
-                                        <div className="step-btns">
+                                        <div>
                                             {
                                                 showSecondScreenSection === "USER" ?
                                                     <GradientButton>User Permissions</GradientButton>
@@ -457,7 +453,7 @@ const Staff = () => {
                                                     <Button clickAction={() => setShowSecondScreenSection("USER")}>User Permissions</Button>
                                             }
                                         </div>
-                                        <div className="step-btns">
+                                        <div>
                                             {
                                                 showSecondScreenSection === "BRAND" ?
                                                     <GradientButton>Brand Permissions</GradientButton>
@@ -465,7 +461,7 @@ const Staff = () => {
                                                     <Button clickAction={() => setShowSecondScreenSection("BRAND")}>Brand Permissions</Button>
                                             }
                                         </div>
-                                        <div className="step-btns">
+                                        <div>
                                             {
                                                 showSecondScreenSection === "OUTLET" ?
                                                     <GradientButton>Outlet Permissions</GradientButton>
@@ -478,65 +474,80 @@ const Staff = () => {
                         </div>
                         {
                             showSecondScreenSection === "PROFILE" &&
-                            <div className="profile-info">
-                                <img src={staffInfo.image} alt="" onError={(e) => e.target.src = "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png"} style={{ borderRadius: "10%", height: "10rem", width: "10rem" }} />
+                            <div className="space-y-6">
+                                <div className="flex justify-center">
+                                    <img 
+                                        src={staffInfo.image} 
+                                        alt="Staff Profile" 
+                                        onError={(e) => e.target.src = "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png"} 
+                                        className="w-32 h-32 rounded-xl object-cover border-4 border-orange-200"
+                                    />
+                                </div>
 
-                                <InputField
-                                    label="Image"
-                                    type="text"
-                                    name={"image"}
-                                    value={staffInfo.image || ""}
-                                    onChange={handleInputChange}
-                                    placeholder="Enter Image url"
-                                    required
-                                />
-                                <InputField
-                                    label="Name"
-                                    type="text"
-                                    name={"name"}
-                                    value={staffInfo.name || ""}
-                                    onChange={handleInputChange}
-                                    placeholder="Enter Name"
-                                    required
-                                />
-                                <PhoneNumberInput
-                                    phoneNumber={phone}
-                                    onPhoneNumberChange={(value) => { setPhone(value); setStaffInfo((prevData) => ({ ...prevData, phone: value })); }}
-                                    selectedCountry={selectedCountryCode}
-                                    onCountryChange={(value) => { setSelectedCountryCode(value); setStaffInfo((prevData) => ({ ...prevData, country_code: value.value })); }}
-                                    countryOptions={countryCodeOptions}
-                                />
-                                <InputField
-                                    label="Email"
-                                    type="email"
-                                    name={"email"}
-                                    value={staffInfo.email || ""}
-                                    onChange={handleInputChange}
-                                    placeholder="Enter Email"
-                                    required
-                                />
-                                <InputField
-                                    label="Passowd"
-                                    type="text"
-                                    name={"password"}
-                                    value={staffInfo.password || ""}
-                                    onChange={handleInputChange}
-                                    placeholder="Enter Password"
-                                    required
-                                />
-                                <InputField
-                                    label="Pos pin"
-                                    type="text"
-                                    name={"pos_login_pin"}
-                                    format={"####"}
-                                    value={staffInfo.pos_login_pin || ""}
-                                    onChange={handleInputChange}
-                                    placeholder="Enter Password"
-                                    required
-                                />
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <InputField
+                                        label="Profile Image URL"
+                                        type="text"
+                                        name={"image"}
+                                        value={staffInfo.image || ""}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter image URL"
+                                        required
+                                    />
+                                    <InputField
+                                        label="Full Name"
+                                        type="text"
+                                        name={"name"}
+                                        value={staffInfo.name || ""}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter full name"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <PhoneNumberInput
+                                        phoneNumber={phone}
+                                        onPhoneNumberChange={(value) => { setPhone(value); setStaffInfo((prevData) => ({ ...prevData, phone: value })); }}
+                                        selectedCountry={selectedCountryCode}
+                                        onCountryChange={(value) => { setSelectedCountryCode(value); setStaffInfo((prevData) => ({ ...prevData, country_code: value.value })); }}
+                                        countryOptions={countryCodeOptions}
+                                    />
+                                    <InputField
+                                        label="Email Address"
+                                        type="email"
+                                        name={"email"}
+                                        value={staffInfo.email || ""}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter email address"
+                                        required
+                                    />
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <InputField
+                                        label="Password"
+                                        type="password"
+                                        name={"password"}
+                                        value={staffInfo.password || ""}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter password"
+                                        required
+                                    />
+                                    <InputField
+                                        label="POS PIN"
+                                        type="text"
+                                        name={"pos_login_pin"}
+                                        format={"####"}
+                                        value={staffInfo.pos_login_pin || ""}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter 4-digit PIN"
+                                        required
+                                    />
+                                </div>
 
                                 {isEditing && (
-                                    <div className="inputs-row checkbox-input">
+                                    <div className="pt-4">
                                         <Checkbox
                                             label="Active Status"
                                             checked={staffInfo.status}
@@ -548,32 +559,32 @@ const Staff = () => {
                         }
                         {
                             showSecondScreenSection === "USER" &&
-                            <div className="permissions">
-                                {/* Roles Dropdown */}
+                            <div className="space-y-6">
                                 <SelectInput
-                                    label="Roles"
+                                    label="Select Role"
                                     options={roles.map((role) => ({ label: role.name, value: role._id }))}
                                     placeholder="Select a Role"
                                     selectedOption={selectedRole}
                                     onChange={handleRoleChange}
                                 />
 
-                                <p style={{ margin: "1rem 0" }}>Permissions</p>
+                                <div>
+                                    <h3 className="text-lg font-medium text-gray-900 mb-4">Permissions</h3>
 
-                                {/* Permissions Table */}
-                                <div className="table-overflow">
-                                    <table className="checkbox-table">
-                                        <thead>
+                                    <div className="overflow-x-auto">
+                                        <table className="w-full border border-gray-200 rounded-lg">
+                                            <thead className="bg-gray-50">
                                             <tr>
-                                                <th>Features</th>
-                                                <th>Capabilities</th>
+                                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Features</th>
+                                                <th className="px-4 py-3 text-left text-sm font-medium text-gray-700">Capabilities</th>
                                             </tr>
                                         </thead>
-                                        <tbody>
+                                        <tbody className="divide-y divide-gray-200">
                                             {Array.from(new Set(permissions.map((p) => p.category))).map((category) => (
                                                 <tr key={category}>
-                                                    <td>{category}</td>
-                                                    <td>
+                                                    <td className="px-4 py-3 text-sm font-medium text-gray-900">{category}</td>
+                                                    <td className="px-4 py-3">
+                                                        <div className="space-y-2">
                                                         {permissions
                                                             .filter((p) => p.category === category)
                                                             .map((perm) => (
@@ -585,23 +596,25 @@ const Staff = () => {
                                                                     onChange={() => handlePermissionToggle(perm.name)}
                                                                 />
                                                             ))}
+                                                        </div>
                                                     </td>
                                                 </tr>
                                             ))}
                                         </tbody>
                                     </table>
+                                    </div>
                                 </div>
                             </div>
                         }
                         {
                             showSecondScreenSection === "BRAND" &&
-                            <div className="brand-permissions">
-                                <p>Permissions</p>
-                                <div className="box">
-                                    <div className="box-head">
-                                        Brand
+                            <div className="space-y-6">
+                                <h3 className="text-lg font-medium text-gray-900">Brand Permissions</h3>
+                                <div className="border border-gray-200 rounded-lg">
+                                    <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                                        <h4 className="text-sm font-medium text-gray-700">Available Brands</h4>
                                     </div>
-                                    <div className="box-body">
+                                    <div className="p-4 space-y-3">
                                         {
                                             brands.map((item, index) => (
                                                 <Checkbox
@@ -619,13 +632,13 @@ const Staff = () => {
                         }
                         {
                             showSecondScreenSection === "OUTLET" &&
-                            <div className="brand-permissions">
-                                <p>Permissions</p>
-                                <div className="box">
-                                    <div className="box-head">
-                                        Outlet
+                            <div className="space-y-6">
+                                <h3 className="text-lg font-medium text-gray-900">Outlet Permissions</h3>
+                                <div className="border border-gray-200 rounded-lg">
+                                    <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
+                                        <h4 className="text-sm font-medium text-gray-700">Available Outlets</h4>
                                     </div>
-                                    <div className="box-body">
+                                    <div className="p-4 space-y-3">
                                         {
                                             outlets
                                                 .filter((item) => staffInfo.brands.includes(item.brand_id))
@@ -643,7 +656,7 @@ const Staff = () => {
                                 </div>
                             </div>
                         }
-                        <div className="sections-action-btns-container">
+                        <div className="flex justify-end gap-3 pt-6 border-t border-gray-200">
                             <GradientButton clickAction={handleStaffSave}>
                                 {isEditing ? "Update" : "Save"}
                             </GradientButton>

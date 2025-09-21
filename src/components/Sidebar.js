@@ -1,7 +1,5 @@
 import React, { useContext, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import './Sidebar.css';
-import GradientText from './GradientText';
 
 import {
   LayoutDashboard,
@@ -61,8 +59,6 @@ import {
   PieChartIcon,
   DollarSign,
 } from 'lucide-react';
-import Popup from './Popup';
-import FizzyLogo from './FizzyLogo';
 import AuthContext from '../context/AuthContext';
 
 const menuItems = [
@@ -203,12 +199,6 @@ const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(window.innerWidth < 768 ? true : false);
   const [openIndex, setOpenIndex] = useState(null);
   const [hoveredIndex, setHoveredIndex] = useState(null);
-  const [showNotificationPopup, setShowNotificationPopup] = useState(false);
-  const [notifications, setNotifications] = useState([
-    { id: 1, message: '🔔 New Message: You have received a new inquiry from a client.', time: '2 minutes ago', read: false },
-    { id: 2, message: '⚠️ System Update: Scheduled maintenance on May 5, 10:00 PM UTC.', time: '1 hour ago', read: false },
-    { id: 3, message: '✅ Task Completed: "Homepage redesign" was marked as completed.', time: 'Yesterday', read: true },
-  ]);
   const { staff, logout } = useContext(AuthContext);
   const location = useLocation();
   const navigate = useNavigate();
@@ -236,24 +226,10 @@ const Sidebar = () => {
   const handleLinkClick = () => {
     if (window.innerWidth < 768) {
       if (!collapsed) setCollapsed(true);
-      setHoveredIndex(null)
+      setHoveredIndex(null);
     } else {
       if (collapsed) setCollapsed(false);
     }
-  };
-
-  // Function to handle marking a notification as read
-  const handleMarkAsRead = (id) => {
-    setNotifications((prev) =>
-      prev.map((notif) =>
-        notif.id === id ? { ...notif, read: true } : notif
-      )
-    );
-  };
-
-  // Function to handle deleting a notification
-  const handleDeleteNotification = (id) => {
-    setNotifications((prev) => prev.filter((notif) => notif.id !== id));
   };
 
   const filteredMenuItems = menuItems
@@ -275,65 +251,81 @@ const Sidebar = () => {
     })
     .filter(Boolean);
 
-
-
   return (
-    <>
-      <aside className={`sidebar ${collapsed ? 'collapsed' : ''}`}>
-        <div className="logo-section">
-          <FizzyLogo oneWord={collapsed} />
-          {
-            !collapsed && (
-              <button className="toggle-btn" onClick={() => setCollapsed(!collapsed)}>
-                <PanelLeftClose color='#DF6229' size={15} />
-              </button>
-            )
-          }
+    <div className={`h-full flex flex-col transition-all duration-300 ${collapsed ? 'w-16' : 'w-64'}`}>
+      {/* Logo Section */}
+      <div className="p-4 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-orange-400 to-orange-600 rounded-lg flex items-center justify-center">
+              <span className="text-white font-bold text-sm">F</span>
+            </div>
+            {!collapsed && (
+              <span className="text-lg font-bold bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent">
+                Fizzy
+              </span>
+            )}
+          </div>
+          {!collapsed && (
+            <button 
+              className="p-1 text-gray-400 hover:text-orange-600 transition-colors"
+              onClick={() => setCollapsed(!collapsed)}
+            >
+              <PanelLeftClose size={16} />
+            </button>
+          )}
         </div>
+      </div>
 
-        <nav>
-          <ul>
+      {/* Navigation */}
+      <nav className="flex-1 overflow-y-auto py-4">
+        <ul className="space-y-1 px-2">
             {filteredMenuItems.map((item, index) => (
-              <li
-                key={index}
-                onMouseEnter={() => setHoveredIndex(index)}
-                onMouseLeave={() => setHoveredIndex(null)}
-                className="menu-item"
-              >
+              <li key={index} className="relative">
                 {item.submenu ? (
-                  <div
-                    className={`dropdown-header ${openIndex === index ? 'active-link' : ''}`}
+                  <button
+                    className={`w-full flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      openIndex === index 
+                        ? 'bg-orange-100 text-orange-700' 
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    }`}
                     onClick={() => handleAccordionToggle(index)}
+                    onMouseEnter={() => setHoveredIndex(index)}
+                    onMouseLeave={() => setHoveredIndex(null)}
                   >
                     {item.icon}
-                    {!collapsed && <GradientText>{item.title}</GradientText>}
-                  </div>
+                    {!collapsed && <span>{item.title}</span>}
+                  </button>
                 ) : (
                   <Link
                     to={item.path}
                     onClick={handleLinkClick}
-                    className={isActive(item.path) ? 'active-link' : ''}
-                    title={item.title}
+                    className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                      isActive(item.path) 
+                        ? 'bg-orange-100 text-orange-700' 
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                    }`}
                   >
                     {item.icon}
-                    {!collapsed && <GradientText>{item.title}</GradientText>}
+                    {!collapsed && <span>{item.title}</span>}
                   </Link>
                 )}
 
-                {((openIndex === index && !collapsed) || (hoveredIndex === index && collapsed)) && item.submenu && (
-                  <ul className={`submenu ${collapsed ? 'card hover-submenu' : ''}`}>
+                {openIndex === index && !collapsed && item.submenu && (
+                  <ul className="ml-6 mt-1 space-y-1">
                     {item.submenu.map((subItem, subIdx) => (
                       <li key={subIdx}>
                         <Link
                           to={subItem.path}
-                          onClick={() => {
-                            handleLinkClick();
-                            setOpenIndex(index);
-                          }}
-                          className={isActive(subItem.path) ? 'active-link' : ''}
+                          onClick={handleLinkClick}
+                          className={`flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${
+                            isActive(subItem.path) 
+                              ? 'bg-orange-100 text-orange-700' 
+                              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                          }`}
                         >
                           {subItem.icon}
-                          <GradientText>{subItem.title}</GradientText>
+                          <span>{subItem.title}</span>
                         </Link>
                       </li>
                     ))}
@@ -344,24 +336,31 @@ const Sidebar = () => {
           </ul>
         </nav>
 
-        <div className={`bottom-section ${collapsed ? "align-center" : ""}`}>
-          {/* <ul>
-            <li>
-              <Link onClick={() => { handleLinkClick(); setShowNotificationPopup(true); }} className={`link-span ${isActive('/notifications') ? 'active-link' : ''}`}>
-                <Bell color="#DF6229" size={15} />
-                {!collapsed && <GradientText>Notifications</GradientText>}
-              </Link>
-            </li>
-            <li>
-              <Link to="#" onClick={(e) => { e.preventDefault(); logout(); }} className={isActive('/logout') ? 'active-link' : ''}>
-                <LogOut color="#DF6229" size={15} />
-                {!collapsed && <GradientText>Logout</GradientText>}
-              </Link>
-            </li>
-          </ul> */}
+      {/* Profile Section */}
+      <div className="p-4 border-t border-gray-200">
+        <button 
+          className="w-full flex items-center gap-3 px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+          onClick={() => { handleLinkClick(); navigate("/profile"); }}
+        >
+          <img 
+            src={staff?.image || "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png"} 
+            alt="Profile" 
+            className="w-8 h-8 rounded-full object-cover border-2 border-orange-200"
+          />
+          {!collapsed && (
+            <div className="flex-1 text-left">
+              <div className="font-medium text-gray-900">{staff?.name}</div>
+              <div className="text-xs text-orange-600">{staff?.role?.name}</div>
+            </div>
+          )}
+        </button>
+      </div>
+    </div>
+  );
+};
 
-          <div className="sidebar-profile" onClick={() => { handleLinkClick(); navigate("/profile"); }}>
-            <img src="https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png" alt="user" />
+export default Sidebar;
+
             {!collapsed && (
               <div>
                 <strong style={{ fontSize: "15px", color: "#4b5563" }}>{staff.name}</strong>

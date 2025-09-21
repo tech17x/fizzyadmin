@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import "./InputField.css";
 
 const SelectInput = ({
     label,
@@ -57,26 +56,23 @@ const SelectInput = ({
     };
 
     return (
-        <div className="select-input">
+        <div className="flex flex-col gap-1">
             {label && (
-                <label
-                    className="select-input__label"
-                    style={{ color: disable ? "#9ca3af" : "#374151" }}
-                >
+                <label className={`text-sm font-medium ${disable ? 'text-gray-400' : 'text-gray-700'}`}>
                     {label}
                 </label>
             )}
 
-            <div className="select-input__container">
+            <div className="relative">
                 <div
-                    className={`select-input__custom-select ${disable ? "select-input__custom-select--disabled" : ""
-                        }`}
+                    className={`w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors flex items-center justify-between cursor-pointer ${
+                        disable ? 'bg-gray-100 text-gray-400 cursor-not-allowed' : 'hover:border-gray-400'
+                    }`}
                     onClick={handleToggleDropdown}
-                    style={{ cursor: disable ? "not-allowed" : "pointer" }}
                     role="button"
                     aria-expanded={isOpen}
                 >
-                    <span className="select-input__selected-option">
+                    <span className="flex-1 truncate">
                         {multiple
                             ? selectedLabels.length > 0
                                 ? selectedLabels.join(", ")
@@ -84,15 +80,13 @@ const SelectInput = ({
                             : selectedLabels || "Select an option"}
                     </span>
                     <ChevronDown
-                        className={`select-input__icon ${isOpen ? "select-input__icon--open" : ""
-                            }`}
-                        size={12}
+                        className={`h-4 w-4 text-gray-400 transition-transform ${isOpen ? "rotate-180" : ""}`}
                         strokeWidth={2.2}
                     />
                 </div>
 
                 {isOpen && !disable && (
-                    <ul className="select-input__options-list">
+                    <ul className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
                         {options.map((option) => {
                             const isSelected = multiple
                                 ? selectedValues?.includes(option.value)
@@ -101,8 +95,9 @@ const SelectInput = ({
                             return (
                                 <li
                                     key={option.value}
-                                    className={`select-input__option ${isSelected ? "select-input__option--selected" : ""
-                                        }`}
+                                    className={`px-3 py-2 text-sm cursor-pointer hover:bg-gray-50 transition-colors flex items-center ${
+                                        isSelected ? 'bg-orange-50 text-orange-600' : 'text-gray-700'
+                                    }`}
                                     onClick={() => handleSelectOption(option)}
                                 >
                                     {multiple && (
@@ -110,7 +105,7 @@ const SelectInput = ({
                                             type="checkbox"
                                             checked={isSelected}
                                             readOnly
-                                            style={{ marginRight: "6px" }}
+                                            className="mr-2"
                                         />
                                     )}
                                     {option.label}
