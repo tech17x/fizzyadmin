@@ -35,6 +35,7 @@ import {
   XCircle,
   PieChart,
   DollarSign,
+  UsersIcon
 } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
 
