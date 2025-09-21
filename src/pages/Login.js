@@ -51,16 +51,19 @@ const Login = () => {
     return (
         <>
             {loading && <Loader />}
-            <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 flex items-center justify-center p-6">
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-6">
                 <div className="w-full max-w-md">
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+                    <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
                         {/* Header */}
-                        <div className="px-8 py-12 bg-gradient-to-br from-blue-600 to-indigo-700 text-center">
-                            <div className="w-16 h-16 bg-white bg-opacity-20 rounded-xl flex items-center justify-center mx-auto mb-6">
-                                <span className="text-2xl font-bold text-white">F</span>
+                        <div className="px-8 py-12 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-center relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-transparent"></div>
+                            <div className="relative z-10">
+                                <div className="w-20 h-20 bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
+                                    <span className="text-3xl font-bold text-white">F</span>
+                                </div>
+                                <h1 className="text-3xl font-bold text-white mb-3">FIZZY ADMIN</h1>
+                                <p className="text-blue-100 text-sm font-medium">Restaurant Management System</p>
                             </div>
-                            <h1 className="text-2xl font-bold text-white mb-2">FIZZY ADMIN</h1>
-                            <p className="text-blue-100 text-sm">Restaurant Management System</p>
                         </div>
 
                         {/* Form */}
@@ -111,7 +114,7 @@ const Login = () => {
                                     </button>
                                 </div>
                                 
-                                <GradientButton type="submit" className="w-full py-4 text-base">
+                                <GradientButton type="submit" className="w-full py-4 text-base font-semibold">
                                     Sign In to Dashboard
                                 </GradientButton>
                             </form>

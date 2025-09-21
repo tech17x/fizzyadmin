@@ -79,14 +79,17 @@ const SelectInput = ({
                 <label className={`block text-sm font-medium ${disable ? 'text-gray-400' : 'text-gray-700'}`}>
                     {label}
                     {required && <span className="text-red-500 ml-1">*</span>}
-                    }
                 </label>
             )}
 
             <div className="relative">
                 <button
                     type="button"
-                    className={`select ${disable ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : 'cursor-pointer hover:border-gray-300'} flex items-center justify-between`}
+                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-sm bg-white text-left flex items-center justify-between transition-all duration-200 ${
+                        disable 
+                            ? 'bg-gray-50 text-gray-400 cursor-not-allowed' 
+                            : 'cursor-pointer hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                    }`}
                     onClick={handleToggleDropdown}
                     disabled={disable}
                 >

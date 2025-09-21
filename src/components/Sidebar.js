@@ -167,10 +167,10 @@ const Sidebar = () => {
     <>
       {/* Mobile Menu Button */}
       <button
-        className="lg:hidden fixed top-6 left-6 z-50 p-3 bg-white rounded-xl shadow-lg border"
+        className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-white rounded-xl shadow-lg border border-gray-200"
         onClick={() => setIsMobileOpen(!isMobileOpen)}
       >
-        {isMobileOpen ? <X size={20} /> : <Menu size={20} />}
+        {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
 
       {/* Mobile Overlay */}
@@ -228,9 +228,8 @@ const Sidebar = () => {
                         onClick={() => toggleMenu(index)}
                       >
                         <div className="flex items-center gap-3">
-                          <IconComponent size={18} />
+                          <IconComponent className="w-5 h-5" />
                           {!collapsed && <span>{item.title}</span>}
-                          }
                         </div>
                         {!collapsed && (
                           <ChevronDown className={`w-4 h-4 transition-transform ${openMenus.has(index) ? 'rotate-180' : ''}`} />
@@ -252,7 +251,7 @@ const Sidebar = () => {
                                   }`}
                                   onClick={() => setIsMobileOpen(false)}
                                 >
-                                  <SubIconComponent size={16} />
+                                  <SubIconComponent className="w-4 h-4" />
                                   <span>{subItem.title}</span>
                                 </Link>
                               </li>
@@ -271,9 +270,8 @@ const Sidebar = () => {
                       }`}
                       onClick={() => setIsMobileOpen(false)}
                     >
-                      <IconComponent size={18} />
+                      <IconComponent className="w-5 h-5" />
                       {!collapsed && <span>{item.title}</span>}
-                      }
                     </Link>
                   )}
                 </li>
