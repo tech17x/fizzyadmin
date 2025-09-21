@@ -82,7 +82,7 @@ export default function AddonSales() {
   // Auto fetch when filters change
   useEffect(() => {
     fetchAddonSales();
-  }, [selectedBrand, selectedOutlet, dateRange]);
+  }, [selectedBrand, selectedOutlet, dateRange, fetchAddonSales]);
 
   // Refresh handler
   const handleRefresh = () => {

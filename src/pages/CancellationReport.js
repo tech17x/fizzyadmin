@@ -84,7 +84,7 @@ export default function CancellationReport() {
   // Auto fetch when filters change
   useEffect(() => {
     fetchCancelRefundSummary();
-  }, [selectedBrand, selectedOutlet, dateRange]);
+  }, [selectedBrand, selectedOutlet, dateRange, fetchCancelRefundSummary]);
 
   // Refresh handler
   const handleRefresh = () => {
@@ -111,24 +111,6 @@ export default function CancellationReport() {
       ? exportToCSV(orders, 'cancel-refund-report')
       : exportToPDF(orders, 'cancel-refund-report');
   };
-
-  const cancelReasonsCount = orders.reduce((acc, order) => {
-    if (order.status === "cancel") {
-      const reason = order.cancelReason || "Not specified";
-      acc[reason] = (acc[reason] || 0) + 1;
-    }
-    return acc;
-  }, {});
-
-  const refundReasonsCount = orders.reduce((acc, order) => {
-    if (order.status === "refund") {
-      const reason = order.refundReason || "Not specified";
-      acc[reason] = (acc[reason] || 0) + 1;
-    }
-    return acc;
-  }, {});
-
-
 
   if (loading) {
     return (

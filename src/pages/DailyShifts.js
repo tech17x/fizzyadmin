@@ -92,7 +92,7 @@ export const DailyShifts = () => {
 
   useEffect(() => {
     fetchShiftData();
-  }, [selectedBrand, selectedOutlet, dateRange]);
+  }, [selectedBrand, selectedOutlet, dateRange, fetchShiftData]);
 
   if (loading) {
     return (

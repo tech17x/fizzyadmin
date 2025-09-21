@@ -303,8 +303,7 @@ const Sidebar = () => {
                     className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                       isActive(item.path) 
                         ? 'bg-orange-100 text-orange-700' 
-                        : 'text-gray-600 hover:bg-gray-100 hover                    }
-:text-gray-900'
+                        : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
                     }`}
                   >
                     {item.icon}
@@ -319,8 +318,7 @@ const Sidebar = () => {
                         <Link
                           to={subItem.path}
                           onClick={handleLinkClick}
-                          className={`f                    }
-lex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${
+                          className={`flex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${
                             isActive(subItem.path) 
                               ? 'bg-orange-100 text-orange-700' 
                               : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
@@ -358,71 +356,6 @@ lex items-center gap-3 px-3 py-2 text-sm rounded-lg transition-colors ${
         </button>
       </div>
     </div>
-  );
-};
-
-export default Sidebar;
-
-            {!collapsed && (
-              <div>
-                <strong style={{ fontSize: "15px", color: "#4b5563" }}>{staff.name}</strong>
-                <small style={{ fontSize: "12px", color: "#DF6229" }}>{staff.role.name}</small>
-              </div>
-            )}
-          </div>
-        </div>
-      </aside>
-      {showNotificationPopup && (
-        <Popup title="Notifications" showCloseBtn={true} closePopup={() => setShowNotificationPopup(false)}>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-            {notifications.map((notification) => (
-              <li
-                key={notification.id}
-                style={{
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  backgroundColor: notification.read ? '#f0f0f0' : '#fff',
-                  padding: '10px',
-                  borderRadius: '8px',
-                }}
-              >
-                <div>
-                  <strong>{notification.read ? '✅' : '🔔'} {notification.message}</strong>
-                  <br />
-                  <small style={{ color: '#888' }}>{notification.time}</small>
-                </div>
-
-                <div>
-                  {!notification.read && (
-                    <CheckCircle
-                      onClick={() => handleMarkAsRead(notification.id)}
-                      style={{
-                        marginRight: '8px',
-                        color: '#DF6229',
-                        cursor: 'pointer',
-                      }}
-                      size={14}
-                    />
-                  )}
-                  <Trash2
-                    onClick={() => handleDeleteNotification(notification.id)}
-                    style={{
-                      color: '#e53e3e',
-                      cursor: 'pointer',
-                    }}
-                    size={14}
-                  />
-                </div>
-              </li>
-            ))}
-          </ul>
-        </Popup>
-      )}
-
-    </>
-
   );
 };
 
