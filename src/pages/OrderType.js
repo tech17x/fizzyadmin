@@ -4,7 +4,6 @@ import { useCallback, useContext, useEffect, useState } from 'react';
 import CardAdd from '../components/CardAdd';
 import EditCard from '../components/EditCard';
 import InputField from '../components/InputField';
-import './Brand.css';
 import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
 import Checkbox from '../components/Checkbox';

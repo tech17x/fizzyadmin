@@ -1,6 +1,5 @@
 import React, { useContext } from 'react';
 import './ProfilePage.css';
-import './Brand.css';
 import Loader from '../components/Loader';
 import HeadingText from '../components/HeadingText';
 import GradientButton from "../components/GradientButton";

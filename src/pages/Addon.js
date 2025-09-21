@@ -1,7 +1,6 @@
 // src/pages/Brand.js
 
 import { useCallback, useContext, useEffect, useState } from 'react';
-import './Brand.css';
 import './Outlet.css';
 import './Staff.css';
 import './Tax.css';
