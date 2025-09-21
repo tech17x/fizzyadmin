@@ -394,6 +394,8 @@ const Outlet = () => {
                         <Button clickAction={() => setShowPopup(false)}>Close</Button>
                     </div>
                 </div>
+            )
+            }
         </>
     );
 };
