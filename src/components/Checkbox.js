@@ -30,11 +30,3 @@ const Checkbox = ({ labelId, label, checked, onChange, disable = false }) => {
 };
 
 export default Checkbox;
-
-                {label}
-            </label>
-        </div>
-    );
-};
-
-export default Checkbox;
