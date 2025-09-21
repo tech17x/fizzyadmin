@@ -13,7 +13,7 @@ import TopBar from '../components/TopBar';
 import { timezones } from '../constants/timezoneOptions';
 import AuthContext from '../context/AuthContext';
 import PhoneNumberInput from '../components/PhoneNumberInput';
-import { Store, Clock, MapPin, Mail, Phone, Globe, Settings, Building } from 'lucide-react';
+import { Store, Plus } from 'lucide-react';
 
 const Outlet = () => {
     const API = process.env.REACT_APP_API_URL;
@@ -145,11 +145,6 @@ const Outlet = () => {
         }
     };
 
-    function formatDate(timestamp) {
-        const date = new Date(timestamp);
-        return date.toLocaleString();
-    }
-
     const validateOutletData = (data) => {
         const errors = {};
         const timeRegex = /^([0-1][0-9]|2[0-3]):([0-5][0-9])$/;
@@ -240,34 +235,14 @@ const Outlet = () => {
         <>
             {loading && <Loader />}
             
-            {showPopup ? (
+            {showPopup && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                        {/* Modal Header */}
-                        <div className="bg-gradient-to-r from-orange-400 to-orange-600 px-8 py-6">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
-                                    <Store className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <h2 className="text-2xl font-bold text-white">
-                                        {isEditing ? "Edit Outlet" : "Create New Outlet"}
-                                    </h2>
-                                    <p className="text-orange-100">Configure outlet information and settings</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="p-8">
-                            {/* Basic Information */}
-                            <div className="mb-8">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                                        <Store className="w-4 h-4 text-orange-600" />
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-gray-900">Basic Information</h3>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="p-6">
+                            <HeadingText title={isEditing ? "Edit Outlet" : "Add New Outlet"} />
+                            
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-2 gap-4">
                                     <SelectInput
                                         selectedOption={selectedBrand}
                                         onChange={setSelectedBrand}
@@ -278,45 +253,42 @@ const Outlet = () => {
                                     <InputField
                                         label="Outlet Name"
                                         type="text"
-                                        name="name"
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         placeholder="Enter outlet name"
                                         required
                                     />
                                 </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+
+                                <div className="grid grid-cols-2 gap-4">
                                     <InputField
                                         label="Outlet Code"
                                         format="####"
                                         type="text"
-                                        name="code"
                                         value={outletCode}
                                         onChange={(e) => setOutletCode(e.target.value)}
                                         placeholder="Enter 4-digit code"
                                         required
                                     />
                                     <InputField
-                                        label="Outlet Password"
+                                        label="Password"
                                         type="password"
-                                        name="password"
                                         value={password}
                                         onChange={(e) => setPassword(e.target.value)}
-                                        placeholder="Enter secure password"
+                                        placeholder="Enter password"
                                         required
                                     />
                                 </div>
-                            </div>
 
-                            {/* Contact Information */}
-                            <div className="mb-8">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                                        <Phone className="w-4 h-4 text-orange-600" />
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-gray-900">Contact Information</h3>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <InputField
+                                        label="Email"
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        placeholder="Enter email"
+                                        required
+                                    />
                                     <PhoneNumberInput
                                         phoneNumber={phone}
                                         onPhoneNumberChange={setPhone}
@@ -324,37 +296,9 @@ const Outlet = () => {
                                         onCountryChange={setSelectedCountryCode}
                                         countryOptions={countryCodeOptions}
                                     />
-                                    <InputField
-                                        label="Email Address"
-                                        type="email"
-                                        name="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="Enter email address"
-                                        required
-                                    />
                                 </div>
-                                <div className="mt-6">
-                                    <InputField
-                                        label="Website"
-                                        type="url"
-                                        name="website"
-                                        value={website}
-                                        onChange={(e) => setWebsite(e.target.value)}
-                                        placeholder="https://example.com"
-                                    />
-                                </div>
-                            </div>
 
-                            {/* Operating Hours */}
-                            <div className="mb-8">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                                        <Clock className="w-4 h-4 text-orange-600" />
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-gray-900">Operating Hours & Timezone</h3>
-                                </div>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="grid grid-cols-3 gap-4">
                                     <SelectInput
                                         selectedOption={timezone}
                                         onChange={setTimezone}
@@ -365,7 +309,6 @@ const Outlet = () => {
                                     <InputField
                                         label="Opening Time"
                                         type="text"
-                                        name="opening_time"
                                         value={openingTime}
                                         onChange={(e) => setOpeningTime(e.target.value)}
                                         format="##:##"
@@ -376,264 +319,174 @@ const Outlet = () => {
                                         label="Closing Time"
                                         type="text"
                                         format="##:##"
-                                        name="closing_time"
                                         value={closingTime}
                                         onChange={(e) => setClosingTime(e.target.value)}
                                         placeholder="22:00"
                                         required
                                     />
                                 </div>
-                            </div>
 
-                            {/* Address Information */}
-                            <div className="mb-8">
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
-                                        <MapPin className="w-4 h-4 text-orange-600" />
-                                    </div>
-                                    <h3 className="text-lg font-semibold text-gray-900">Address Information</h3>
-                                </div>
-                                <div className="space-y-6">
+                                <InputField
+                                    label="Website"
+                                    type="url"
+                                    value={website}
+                                    onChange={(e) => setWebsite(e.target.value)}
+                                    placeholder="https://example.com"
+                                />
+
+                                <InputField
+                                    label="Street Address"
+                                    type="text"
+                                    value={address}
+                                    onChange={(e) => setAddress(e.target.value)}
+                                    placeholder="Enter street address"
+                                    required
+                                />
+
+                                <div className="grid grid-cols-2 gap-4">
                                     <InputField
-                                        label="Street Address"
+                                        label="City"
                                         type="text"
-                                        name="street_address"
-                                        value={address}
-                                        onChange={(e) => setAddress(e.target.value)}
-                                        placeholder="Enter street address"
+                                        value={city}
+                                        onChange={(e) => setCity(e.target.value)}
+                                        placeholder="Enter city"
                                         required
                                     />
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <InputField
-                                            label="City"
-                                            type="text"
-                                            name="city"
-                                            value={city}
-                                            onChange={(e) => setCity(e.target.value)}
-                                            placeholder="Enter city"
-                                            required
-                                        />
-                                        <InputField
-                                            label="State"
-                                            type="text"
-                                            name="state"
-                                            value={state}
-                                            onChange={(e) => setState(e.target.value)}
-                                            placeholder="Enter state"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                        <SelectInput
-                                            label="Country"
-                                            selectedOption={selectedCountry}
-                                            onChange={setSelectedCountry}
-                                            options={countryOptions}
-                                            required
-                                        />
-                                        <InputField
-                                            label="Postal Code"
-                                            type="text"
-                                            name="postal_code"
-                                            value={postalCode}
-                                            onChange={(e) => setPostalCode(e.target.value)}
-                                            placeholder="Enter postal code"
-                                            required
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-
-                            {isEditing && (
-                                <div className="mb-8 p-6 bg-gray-50 rounded-xl">
-                                    <h3 className="text-lg font-semibold text-gray-900 mb-4">Status Settings</h3>
-                                    <Checkbox
-                                        label="Active Status"
-                                        checked={status}
-                                        onChange={() => setStatus(!status)}
+                                    <InputField
+                                        label="State"
+                                        type="text"
+                                        value={state}
+                                        onChange={(e) => setState(e.target.value)}
+                                        placeholder="Enter state"
+                                        required
                                     />
                                 </div>
-                            )}
 
-                            {/* Action Buttons */}
-                            <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+                                <div className="grid grid-cols-2 gap-4">
+                                    <SelectInput
+                                        label="Country"
+                                        selectedOption={selectedCountry}
+                                        onChange={setSelectedCountry}
+                                        options={countryOptions}
+                                        required
+                                    />
+                                    <InputField
+                                        label="Postal Code"
+                                        type="text"
+                                        value={postalCode}
+                                        onChange={(e) => setPostalCode(e.target.value)}
+                                        placeholder="Enter postal code"
+                                        required
+                                    />
+                                </div>
+
+                                {isEditing && (
+                                    <div className="pt-4 border-t border-gray-200">
+                                        <Checkbox
+                                            label="Active Status"
+                                            checked={status}
+                                            onChange={() => setStatus(!status)}
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 mt-6">
                                 <Button clickAction={() => setShowPopup(false)}>
                                     Cancel
                                 </Button>
                                 <GradientButton clickAction={handleSave}>
-                                    {isEditing ? "Update Outlet" : "Create Outlet"}
+                                    {isEditing ? "Update" : "Create"}
                                 </GradientButton>
                             </div>
                         </div>
                     </div>
                 </div>
-            ) : (
-                <div className="space-y-6">
-                    <TopBar
-                        title="Outlet Management"
-                        searchText={search}
-                        setSearchText={setSearch}
-                        selectedFilter={filteredStatus}
-                        setSelectedFilter={setFilteredStatus}
-                    />
-                    
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                                    <Store className="w-6 h-6 text-orange-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">Total Outlets</p>
-                                    <p className="text-2xl font-bold text-gray-900">{outlets.length}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                                    <Store className="w-6 h-6 text-green-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">Active Outlets</p>
-                                    <p className="text-2xl font-bold text-gray-900">
-                                        {outlets.filter(o => o.status === 'active').length}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                                    <Building className="w-6 h-6 text-blue-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">Brands</p>
-                                    <p className="text-2xl font-bold text-gray-900">
-                                        {new Set(outlets.map(o => o.brand_id)).size}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                                    <Globe className="w-6 h-6 text-purple-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">Cities</p>
-                                    <p className="text-2xl font-bold text-gray-900">
-                                        {new Set(outlets.map(o => o.city)).size}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+            )}
 
-                    {/* Outlets Grid */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <div className="flex justify-between items-center mb-6">
-                            <div>
-                                <h2 className="text-xl font-bold text-gray-900">Outlet Directory</h2>
-                                <p className="text-gray-600">Manage your outlet locations</p>
-                            </div>
-                            <GradientButton clickAction={handleAddNewOutlet}>
-                                <Store className="w-4 h-4" />
-                                Add New Outlet
-                            </GradientButton>
+            <div className="space-y-6">
+                <TopBar
+                    title="Outlet Management"
+                    searchText={search}
+                    setSearchText={setSearch}
+                    selectedFilter={filteredStatus}
+                    setSelectedFilter={setFilteredStatus}
+                />
+                
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-900">Outlets ({outlets.length})</h2>
+                            <p className="text-gray-600">Manage your outlet locations</p>
                         </div>
-                        
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredData.map((outlet) => (
-                                <div key={outlet._id} className="group">
-                                    <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-orange-300">
-                                        <div className="flex flex-col space-y-4">
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
-                                                        <span className="text-lg font-bold text-white">
-                                                            {outlet.name.charAt(0)}
-                                                        </span>
-                                                    </div>
-                                                    <div>
-                                                        <h3 className="text-lg font-semibold text-gray-900">{outlet.name}</h3>
-                                                        <p className="text-sm text-gray-600">Code: {outlet.code}</p>
-                                                    </div>
+                        <GradientButton clickAction={handleAddNewOutlet}>
+                            <Plus className="w-4 h-4" />
+                            Add Outlet
+                        </GradientButton>
+                    </div>
+                    
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Outlet</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {filteredData.map((outlet) => (
+                                    <tr key={outlet._id} className="hover:bg-gray-50">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center">
+                                                <div className="w-10 h-10 bg-primary-gradient rounded-lg flex items-center justify-center">
+                                                    <span className="text-white font-bold">{outlet.name.charAt(0)}</span>
                                                 </div>
-                                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                                    outlet.status === 'active' 
-                                                        ? 'bg-green-100 text-green-800' 
-                                                        : 'bg-red-100 text-red-800'
-                                                }`}>
-                                                    {outlet.status.charAt(0).toUpperCase() + outlet.status.slice(1)}
-                                                </span>
+                                                <div className="ml-4">
+                                                    <div className="text-sm font-medium text-gray-900">{outlet.name}</div>
+                                                    <div className="text-sm text-gray-500">Code: {outlet.code}</div>
+                                                </div>
                                             </div>
-                                            
-                                            <div className="space-y-3 text-sm text-gray-600">
-                                                <div className="flex items-center gap-2">
-                                                    <Mail className="w-4 h-4 text-gray-400" />
-                                                    <span className="truncate">{outlet.email}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Phone className="w-4 h-4 text-gray-400" />
-                                                    <span>{outlet.phone}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <MapPin className="w-4 h-4 text-gray-400" />
-                                                    <span className="truncate">{outlet.street}, {outlet.city}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Clock className="w-4 h-4 text-gray-400" />
-                                                    <span>{outlet.opening_time} - {outlet.closing_time}</span>
-                                                </div>
-                                                {outlet.website && (
-                                                    <div className="flex items-center gap-2">
-                                                        <Globe className="w-4 h-4 text-gray-400" />
-                                                        <a 
-                                                            href={outlet.website} 
-                                                            target="_blank" 
-                                                            rel="noopener noreferrer"
-                                                            className="text-orange-600 hover:text-orange-700 truncate"
-                                                        >
-                                                            Visit Website
-                                                        </a>
-                                                    </div>
-                                                )}
-                                            </div>
-                                            
-                                            <div className="pt-4 border-t border-gray-100">
-                                                <button
-                                                    onClick={() => handleOutletEdit(outlet)}
-                                                    className="w-full px-4 py-2 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition-colors font-medium"
-                                                >
-                                                    Edit Outlet
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                            
-                            {/* Add New Card */}
-                            <div className="group">
-                                <button 
-                                    onClick={handleAddNewOutlet}
-                                    className="w-full h-full min-h-[300px] border-2 border-dashed border-gray-300 rounded-xl hover:border-orange-400 hover:bg-orange-50 transition-all duration-300 flex flex-col items-center justify-center text-center p-6"
-                                >
-                                    <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-300 shadow-lg">
-                                        <Store className="w-6 h-6 text-white" />
-                                    </div>
-                                    <span className="text-lg font-semibold text-gray-600 group-hover:text-orange-600 transition-colors">
-                                        Add New Outlet
-                                    </span>
-                                    <span className="text-sm text-gray-400 mt-2">Click to create a new outlet</span>
-                                </button>
-                            </div>
-                        </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900">{outlet.email}</div>
+                                            <div className="text-sm text-gray-500">{outlet.phone}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900">{outlet.opening_time} - {outlet.closing_time}</div>
+                                            <div className="text-sm text-gray-500">{outlet.timezone?.label?.split(')')[0]}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900">{outlet.city}</div>
+                                            <div className="text-sm text-gray-500">{outlet.state}, {outlet.country}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                outlet.status === 'active' 
+                                                    ? 'bg-green-100 text-green-800' 
+                                                    : 'bg-red-100 text-red-800'
+                                            }`}>
+                                                {outlet.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <button
+                                                onClick={() => handleOutletEdit(outlet)}
+                                                className="text-primary-orange hover:text-orange-700"
+                                            >
+                                                Edit
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
-            )}
+            </div>
         </>
     );
 };

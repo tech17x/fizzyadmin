@@ -12,7 +12,7 @@ import AuthContext from '../context/AuthContext';
 import TopBar from '../components/TopBar';
 import PhoneNumberInput from '../components/PhoneNumberInput';
 import { countryCodeOptions } from '../constants/countryOptions';
-import { Users, User, Shield, Building, Store, Settings, Award, UserPlus, Mail, Phone } from 'lucide-react';
+import { Users, Plus, User, Shield, Building, Store } from 'lucide-react';
 
 const Staff = () => {
     const API = process.env.REACT_APP_API_URL;
@@ -27,8 +27,8 @@ const Staff = () => {
     const [staff, setStaff] = useState([]);
 
     const [isEditing, setIsEditing] = useState(false);
-    const [showSecondScreen, setShowSecondScreen] = useState(false);
-    const [showSecondScreenSection, setShowSecondScreenSection] = useState("PROFILE");
+    const [showPopup, setShowPopup] = useState(false);
+    const [currentStep, setCurrentStep] = useState(1);
 
     const [roles, setRoles] = useState([]);
     const [permissions, setPermissions] = useState([]);
@@ -88,14 +88,16 @@ const Staff = () => {
 
     const handleAddNewStaff = () => {
         setIsEditing(false);
+        setCurrentStep(1);
         getRolesAndPermissions();
-        setShowSecondScreen(true);
+        setShowPopup(true);
     }
 
     const handleStaffEdit = (staff) => {
         setIsEditing(true);
+        setCurrentStep(1);
         getRolesAndPermissions(staff);
-        setShowSecondScreen(true);
+        setShowPopup(true);
     }
 
     const handleInputChange = (e) => {
@@ -105,11 +107,6 @@ const Staff = () => {
             [name]: value,
         }));
     };
-
-    function formatDate(timestamp) {
-        const date = new Date(timestamp);
-        return date.toLocaleString();
-    }
 
     const getRolesAndPermissions = async (staff) => {
         setLoading(true);
@@ -367,7 +364,7 @@ const Staff = () => {
                 setStaff((prev) => [...prev, response.data.staff]);
                 toast.success("Staff created successfully!");
             }
-            setShowSecondScreen(false);
+            setShowPopup(false);
         } catch (error) {
             console.error("Error saving staff:", error.response?.data || error.message);
             toast.error(error.response?.data?.message || "An error occurred while saving staff.");
@@ -383,422 +380,318 @@ const Staff = () => {
         filters: { status: status },
     });
 
+    const renderStepContent = () => {
+        switch (currentStep) {
+            case 1:
+                return (
+                    <div className="space-y-6">
+                        <div className="grid grid-cols-2 gap-4">
+                            <InputField
+                                label="Full Name"
+                                type="text"
+                                name="name"
+                                value={staffInfo.name || ""}
+                                onChange={handleInputChange}
+                                placeholder="Enter full name"
+                                required
+                            />
+                            <InputField
+                                label="Email"
+                                type="email"
+                                name="email"
+                                value={staffInfo.email || ""}
+                                onChange={handleInputChange}
+                                placeholder="Enter email"
+                                required
+                            />
+                        </div>
+
+                        <PhoneNumberInput
+                            phoneNumber={phone}
+                            onPhoneNumberChange={(value) => { 
+                                setPhone(value); 
+                                setStaffInfo((prevData) => ({ ...prevData, phone: value })); 
+                            }}
+                            selectedCountry={selectedCountryCode}
+                            onCountryChange={(value) => { 
+                                setSelectedCountryCode(value); 
+                                setStaffInfo((prevData) => ({ ...prevData, country_code: value.value })); 
+                            }}
+                            countryOptions={countryCodeOptions}
+                        />
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <InputField
+                                label="Password"
+                                type="password"
+                                name="password"
+                                value={staffInfo.password || ""}
+                                onChange={handleInputChange}
+                                placeholder="Enter password"
+                                required={!isEditing}
+                            />
+                            <InputField
+                                label="POS PIN"
+                                type="text"
+                                name="pos_login_pin"
+                                format="####"
+                                value={staffInfo.pos_login_pin || ""}
+                                onChange={handleInputChange}
+                                placeholder="4-digit PIN"
+                            />
+                        </div>
+
+                        <InputField
+                            label="Profile Image URL"
+                            type="text"
+                            name="image"
+                            value={staffInfo.image || ""}
+                            onChange={handleInputChange}
+                            placeholder="Enter image URL"
+                        />
+
+                        {isEditing && (
+                            <div className="pt-4 border-t border-gray-200">
+                                <Checkbox
+                                    label="Active Status"
+                                    checked={staffInfo.status}
+                                    onChange={handleStatusChange}
+                                />
+                            </div>
+                        )}
+                    </div>
+                );
+            case 2:
+                return (
+                    <div className="space-y-6">
+                        <SelectInput
+                            label="Select Role"
+                            options={roles.map((role) => ({ label: role.name, value: role._id }))}
+                            selectedOption={selectedRole}
+                            onChange={handleRoleChange}
+                            required
+                        />
+
+                        <div className="bg-gray-50 rounded-lg p-4">
+                            <h4 className="font-medium text-gray-900 mb-4">Permissions</h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                {Array.from(new Set(permissions.map((p) => p.category))).map((category) => (
+                                    <div key={category} className="space-y-2">
+                                        <h5 className="text-sm font-medium text-gray-700">{category}</h5>
+                                        {permissions
+                                            .filter((p) => p.category === category)
+                                            .map((perm) => (
+                                                <Checkbox
+                                                    disable={selectedRole?.label === "Admin"}
+                                                    key={perm._id}
+                                                    label={perm.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                                    checked={checkedPermissions[perm.name] || false}
+                                                    onChange={() => handlePermissionToggle(perm.name)}
+                                                />
+                                            ))}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            case 3:
+                return (
+                    <div className="space-y-6">
+                        <div>
+                            <h4 className="font-medium text-gray-900 mb-4">Select Brands</h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                {brands.map((item) => (
+                                    <Checkbox
+                                        key={item._id}
+                                        labelId={item._id}
+                                        label={item.full_name}
+                                        checked={staffInfo.brands.includes(item._id)}
+                                        onChange={() => handleBrandSelection(item._id)}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        <div>
+                            <h4 className="font-medium text-gray-900 mb-4">Select Outlets</h4>
+                            <div className="grid grid-cols-2 gap-4">
+                                {outlets
+                                    .filter((item) => staffInfo.brands.includes(item.brand_id))
+                                    .map((item) => (
+                                        <Checkbox
+                                            key={item._id}
+                                            label={item.name}
+                                            labelId={item._id}
+                                            checked={staffInfo.outlets.includes(item._id)}
+                                            onChange={() => handleOutletSelection(item._id)}
+                                        />
+                                    ))}
+                            </div>
+                        </div>
+                    </div>
+                );
+            default:
+                return null;
+        }
+    };
+
     return (
         <>
             {loading && <Loader />}
             
-            {!showSecondScreen ? (
-                <div className="space-y-6">
-                    <TopBar
-                        title="Staff Management"
-                        searchText={search}
-                        setSearchText={setSearch}
-                        selectedFilter={status}
-                        setSelectedFilter={setStatus}
-                    />
-                    
-                    {/* Stats Cards */}
-                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
-                                    <Users className="w-6 h-6 text-orange-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">Total Staff</p>
-                                    <p className="text-2xl font-bold text-gray-900">{staff.length}</p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
-                                    <Users className="w-6 h-6 text-green-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">Active Staff</p>
-                                    <p className="text-2xl font-bold text-gray-900">
-                                        {staff.filter(s => s.status === 'active').length}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
-                                    <Shield className="w-6 h-6 text-blue-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">Roles</p>
-                                    <p className="text-2xl font-bold text-gray-900">
-                                        {new Set(staff.map(s => s.role.name)).size}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
-                                    <UserPlus className="w-6 h-6 text-purple-600" />
-                                </div>
-                                <div>
-                                    <p className="text-sm text-gray-600">This Month</p>
-                                    <p className="text-2xl font-bold text-gray-900">
-                                        {staff.filter(s => {
-                                            const created = new Date(s.createdAt);
-                                            const now = new Date();
-                                            return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
-                                        }).length}
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Staff Grid */}
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-                        <div className="flex justify-between items-center mb-6">
-                            <div>
-                                <h2 className="text-xl font-bold text-gray-900">Staff Directory</h2>
-                                <p className="text-gray-600">Manage your team members</p>
-                            </div>
-                            <GradientButton clickAction={handleAddNewStaff}>
-                                <UserPlus className="w-4 h-4" />
-                                Add New Staff
-                            </GradientButton>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                            {filteredData.map((staffMember) => (
-                                <div key={staffMember._id} className="group">
-                                    <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-orange-300">
-                                        <div className="flex flex-col space-y-4">
-                                            <div className="flex items-start justify-between">
-                                                <div className="flex items-center gap-3">
-                                                    <img
-                                                        src={staffMember.image}
-                                                        onError={(e) => {
-                                                            e.target.src = "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png";
-                                                        }}
-                                                        alt="Staff"
-                                                        className="w-12 h-12 rounded-xl object-cover border-2 border-orange-200"
-                                                    />
-                                                    <div>
-                                                        <h3 className="text-lg font-semibold text-gray-900">{staffMember.name}</h3>
-                                                        <p className="text-sm text-orange-600 font-medium">{staffMember.role.name}</p>
-                                                    </div>
-                                                </div>
-                                                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                                    staffMember.status === 'active' 
-                                                        ? 'bg-green-100 text-green-800' 
-                                                        : 'bg-red-100 text-red-800'
-                                                }`}>
-                                                    {staffMember.status.charAt(0).toUpperCase() + staffMember.status.slice(1)}
-                                                </span>
-                                            </div>
-                                            
-                                            <div className="space-y-3 text-sm text-gray-600">
-                                                <div className="flex items-center gap-2">
-                                                    <Mail className="w-4 h-4 text-gray-400" />
-                                                    <span className="truncate">{staffMember.email}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Phone className="w-4 h-4 text-gray-400" />
-                                                    <span>{staffMember.phone}</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Building className="w-4 h-4 text-gray-400" />
-                                                    <span>{staffMember.brands?.length || 0} brands</span>
-                                                </div>
-                                                <div className="flex items-center gap-2">
-                                                    <Store className="w-4 h-4 text-gray-400" />
-                                                    <span>{staffMember.outlets?.length || 0} outlets</span>
-                                                </div>
-                                            </div>
-                                            
-                                            <div className="pt-4 border-t border-gray-100">
-                                                <button
-                                                    onClick={() => handleStaffEdit(staffMember)}
-                                                    className="w-full px-4 py-2 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition-colors font-medium"
-                                                >
-                                                    Edit Staff
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            ) : (
+            {showPopup && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
-                        {/* Modal Header */}
-                        <div className="bg-gradient-to-r from-orange-400 to-orange-600 px-8 py-6">
-                            <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
-                                    <User className="w-6 h-6 text-white" />
-                                </div>
-                                <div>
-                                    <h2 className="text-2xl font-bold text-white">
-                                        {isEditing ? "Edit Staff Member" : "Add New Staff Member"}
-                                    </h2>
-                                    <p className="text-orange-100">Configure staff information and permissions</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Navigation Tabs */}
-                        <div className="border-b border-gray-200 px-8">
-                            <nav className="flex space-x-8">
+                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                        <div className="p-6">
+                            <HeadingText title={isEditing ? "Edit Staff" : "Add New Staff"} />
+                            
+                            {/* Step Navigation */}
+                            <div className="flex items-center justify-center mb-8">
                                 {[
-                                    { id: 'PROFILE', label: 'Profile Information', icon: User },
-                                    { id: 'USER', label: 'User Permissions', icon: Shield },
-                                    { id: 'BRAND', label: 'Brand Access', icon: Building },
-                                    { id: 'OUTLET', label: 'Outlet Access', icon: Store }
-                                ].map((tab) => {
-                                    const IconComponent = tab.icon;
-                                    const isActive = showSecondScreenSection === tab.id;
-                                    const isDisabled = (selectedRole?.label === "Admin" && isEditing && tab.id !== 'PROFILE');
-                                    
-                                    return (
-                                        <button
-                                            key={tab.id}
-                                            onClick={() => !isDisabled && setShowSecondScreenSection(tab.id)}
-                                            className={`flex items-center gap-2 py-4 px-2 border-b-2 font-medium text-sm transition-colors ${
-                                                isActive
-                                                    ? 'border-orange-500 text-orange-600'
-                                                    : isDisabled
-                                                        ? 'border-transparent text-gray-400 cursor-not-allowed'
-                                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                                            }`}
-                                            disabled={isDisabled}
-                                        >
-                                            <IconComponent className="w-4 h-4" />
-                                            {tab.label}
-                                        </button>
-                                    );
-                                })}
-                            </nav>
-                        </div>
-
-                        <div className="p-8">
-                            {showSecondScreenSection === "PROFILE" && (
-                                <div className="space-y-8">
-                                    {/* Profile Image */}
-                                    <div className="text-center">
-                                        <img 
-                                            src={staffInfo.image || "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png"} 
-                                            alt="Staff Profile" 
-                                            onError={(e) => e.target.src = "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png"} 
-                                            className="w-24 h-24 rounded-xl object-cover border-4 border-orange-200 mx-auto shadow-lg"
-                                        />
-                                    </div>
-
-                                    {/* Basic Info */}
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-6">Basic Information</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <InputField
-                                                label="Profile Image URL"
-                                                type="text"
-                                                name="image"
-                                                value={staffInfo.image || ""}
-                                                onChange={handleInputChange}
-                                                placeholder="Enter image URL"
-                                            />
-                                            <InputField
-                                                label="Full Name"
-                                                type="text"
-                                                name="name"
-                                                value={staffInfo.name || ""}
-                                                onChange={handleInputChange}
-                                                placeholder="Enter full name"
-                                                required
-                                            />
+                                    { step: 1, label: 'Profile', icon: User },
+                                    { step: 2, label: 'Role & Permissions', icon: Shield },
+                                    { step: 3, label: 'Access', icon: Building }
+                                ].map(({ step, label, icon: Icon }) => (
+                                    <div key={step} className="flex items-center">
+                                        <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
+                                            currentStep === step 
+                                                ? 'bg-primary-gradient text-white' 
+                                                : currentStep > step 
+                                                    ? 'bg-green-500 text-white' 
+                                                    : 'bg-gray-200 text-gray-500'
+                                        }`}>
+                                            <Icon className="w-5 h-5" />
                                         </div>
+                                        <span className={`ml-2 text-sm font-medium ${
+                                            currentStep === step ? 'text-primary-orange' : 'text-gray-500'
+                                        }`}>
+                                            {label}
+                                        </span>
+                                        {step < 3 && <div className="w-8 h-px bg-gray-300 mx-4" />}
                                     </div>
+                                ))}
+                            </div>
 
-                                    {/* Contact Info */}
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-6">Contact Information</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <PhoneNumberInput
-                                                phoneNumber={phone}
-                                                onPhoneNumberChange={(value) => { 
-                                                    setPhone(value); 
-                                                    setStaffInfo((prevData) => ({ ...prevData, phone: value })); 
-                                                }}
-                                                selectedCountry={selectedCountryCode}
-                                                onCountryChange={(value) => { 
-                                                    setSelectedCountryCode(value); 
-                                                    setStaffInfo((prevData) => ({ ...prevData, country_code: value.value })); 
-                                                }}
-                                                countryOptions={countryCodeOptions}
-                                            />
-                                            <InputField
-                                                label="Email Address"
-                                                type="email"
-                                                name="email"
-                                                value={staffInfo.email || ""}
-                                                onChange={handleInputChange}
-                                                placeholder="Enter email address"
-                                                required
-                                            />
-                                        </div>
-                                    </div>
+                            {renderStepContent()}
 
-                                    {/* Security */}
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-6">Security Settings</h3>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                            <InputField
-                                                label="Password"
-                                                type="password"
-                                                name="password"
-                                                value={staffInfo.password || ""}
-                                                onChange={handleInputChange}
-                                                placeholder="Enter password"
-                                                required={!isEditing}
-                                            />
-                                            <InputField
-                                                label="POS PIN"
-                                                type="text"
-                                                name="pos_login_pin"
-                                                format="####"
-                                                value={staffInfo.pos_login_pin || ""}
-                                                onChange={handleInputChange}
-                                                placeholder="Enter 4-digit PIN"
-                                            />
-                                        </div>
-                                    </div>
-
-                                    {isEditing && (
-                                        <div className="p-6 bg-gray-50 rounded-xl">
-                                            <h3 className="text-lg font-semibold text-gray-900 mb-4">Status Settings</h3>
-                                            <Checkbox
-                                                label="Active Status"
-                                                checked={staffInfo.status}
-                                                onChange={handleStatusChange}
-                                            />
-                                        </div>
+                            <div className="flex justify-between pt-6 border-t border-gray-200 mt-6">
+                                <div>
+                                    {currentStep > 1 && (
+                                        <Button clickAction={() => setCurrentStep(currentStep - 1)}>
+                                            Previous
+                                        </Button>
                                     )}
                                 </div>
-                            )}
-
-                            {showSecondScreenSection === "USER" && (
-                                <div className="space-y-8">
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-6">Role & Permissions</h3>
-                                        <SelectInput
-                                            label="Select Role"
-                                            options={roles.map((role) => ({ label: role.name, value: role._id }))}
-                                            placeholder="Select a Role"
-                                            selectedOption={selectedRole}
-                                            onChange={handleRoleChange}
-                                            required
-                                        />
-                                    </div>
-
-                                    <div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-6">Permissions</h3>
-                                        <div className="bg-gray-50 rounded-xl p-6">
-                                            <div className="overflow-x-auto">
-                                                <table className="w-full">
-                                                    <thead>
-                                                        <tr className="border-b border-gray-200">
-                                                            <th className="text-left py-3 px-4 font-semibold text-gray-700">Feature Category</th>
-                                                            <th className="text-left py-3 px-4 font-semibold text-gray-700">Available Permissions</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody>
-                                                        {Array.from(new Set(permissions.map((p) => p.category))).map((category) => (
-                                                            <tr key={category} className="border-b border-gray-100">
-                                                                <td className="py-4 px-4 font-medium text-gray-900">{category}</td>
-                                                                <td className="py-4 px-4">
-                                                                    <div className="flex flex-wrap gap-3">
-                                                                        {permissions
-                                                                            .filter((p) => p.category === category)
-                                                                            .map((perm) => (
-                                                                                <Checkbox
-                                                                                    disable={selectedRole?.label === "Admin"}
-                                                                                    key={perm._id}
-                                                                                    label={perm.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                                                                    checked={checkedPermissions[perm.name] || false}
-                                                                                    onChange={() => handlePermissionToggle(perm.name)}
-                                                                                />
-                                                                            ))}
-                                                                    </div>
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
+                                <div className="flex gap-3">
+                                    <Button clickAction={() => setShowPopup(false)}>
+                                        Cancel
+                                    </Button>
+                                    {currentStep < 3 ? (
+                                        <GradientButton clickAction={() => setCurrentStep(currentStep + 1)}>
+                                            Next
+                                        </GradientButton>
+                                    ) : (
+                                        <GradientButton clickAction={handleStaffSave}>
+                                            {isEditing ? "Update" : "Create"}
+                                        </GradientButton>
+                                    )}
                                 </div>
-                            )}
-
-                            {showSecondScreenSection === "BRAND" && (
-                                <div className="space-y-6">
-                                    <h3 className="text-lg font-semibold text-gray-900">Brand Access</h3>
-                                    <div className="bg-gray-50 rounded-xl p-6">
-                                        <h4 className="font-medium text-gray-700 mb-4">Select accessible brands</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {brands.map((item) => (
-                                                <Checkbox
-                                                    key={item._id}
-                                                    labelId={item._id}
-                                                    label={item.full_name}
-                                                    checked={staffInfo.brands.includes(item._id)}
-                                                    onChange={() => handleBrandSelection(item._id)}
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {showSecondScreenSection === "OUTLET" && (
-                                <div className="space-y-6">
-                                    <h3 className="text-lg font-semibold text-gray-900">Outlet Access</h3>
-                                    <div className="bg-gray-50 rounded-xl p-6">
-                                        <h4 className="font-medium text-gray-700 mb-4">Select accessible outlets</h4>
-                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                            {outlets
-                                                .filter((item) => staffInfo.brands.includes(item.brand_id))
-                                                .map((item) => (
-                                                    <Checkbox
-                                                        key={item._id}
-                                                        label={item.name}
-                                                        labelId={item._id}
-                                                        checked={staffInfo.outlets.includes(item._id)}
-                                                        onChange={() => handleOutletSelection(item._id)}
-                                                    />
-                                                ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Action Buttons */}
-                            <div className="flex justify-end gap-4 pt-8 border-t border-gray-200 mt-8">
-                                <Button clickAction={() => { 
-                                    setShowSecondScreen(false); 
-                                    setShowSecondScreenSection('PROFILE'); 
-                                }}>
-                                    Cancel
-                                </Button>
-                                <GradientButton clickAction={handleStaffSave}>
-                                    {isEditing ? "Update Staff" : "Create Staff"}
-                                </GradientButton>
                             </div>
                         </div>
                     </div>
                 </div>
             )}
+
+            <div className="space-y-6">
+                <TopBar
+                    title="Staff Management"
+                    searchText={search}
+                    setSearchText={setSearch}
+                    selectedFilter={status}
+                    setSelectedFilter={setStatus}
+                />
+                
+                <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                    <div className="flex justify-between items-center mb-6">
+                        <div>
+                            <h2 className="text-xl font-bold text-gray-900">Staff ({staff.length})</h2>
+                            <p className="text-gray-600">Manage your team members</p>
+                        </div>
+                        <GradientButton clickAction={handleAddNewStaff}>
+                            <Plus className="w-4 h-4" />
+                            Add Staff
+                        </GradientButton>
+                    </div>
+                    
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead className="bg-gray-50">
+                                <tr>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Staff</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Access</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody className="bg-white divide-y divide-gray-200">
+                                {filteredData.map((staffMember) => (
+                                    <tr key={staffMember._id} className="hover:bg-gray-50">
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="flex items-center">
+                                                <img
+                                                    src={staffMember.image}
+                                                    onError={(e) => {
+                                                        e.target.src = "https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png";
+                                                    }}
+                                                    alt="Staff"
+                                                    className="w-10 h-10 rounded-lg object-cover"
+                                                />
+                                                <div className="ml-4">
+                                                    <div className="text-sm font-medium text-gray-900">{staffMember.name}</div>
+                                                    <div className="text-sm text-gray-500">ID: {staffMember._id.slice(-6)}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900">{staffMember.email}</div>
+                                            <div className="text-sm text-gray-500">{staffMember.phone}</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-primary-light text-primary-orange">
+                                                {staffMember.role.name}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <div className="text-sm text-gray-900">{staffMember.brands?.length || 0} brands</div>
+                                            <div className="text-sm text-gray-500">{staffMember.outlets?.length || 0} outlets</div>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap">
+                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                                staffMember.status === 'active' 
+                                                    ? 'bg-green-100 text-green-800' 
+                                                    : 'bg-red-100 text-red-800'
+                                            }`}>
+                                                {staffMember.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                            <button
+                                                onClick={() => handleStaffEdit(staffMember)}
+                                                className="text-primary-orange hover:text-orange-700"
+                                            >
+                                                Edit
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
         </>
     );
 };
