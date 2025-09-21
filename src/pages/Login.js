@@ -19,7 +19,7 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setMessage(null); // Clear previous messages
+        setMessage(null);
 
         try {
             const response = await axios.post(
@@ -32,7 +32,6 @@ const Login = () => {
                 setStaff(response.data.staff);
                 setMessage({ type: "success", text: "Login successful! Redirecting..." });
 
-                // ✅ Move setLoading(false) inside setTimeout after navigation
                 setTimeout(() => {
                     navigate("/sales");
                     setLoading(false);
@@ -45,24 +44,26 @@ const Login = () => {
                 type: "error",
                 text: error.response?.data?.message || "Login failed! Please try again."
             });
-            setLoading(false); // ✅ Ensure loader is turned off in case of an error
+            setLoading(false);
         }
     };
 
-
     return (
         <>
-            {
-                loading && <Loader />
-            }
-            <div className="min-h-screen bg-gradient-to-br from-orange-50 via-orange-100 to-orange-200 flex items-center justify-center p-4">
+            {loading && <Loader />}
+            <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-100 flex items-center justify-center p-4">
                 <div className="w-full max-w-md">
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-                        <div className="px-8 py-6 bg-gradient-to-r from-orange-400 to-orange-600 text-center">
+                    <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+                        {/* Header */}
+                        <div className="px-8 py-8 bg-gradient-to-r from-orange-500 to-orange-600 text-center">
+                            <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span className="text-2xl font-bold text-white">F</span>
+                            </div>
                             <h1 className="text-2xl font-bold text-white">FIZZY ADMIN</h1>
-                            <p className="text-orange-100 text-sm mt-1">Restaurant Management System</p>
+                            <p className="text-orange-100 text-sm mt-2">Restaurant Management System</p>
                         </div>
 
+                        {/* Form */}
                         <div className="p-8">
                             {message && (
                                 <div className="mb-6">
@@ -81,24 +82,31 @@ const Login = () => {
                                     type="text"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
-                                    placeholder="Enter email or username"
+                                    placeholder="Enter your email or username"
                                     required
                                 />
+                                
                                 <InputField
                                     label="Password"
                                     type="password"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
-                                    placeholder="Enter password"
+                                    placeholder="Enter your password"
                                     required
                                 />
                                 
-                                <button 
-                                    type="button"
-                                    className="text-sm text-orange-600 hover:text-orange-700 underline"
-                                >
-                                    Forgot Password?
-                                </button>
+                                <div className="flex items-center justify-between">
+                                    <label className="flex items-center">
+                                        <input type="checkbox" className="rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
+                                        <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                                    </label>
+                                    <button 
+                                        type="button"
+                                        className="text-sm text-orange-600 hover:text-orange-700 font-medium"
+                                    >
+                                        Forgot Password?
+                                    </button>
+                                </div>
                                 
                                 <GradientButton type="submit" className="w-full">
                                     Sign In
@@ -107,8 +115,9 @@ const Login = () => {
                         </div>
                     </div>
                     
-                    <div className="text-center mt-6">
-                        <Button>Contact Support</Button>
+                    <div className="text-center mt-8">
+                        <p className="text-sm text-gray-600 mb-4">Need help?</p>
+                        <Button className="mx-auto">Contact Support</Button>
                     </div>
                 </div>
             </div>

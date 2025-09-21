@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { Filter, Check, Search } from 'lucide-react';
+import { Filter, Check, Search, X } from 'lucide-react';
 
 const filterOptions = [
-    { label: 'All', value: '' },
+    { label: 'All Status', value: '' },
     { label: 'Active', value: 'active' },
     { label: 'Inactive', value: 'inactive' }
 ];
@@ -19,32 +19,51 @@ const TopBar = ({ title, searchText, setSearchText, selectedFilter, setSelectedF
         return filterOptions.find(opt => opt.value === value)?.label || 'All Status';
     };
 
+    const clearSearch = () => {
+        setSearchText('');
+    };
+
     return (
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
-            <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
+        <div className="page-header">
+            <div>
+                <h1 className="page-title">{title}</h1>
+                <p className="text-gray-600 text-sm mt-1">Manage and configure your {title.toLowerCase()}</p>
+            </div>
+            
             <div className="flex items-center gap-3">
+                {/* Search Input */}
                 <div className="relative">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                     <input
                         type="text"
-                        className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors w-64"
-                        placeholder="Search..."
+                        className="pl-10 pr-10 py-2.5 w-80 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 transition-colors"
+                        placeholder={`Search ${title.toLowerCase()}...`}
                         value={searchText}
                         onChange={(e) => setSearchText(e.target.value)}
                     />
+                    {searchText && (
+                        <button
+                            onClick={clearSearch}
+                            className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                        >
+                            <X className="h-4 w-4" />
+                        </button>
+                    )}
                 </div>
 
+                {/* Filter Dropdown */}
                 <div className="relative">
                     <button
-                        className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                        className="flex items-center gap-2 px-4 py-2.5 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors text-sm font-medium"
                         onClick={() => setShowFilterDropdown(!showFilterDropdown)}
                     >
-                        <Filter size={14} />
-                        <span className="text-sm">{getLabel(selectedFilter)}</span>
+                        <Filter className="w-4 h-4" />
+                        <span>{getLabel(selectedFilter)}</span>
+                        <ChevronDown className={`w-4 h-4 transition-transform ${showFilterDropdown ? 'rotate-180' : ''}`} />
                     </button>
 
                     {showFilterDropdown && (
-                        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                        <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50 py-1">
                             {filterOptions.map(({ label, value }) => (
                                 <button
                                     key={value}
@@ -54,7 +73,7 @@ const TopBar = ({ title, searchText, setSearchText, selectedFilter, setSelectedF
                                     onClick={() => handleFilterSelect(value)}
                                 >
                                     {label}
-                                    {selectedFilter === value && <Check size={16} />}
+                                    {selectedFilter === value && <Check className="w-4 h-4" />}
                                 </button>
                             ))}
                         </div>

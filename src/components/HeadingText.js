@@ -1,10 +1,11 @@
 import React from 'react';
 
-const HeadingText = ({ title }) => {
+const HeadingText = ({ title, subtitle }) => {
   return (
-    <div className="mb-6">
-      <h2 className="text-xl font-semibold text-gray-900 mb-3">{title}</h2>
-      <div className="w-full h-0.5 bg-gradient-to-r from-orange-300 to-orange-600 rounded-full"></div>
+    <div className="mb-8">
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">{title}</h2>
+      {subtitle && <p className="text-gray-600">{subtitle}</p>}
+      <div className="w-16 h-1 bg-gradient-to-r from-orange-500 to-orange-600 rounded-full mt-3"></div>
     </div>
   );
 };
