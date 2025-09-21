@@ -295,6 +295,7 @@ const Sidebar = () => {
                   >
                     {item.icon}
                     {!collapsed && <span>{item.title}</span>}
+                    }
                   </button>
                 ) : (
                   <Link
@@ -308,6 +309,7 @@ const Sidebar = () => {
                   >
                     {item.icon}
                     {!collapsed && <span>{item.title}</span>}
+                    }
                   </Link>
                 )}
 
