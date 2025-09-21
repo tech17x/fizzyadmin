@@ -263,7 +263,7 @@ const ProfilePage = () => {
                             <span>{outlet.opening_time} - {outlet.closing_time}</span>
                           </div>
                           <div>
-                            <span className="font-medium">Timezone:</span> {outlet.timezone?.label?.split(')')[0])}
+                            <span className="font-medium">Timezone:</span> {outlet.timezone?.label?.split(')')[0]}
                           </div>
                         </div>
                       </div>
