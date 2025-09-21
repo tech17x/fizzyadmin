@@ -14,6 +14,7 @@ import { timezones } from '../constants/timezoneOptions';
 import AuthContext from '../context/AuthContext';
 import PhoneNumberInput from '../components/PhoneNumberInput';
 import { Store, Plus } from 'lucide-react';
+import HeadingText from '../components/HeadingText';
 
 const Outlet = () => {
     const API = process.env.REACT_APP_API_URL;

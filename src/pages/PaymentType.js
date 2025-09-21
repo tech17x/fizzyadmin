@@ -11,6 +11,7 @@ import Loader from '../components/Loader';
 import TopBar from '../components/TopBar';
 import AuthContext from '../context/AuthContext';
 import { CreditCard, Plus } from 'lucide-react';
+import HeadingText from '../components/HeadingText';
 
 const PaymentType = () => {
     const API = process.env.REACT_APP_API_URL;

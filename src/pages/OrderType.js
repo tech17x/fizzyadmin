@@ -11,6 +11,7 @@ import Loader from '../components/Loader';
 import TopBar from '../components/TopBar';
 import AuthContext from '../context/AuthContext';
 import { Type, Plus } from 'lucide-react';
+import HeadingText from '../components/HeadingText';
 
 const category = [
     { label: "Pickup", value: "pickup" },
