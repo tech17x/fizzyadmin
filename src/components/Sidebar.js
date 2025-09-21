@@ -233,6 +233,7 @@ const Sidebar = () => {
                         <div className="flex items-center gap-3">
                           <IconComponent size={20} className={openMenus.has(index) ? 'text-blue-600' : 'text-slate-500'} />
                           {!collapsed && <span>{item.title}</span>}
+                          }
                         </div>
                         {!collapsed && (
                           <ChevronDown className={`w-4 h-4 transition-transform ${openMenus.has(index) ? 'rotate-180' : ''}`} />
@@ -275,6 +276,7 @@ const Sidebar = () => {
                     >
                       <IconComponent size={20} className={isActive(item.path) ? 'text-blue-600' : 'text-slate-500'} />
                       {!collapsed && <span>{item.title}</span>}
+                      }
                     </Link>
                   )}
                 </li>

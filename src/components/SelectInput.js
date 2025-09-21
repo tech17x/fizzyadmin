@@ -79,6 +79,7 @@ const SelectInput = ({
                 <label className={`block text-sm font-semibold ${disable ? 'text-slate-400' : 'text-slate-700'}`}>
                     {label}
                     {required && <span className="text-red-500 ml-1">*</span>}
+                    }
                 </label>
             )}
 

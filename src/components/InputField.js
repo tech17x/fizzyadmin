@@ -75,6 +75,7 @@ const InputField = ({
         <label className={`block text-sm font-semibold ${disabled ? 'text-slate-400' : 'text-slate-700'}`}>
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
+          }
         </label>
       )}
 
