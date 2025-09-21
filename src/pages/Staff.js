@@ -12,7 +12,7 @@ import AuthContext from '../context/AuthContext';
 import TopBar from '../components/TopBar';
 import PhoneNumberInput from '../components/PhoneNumberInput';
 import { countryCodeOptions } from '../constants/countryOptions';
-import { Users, User, Shield, Building, Store, Settings, Award, UserPlus } from 'lucide-react';
+import { Users, User, Shield, Building, Store, Settings, Award, UserPlus, Mail, Phone } from 'lucide-react';
 
 const Staff = () => {
     const API = process.env.REACT_APP_API_URL;
