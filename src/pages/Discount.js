@@ -17,7 +17,6 @@ import TopBar from '../components/TopBar';
 import AuthContext from '../context/AuthContext';
 import useFilteredData from '../hooks/filterData';
 import HeadingText from '../components/HeadingText';
-import SectionHeading from '../components/SectionHeading';
 
 const weeks = [
     { label: "Sunday", value: "sunday" },

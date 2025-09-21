@@ -19,7 +19,6 @@ import TopBar from '../components/TopBar';
 import HeadingText from '../components/HeadingText';
 import AuthContext from '../context/AuthContext';
 import PhoneNumberInput from '../components/PhoneNumberInput';
-import { countryOptions, countryCodeOptions } from '../constants/countryOptions';
 
 const Customer = () => {
     const API = process.env.REACT_APP_API_URL;

@@ -13,7 +13,6 @@ import TopBar from '../components/TopBar';
 import AuthContext from '../context/AuthContext';
 import Loader from '../components/Loader';
 import useFilteredData from '../hooks/filterData';
-import HeadingText from '../components/HeadingText';
 
 const Menu = () => {
     const API = process.env.REACT_APP_API_URL;

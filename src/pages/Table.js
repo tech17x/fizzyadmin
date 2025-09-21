@@ -15,7 +15,6 @@ import axios from 'axios';
 import Loader from '../components/Loader';
 import TopBar from '../components/TopBar';
 import AuthContext from '../context/AuthContext';
-import useFilteredData from '../hooks/filterData';
 
 const tableTypes = [
     { label: "square", value: "square" },

@@ -16,7 +16,6 @@ import axios from 'axios';
 import Loader from '../components/Loader';
 import useFilteredData from '../hooks/filterData';
 import TopBar from '../components/TopBar';
-import AuthContext from '../context/AuthContext';
 
 const weeks = [
     { label: "Sunday", value: "sunday" },

@@ -16,7 +16,6 @@ import Loader from '../components/Loader';
 import useFilteredData from '../hooks/filterData';
 import TopBar from '../components/TopBar';
 import HeadingText from '../components/HeadingText';
-import AuthContext from '../context/AuthContext';
 
 
 const Addon = () => {

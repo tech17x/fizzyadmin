@@ -16,7 +16,6 @@ import Loader from '../components/Loader';
 import TopBar from '../components/TopBar';
 import HeadingText from '../components/HeadingText';
 import AuthContext from '../context/AuthContext';
-import useFilteredData from '../hooks/filterData';
 
 
 const weeks = [

@@ -15,7 +15,6 @@ import PhoneNumberInput from "../components/PhoneNumberInput";
 import HeadingText from "../components/HeadingText";
 import SelectInput from "../components/SelectInput";
 import AuthContext from "../context/AuthContext";
-import { countryOptions, countryCodeOptions } from '../constants/countryOptions';
 
 const Brand = () => {
     const API = process.env.REACT_APP_API_URL;
