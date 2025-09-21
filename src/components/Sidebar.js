@@ -2,9 +2,7 @@ import React, { useContext, useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   Settings,
-  MenuSquare,
   Contact2,
-  Headset,
   ChevronDown,
   ChevronRight,
   Building,
@@ -92,7 +90,7 @@ const menuItems = [
   },
   {
     title: 'Menu Configuration',
-    icon: MenuSquare,
+    icon: Utensils,
     submenu: [
       { title: 'Categories', path: '/categories', icon: FolderKanban, permission: 'category_manage' },
       { title: 'Menu', path: '/menu', icon: Utensils, permission: 'menu_manage' },
@@ -109,7 +107,7 @@ const menuItems = [
   },
   {
     title: 'Support',
-    icon: Headset,
+    icon: Phone,
     submenu: [
       { title: '1800-100-1001', path: 'tel:+18001001001', icon: Phone },
       { title: 'support@fizzy.com', path: 'mailto:support@fizzy.com', icon: Mail },
@@ -168,10 +166,10 @@ const Sidebar = () => {
     <>
       {/* Mobile Menu Button */}
       <button
-        className="lg:hidden fixed top-6 left-6 z-50 p-3 bg-white rounded-xl shadow-lg border border-gray-200"
+        className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-white rounded-lg shadow-lg border border-gray-200 hover:bg-gray-50 transition-colors"
         onClick={() => setIsMobileOpen(!isMobileOpen)}
       >
-        {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        {isMobileOpen ? <X className="w-5 h-5 text-gray-600" /> : <Menu className="w-5 h-5 text-gray-600" />}
       </button>
 
       {/* Mobile Overlay */}
@@ -185,40 +183,35 @@ const Sidebar = () => {
       {/* Sidebar */}
       <div className={`
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        fixed lg:relative z-40 h-screen bg-white shadow-xl flex flex-col transition-all duration-300 ease-in-out
-        ${collapsed ? 'w-20' : 'w-80'}
+        fixed lg:relative z-40 h-screen bg-white shadow-lg border-r border-gray-200 flex flex-col transition-all duration-300 ease-in-out
+        ${collapsed ? 'w-16' : 'w-72'}
       `}>
         {/* Header */}
-        <div className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-primary-gradient"></div>
-          <div className="relative z-10 p-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg">
-                  <span className="text-xl font-bold text-white">F</span>
-                </div>
-                {!collapsed && (
-                  <div>
-                    <h1 className="text-xl font-bold text-white">Fizzy Admin</h1>
-                    <p className="text-orange-100 text-sm">Restaurant Management</p>
-                  </div>
-                )}
-              </div>
-              <button 
-                className="hidden lg:flex p-2 text-white text-opacity-70 hover:text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition-all duration-200"
-                onClick={() => setCollapsed(!collapsed)}
-              >
-                <ChevronRight className={`w-4 h-4 transition-transform ${collapsed ? '' : 'rotate-180'}`} />
-              </button>
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 bg-gray-50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center shadow-sm">
+              <span className="text-lg font-bold text-white">F</span>
             </div>
+            {!collapsed && (
+              <div>
+                <h1 className="text-lg font-bold text-gray-900">Fizzy Admin</h1>
+                <p className="text-xs text-gray-500">Restaurant Management</p>
+              </div>
+            )}
           </div>
+          <button 
+            className="hidden lg:flex p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-md transition-colors"
+            onClick={() => setCollapsed(!collapsed)}
+          >
+            <ChevronRight className={`w-4 h-4 transition-transform ${collapsed ? '' : 'rotate-180'}`} />
+          </button>
         </div>
 
         {/* User Profile Section */}
         {!collapsed && (
-          <div className="px-6 py-4 border-b border-gray-100">
+          <div className="p-4 border-b border-gray-200 bg-gray-50">
             <button 
-              className="w-full flex items-center gap-3 p-3 bg-primary-light rounded-xl hover:bg-primary-lighter transition-all duration-200 group"
+              className="w-full flex items-center gap-3 p-3 bg-white rounded-lg hover:bg-gray-50 transition-colors border border-gray-200 group"
               onClick={() => {
                 navigate("/profile");
                 setIsMobileOpen(false);
@@ -227,23 +220,23 @@ const Sidebar = () => {
               <img 
                 src={staff?.image || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face"} 
                 alt="Profile" 
-                className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm"
+                className="w-8 h-8 rounded-lg object-cover border border-gray-200"
                 onError={(e) => {
                   e.target.src = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face";
                 }}
               />
               <div className="flex-1 text-left min-w-0">
-                <div className="font-semibold text-gray-900 truncate">{staff?.name}</div>
-                <div className="text-xs text-gray-600">{staff?.role?.name}</div>
+                <div className="font-medium text-gray-900 truncate text-sm">{staff?.name}</div>
+                <div className="text-xs text-gray-500">{staff?.role?.name}</div>
               </div>
-              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-primary-orange transition-colors" />
+              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-orange-500 transition-colors" />
             </button>
           </div>
         )}
 
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4 px-4">
-          <ul className="space-y-2">
+        <nav className="flex-1 overflow-y-auto py-2">
+          <ul className="space-y-1 px-2">
             {filteredMenuItems.map((item, index) => {
               const IconComponent = item.icon;
               const isMenuOpen = openMenus.has(index);
@@ -254,25 +247,24 @@ const Sidebar = () => {
                   {item.submenu ? (
                     <div>
                       <button
-                        className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group ${
+                        className={`w-full flex items-center justify-between px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group ${
                           isMenuOpen || hasActiveSubmenu
-                            ? 'bg-primary-light text-primary-orange shadow-sm' 
+                            ? 'bg-orange-50 text-orange-700 border border-orange-200' 
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                         }`}
                         onClick={() => toggleMenu(index)}
                       >
                         <div className="flex items-center gap-3">
-                          <IconComponent className={`w-5 h-5 ${isMenuOpen || hasActiveSubmenu ? 'text-primary-orange' : ''}`} />
+                          <IconComponent className={`w-5 h-5 ${isMenuOpen || hasActiveSubmenu ? 'text-orange-600' : 'text-gray-500'}`} />
                           {!collapsed && <span>{item.title}</span>}
-                          }
                         </div>
                         {!collapsed && (
-                          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''} ${isMenuOpen || hasActiveSubmenu ? 'text-orange-600' : 'text-gray-400'}`} />
                         )}
                       </button>
                       
                       {isMenuOpen && !collapsed && (
-                        <ul className="mt-2 ml-4 space-y-1 border-l-2 border-gray-100 pl-4">
+                        <ul className="mt-1 ml-8 space-y-1">
                           {item.submenu.map((subItem, subIdx) => {
                             const SubIconComponent = subItem.icon;
                             const isSubActive = isActive(subItem.path);
@@ -283,8 +275,8 @@ const Sidebar = () => {
                                   to={subItem.path}
                                   className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
                                     isSubActive 
-                                      ? 'bg-primary-gradient text-white shadow-md' 
-                                      : 'text-gray-600 hover:bg-primary-light hover:text-primary-orange'
+                                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm' 
+                                      : 'text-gray-600 hover:bg-orange-50 hover:text-orange-700'
                                   }`}
                                   onClick={() => setIsMobileOpen(false)}
                                 >
@@ -300,16 +292,15 @@ const Sidebar = () => {
                   ) : (
                     <Link
                       to={item.path}
-                      className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
+                      className={`flex items-center gap-3 px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
                         isActive(item.path) 
-                          ? 'bg-primary-gradient text-white shadow-md' 
+                          ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm' 
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                       onClick={() => setIsMobileOpen(false)}
                     >
                       <IconComponent className="w-5 h-5" />
                       {!collapsed && <span>{item.title}</span>}
-                      }
                     </Link>
                   )}
                 </li>
@@ -319,16 +310,15 @@ const Sidebar = () => {
         </nav>
 
         {/* Logout Button */}
-        <div className="p-4 border-t border-gray-100">
+        <div className="p-4 border-t border-gray-200">
           <button
             onClick={logout}
-            className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 ${
+            className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 hover:text-red-700 rounded-lg transition-all duration-200 ${
               collapsed ? 'justify-center' : ''
             }`}
           >
             <LogOut className="w-5 h-5" />
             {!collapsed && <span>Sign Out</span>}
-            }
           </button>
         </div>
       </div>
