@@ -16,14 +16,14 @@ const Checkbox = ({ labelId, label, checked, onChange, disable = false, classNam
                 htmlFor={labelId || label}
                 className={`flex items-center gap-3 cursor-pointer select-none ${disable ? 'opacity-50 cursor-not-allowed' : ''}`}
             >
-                <div className={`w-5 h-5 border-2 rounded-md flex items-center justify-center transition-all duration-200 ${
+                <div className={`w-6 h-6 border-2 rounded-lg flex items-center justify-center transition-all duration-200 ${
                     checked 
-                        ? 'bg-orange-500 border-orange-500 shadow-sm' 
-                        : 'border-gray-300 hover:border-gray-400 bg-white'
+                        ? 'bg-blue-600 border-blue-600 shadow-sm' 
+                        : 'border-slate-300 hover:border-slate-400 bg-white'
                 }`}>
-                    {checked && <Check className="w-3 h-3 text-white" />}
+                    {checked && <Check className="w-4 h-4 text-white" />}
                 </div>
-                <span className="text-sm font-medium text-gray-700">{label}</span>
+                <span className="text-sm font-medium text-slate-700">{label}</span>
             </label>
         </div>
     );

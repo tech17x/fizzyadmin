@@ -76,58 +76,57 @@ const SelectInput = ({
     return (
         <div className={`space-y-2 ${className}`} ref={dropdownRef}>
             {label && (
-                <label className={`block text-sm font-medium ${disable ? 'text-gray-400' : 'text-gray-700'}`}>
+                <label className={`block text-sm font-semibold ${disable ? 'text-slate-400' : 'text-slate-700'}`}>
                     {label}
                     {required && <span className="text-red-500 ml-1">*</span>}
-                    }
                 </label>
             )}
 
             <div className="relative">
                 <button
                     type="button"
-                    className={`select-field flex items-center justify-between ${
-                        disable ? 'bg-gray-50 text-gray-400 cursor-not-allowed' : 'cursor-pointer hover:border-gray-400'
+                    className={`w-full px-4 py-3 border-2 border-slate-200 rounded-xl text-sm bg-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 flex items-center justify-between ${
+                        disable ? 'bg-slate-50 text-slate-400 cursor-not-allowed' : 'cursor-pointer hover:border-slate-300'
                     }`}
                     onClick={handleToggleDropdown}
                     disabled={disable}
                 >
                     <div className="flex-1 flex items-center gap-2 min-w-0">
                         {multiple && selectedOption && selectedOption.length > 0 ? (
-                            <div className="flex flex-wrap gap-1 max-w-full">
+                            <div className="flex flex-wrap gap-2 max-w-full">
                                 {selectedOption.slice(0, 2).map((option) => (
                                     <span
                                         key={option.value}
-                                        className="inline-flex items-center gap-1 px-2 py-1 bg-orange-100 text-orange-700 text-xs rounded-md"
+                                        className="inline-flex items-center gap-1 px-3 py-1 bg-blue-100 text-blue-700 text-xs rounded-lg font-medium"
                                     >
                                         {option.label}
                                         <button
                                             onClick={(e) => removeOption(option, e)}
-                                            className="hover:bg-orange-200 rounded-full p-0.5"
+                                            className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
                                         >
                                             <X className="w-3 h-3" />
                                         </button>
                                     </span>
                                 ))}
                                 {selectedOption.length > 2 && (
-                                    <span className="text-xs text-gray-500">
+                                    <span className="text-xs text-slate-500 bg-slate-100 px-2 py-1 rounded-lg">
                                         +{selectedOption.length - 2} more
                                     </span>
                                 )}
                             </div>
                         ) : (
-                            <span className={selectedOption ? 'text-gray-900' : 'text-gray-400'}>
+                            <span className={selectedOption ? 'text-slate-900' : 'text-slate-400'}>
                                 {getDisplayValue()}
                             </span>
                         )}
                     </div>
-                    <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
+                    <ChevronDown className={`w-5 h-5 text-slate-400 transition-transform flex-shrink-0 ${isOpen ? 'rotate-180' : ''}`} />
                 </button>
 
                 {isOpen && !disable && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-50 w-full mt-2 bg-white border-2 border-slate-200 rounded-xl shadow-xl max-h-60 overflow-y-auto">
                         {options.length === 0 ? (
-                            <div className="px-4 py-3 text-sm text-gray-500 text-center">
+                            <div className="px-4 py-6 text-sm text-slate-500 text-center">
                                 No options available
                             </div>
                         ) : (
@@ -137,13 +136,13 @@ const SelectInput = ({
                                     <button
                                         key={option.value}
                                         type="button"
-                                        className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors flex items-center justify-between ${
-                                            selected ? 'bg-orange-50 text-orange-600' : 'text-gray-700'
+                                        className={`w-full text-left px-4 py-3 text-sm hover:bg-slate-50 transition-colors flex items-center justify-between ${
+                                            selected ? 'bg-blue-50 text-blue-600 font-medium' : 'text-slate-700'
                                         }`}
                                         onClick={() => handleSelectOption(option)}
                                     >
                                         <span className="truncate">{option.label}</span>
-                                        {selected && <Check className="w-4 h-4 flex-shrink-0" />}
+                                        {selected && <Check className="w-4 h-4 flex-shrink-0 text-blue-600" />}
                                     </button>
                                 );
                             })

@@ -51,16 +51,19 @@ const Login = () => {
     return (
         <>
             {loading && <Loader />}
-            <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-orange-100 flex items-center justify-center p-4">
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-6">
                 <div className="w-full max-w-md">
-                    <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
+                    <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 overflow-hidden">
                         {/* Header */}
-                        <div className="px-8 py-8 bg-gradient-to-r from-orange-500 to-orange-600 text-center">
-                            <div className="w-16 h-16 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <span className="text-2xl font-bold text-white">F</span>
+                        <div className="px-8 py-10 bg-gradient-to-br from-blue-600 to-indigo-700 text-center relative overflow-hidden">
+                            <div className="absolute inset-0 bg-black opacity-10"></div>
+                            <div className="relative z-10">
+                                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-2xl flex items-center justify-center mx-auto mb-6 backdrop-blur-sm">
+                                    <span className="text-3xl font-bold text-white">F</span>
+                                </div>
+                                <h1 className="text-3xl font-bold text-white mb-2">FIZZY ADMIN</h1>
+                                <p className="text-blue-100 text-sm">Restaurant Management System</p>
                             </div>
-                            <h1 className="text-2xl font-bold text-white">FIZZY ADMIN</h1>
-                            <p className="text-orange-100 text-sm mt-2">Restaurant Management System</p>
                         </div>
 
                         {/* Form */}
@@ -78,11 +81,11 @@ const Login = () => {
 
                             <form onSubmit={handleLogin} className="space-y-6">
                                 <InputField
-                                    label="Email/Username"
+                                    label="Email Address"
                                     type="text"
                                     value={username}
                                     onChange={(e) => setUsername(e.target.value)}
-                                    placeholder="Enter your email or username"
+                                    placeholder="Enter your email address"
                                     required
                                 />
                                 
@@ -97,27 +100,30 @@ const Login = () => {
                                 
                                 <div className="flex items-center justify-between">
                                     <label className="flex items-center">
-                                        <input type="checkbox" className="rounded border-gray-300 text-orange-600 focus:ring-orange-500" />
-                                        <span className="ml-2 text-sm text-gray-600">Remember me</span>
+                                        <input 
+                                            type="checkbox" 
+                                            className="w-4 h-4 text-blue-600 border-2 border-slate-300 rounded focus:ring-blue-500 focus:ring-2" 
+                                        />
+                                        <span className="ml-3 text-sm text-slate-600 font-medium">Remember me</span>
                                     </label>
                                     <button 
                                         type="button"
-                                        className="text-sm text-orange-600 hover:text-orange-700 font-medium"
+                                        className="text-sm text-blue-600 hover:text-blue-700 font-semibold transition-colors"
                                     >
                                         Forgot Password?
                                     </button>
                                 </div>
                                 
-                                <GradientButton type="submit" className="w-full">
-                                    Sign In
+                                <GradientButton type="submit" className="w-full py-4 text-base">
+                                    Sign In to Dashboard
                                 </GradientButton>
                             </form>
                         </div>
                     </div>
                     
                     <div className="text-center mt-8">
-                        <p className="text-sm text-gray-600 mb-4">Need help?</p>
-                        <Button className="mx-auto">Contact Support</Button>
+                        <p className="text-sm text-slate-600 mb-4">Need assistance?</p>
+                        <Button className="mx-auto">Contact Support Team</Button>
                     </div>
                 </div>
             </div>
