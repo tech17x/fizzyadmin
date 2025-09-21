@@ -272,8 +272,6 @@ const Sidebar = () => {
                       onClick={() => setIsMobileOpen(false)}
                     >
                       <IconComponent className="w-5 h-5" />
-                      {!collapsed && <span>{item.title}</span>}
-                      }
                     </Link>
                   )}
                 </li>
