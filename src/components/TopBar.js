@@ -66,27 +66,3 @@ const TopBar = ({ title, searchText, setSearchText, selectedFilter, setSelectedF
 };
 
 export default TopBar;
-
-                    </div>
-
-                    {showFilterDropdown && (
-                        <div className="filter-dropdown">
-                            {filterOptions.map(({ label, value }) => (
-                                <div
-                                    key={value}
-                                    className={`filter-option ${selectedFilter === value ? 'selected' : ''}`}
-                                    onClick={() => handleFilterSelect(value)}
-                                >
-                                    {label}
-                                    {selectedFilter === value && <Check className="check-icon" size={16} />}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
-        </div>
-    );
-};
-
-export default TopBar;
