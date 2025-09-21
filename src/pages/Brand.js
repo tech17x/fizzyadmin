@@ -149,7 +149,7 @@ const Brand = () => {
             postal_code: postalCode,
             street_address: address,
             status: status ? "active" : "inactive",
-        }
+        };
 
 
         const errors = validateBrandData(payload);
@@ -440,7 +440,7 @@ const Brand = () => {
                         </div>
                     </div>
                 </div>
-            )}
+            }
         </>
     );
 };

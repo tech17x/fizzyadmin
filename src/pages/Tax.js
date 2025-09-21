@@ -273,7 +273,7 @@ const Tax = () => {
                                     />
                                 </div>
                             )}
-                            </div>
+                        </div>
                         <div className="flex justify-end gap-4 pt-8 border-t border-slate-200 mt-8">
                             <GradientButton clickAction={handleSave}>Update</GradientButton>
                             <Button clickAction={() => setShowPopup(false)}>Close</Button>
@@ -311,39 +311,39 @@ const Tax = () => {
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-slate-900">{tax.display_tax_name}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700">{tax.brand_id.short_name}</td>
                                                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">{tax.tax_value}%</td>
-                                                    <td className="px-6 py-4 whitespace-nowrap">
-                                                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                                                            tax.status === 'active' 
-                                                                ? 'bg-emerald-100 text-emerald-800' 
-                                                                : 'bg-red-100 text-red-800'
-                                                        }`}>
-                                                            {tax.status.charAt(0).toUpperCase() + tax.status.slice(1)}
-                                                        </span>
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                                        <div className="flex items-center gap-3">
-                                                            <button 
-                                                                onClick={() => handleEditTax(tax)}
-                                                                className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all duration-200"
-                                                            >
-                                                                <Edit size={18} />
-                                                            </button>
-                                                            <button 
-                                                                onClick={() => handleDelete(tax)}
-                                                                className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
-                                                            >
-                                                                <Trash2 size={18} />
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                                <td className="px-6 py-4 whitespace-nowrap">
+                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                                        tax.status === 'active' 
+                                                            ? 'bg-emerald-100 text-emerald-800' 
+                                                            : 'bg-red-100 text-red-800'
+                                                    }`}>
+                                                        {tax.status.charAt(0).toUpperCase() + tax.status.slice(1)}
+                                                    </span>
+                                                </td>
+                                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                                    <div className="flex items-center gap-3">
+                                                        <button 
+                                                            onClick={() => handleEditTax(tax)}
+                                                            className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                                                        >
+                                                            <Edit size={18} />
+                                                        </button>
+                                                        <button 
+                                                            onClick={() => handleDelete(tax)}
+                                                            className="p-2 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-all duration-200"
+                                                        >
+                                                            <Trash2 size={18} />
+                                                        </button>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
                                     </tbody>
                                 </table>
                             </div>
                         </div>
                     </div>
-            )}
+            }
         </>
     )
 }
