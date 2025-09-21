@@ -12,8 +12,8 @@ const PhoneNumberInput = ({
     disable = false,
 }) => {
     return (
-        <div className="grid grid-cols-5 gap-2">
-            <div className="col-span-2">
+        <div className="phone-input__row">
+            <div className="input-field__container">
                 <SelectInput
                     label="Country Code"
                     selectedOption={selectedCountry}
@@ -22,7 +22,7 @@ const PhoneNumberInput = ({
                     disabled={disable}
                 />
             </div>
-            <div className="col-span-3">
+            <div className="input-field__container">
                 <InputField
                     label="Phone Number"
                     type="tel"

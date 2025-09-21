@@ -228,75 +228,65 @@ const OrderType = () => {
             {loading && <Loader />}
 
             {showPopup && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full">
-                        <div className="p-6">
-                            <HeadingText title={isEditing ? "Edit Order Type" : "Add Order Type"} />
-                            
-                            <div className="space-y-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <SelectInput
-                                        label="Select Brand"
-                                        selectedOption={selectedBrand}
-                                        onChange={handleBrandSelection}
-                                        options={brands.map(o => ({ label: o.full_name, value: o._id }))}
-                                        required
-                                    />
-                                    <SelectInput
-                                        disable={filteredOutlets.length === 0}
-                                        label="Select Outlet"
-                                        selectedOption={selectedOutlet}
-                                        onChange={setSelectedOutlet}
-                                        options={filteredOutlets.map(o => ({ label: o.name, value: o._id }))}
-                                        placeholder={!selectedBrand ? "Select brand first" : "Select outlet"}
-                                        required
-                                    />
-                                </div>
-                                
-                                <div className="grid grid-cols-2 gap-4">
-                                    <SelectInput
-                                        label="Category"
-                                        selectedOption={selectedCategory}
-                                        onChange={setSelectedCategory}
-                                        options={category}
-                                        required
-                                    />
-                                    <InputField
-                                        label="Order Type Name"
-                                        name="name"
-                                        type="text"
-                                        value={orderTypeInfo.name}
-                                        onChange={handleInputChange}
-                                        placeholder="Enter name"
-                                        required
-                                    />
-                                </div>
-
-                                {isEditing && (
-                                    <div className="pt-4 border-t border-gray-200">
-                                        <Checkbox
-                                            label="Active Status"
-                                            checked={orderTypeInfo.status === 'active'}
-                                            onChange={() =>
-                                                setOrderTypeInfo(prev => ({
-                                                    ...prev,
-                                                    status: prev.status === 'active' ? 'inactive' : 'active',
-                                                }))
-                                            }
-                                        />
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 mt-6">
-                                <Button clickAction={() => setShowPopup(false)}>
-                                    Cancel
-                                </Button>
-                                <GradientButton clickAction={handleSave}>
-                                    {isEditing ? 'Update' : 'Create'}
-                                </GradientButton>
-                            </div>
+                <div className='card'>
+                    <HeadingText title={`${isEditing ? "Edit" : "Add"} Order Type`} />
+                    <div className="inputs-container">
+                        <div className="inputs-row">
+                            <SelectInput
+                                label="Select Brand"
+                                selectedOption={selectedBrand}
+                                onChange={handleBrandSelection}
+                                options={brands.map(o => ({ label: o.full_name, value: o._id }))}
+                                required
+                            />
+                            <SelectInput
+                                disable={filteredOutlets.length === 0}
+                                label="Select Outlet"
+                                selectedOption={selectedOutlet}
+                                onChange={setSelectedOutlet}
+                                options={filteredOutlets.map(o => ({ label: o.name, value: o._id }))}
+                                placeholder={!selectedBrand ? "Select brand first" : "Select outlet"}
+                                required
+                            />
                         </div>
+                        <div className="inputs-row">
+                            <SelectInput
+                                label="Category"
+                                selectedOption={selectedCategory}
+                                onChange={setSelectedCategory}
+                                options={category}
+                                required
+                            />
+                            <InputField
+                                label="Order Type Name"
+                                name="name"
+                                type="text"
+                                value={orderTypeInfo.name}
+                                onChange={handleInputChange}
+                                placeholder="Enter name"
+                                required
+                            />
+                        </div>
+                        {isEditing && (
+                            <div className="checkbox-container">
+                                <Checkbox
+                                    label="Active Status"
+                                    checked={orderTypeInfo.status === 'active'}
+                                    onChange={() =>
+                                        setOrderTypeInfo(prev => ({
+                                            ...prev,
+                                            status: prev.status === 'active' ? 'inactive' : 'active',
+                                        }))
+                                    }
+                                />
+                            </div>
+                        )}
+                    </div>
+                    <div className="action-btns-container">
+                        <GradientButton clickAction={handleSave}>
+                            {isEditing ? 'Update' : 'Create'}
+                        </GradientButton>
+                        <Button clickAction={() => setShowPopup(false)}>Close</Button>
                     </div>
                 </div>
             )}

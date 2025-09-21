@@ -385,8 +385,8 @@ const Staff = () => {
         switch (currentStep) {
             case 1:
                 return (
-                    <div className="space-y-6">
-                        <div className="grid grid-cols-2 gap-4">
+                    <div className="inputs-container">
+                        <div className="inputs-row">
                             <InputField
                                 label="Full Name"
                                 type="text"
@@ -407,21 +407,30 @@ const Staff = () => {
                             />
                         </div>
 
-                        <PhoneNumberInput
-                            phoneNumber={phone}
-                            onPhoneNumberChange={(value) => { 
-                                setPhone(value); 
-                                setStaffInfo((prevData) => ({ ...prevData, phone: value })); 
-                            }}
-                            selectedCountry={selectedCountryCode}
-                            onCountryChange={(value) => { 
-                                setSelectedCountryCode(value); 
-                                setStaffInfo((prevData) => ({ ...prevData, country_code: value.value })); 
-                            }}
-                            countryOptions={countryCodeOptions}
-                        />
-
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="inputs-row">
+                            <PhoneNumberInput
+                                phoneNumber={phone}
+                                onPhoneNumberChange={(value) => { 
+                                    setPhone(value); 
+                                    setStaffInfo((prevData) => ({ ...prevData, phone: value })); 
+                                }}
+                                selectedCountry={selectedCountryCode}
+                                onCountryChange={(value) => { 
+                                    setSelectedCountryCode(value); 
+                                    setStaffInfo((prevData) => ({ ...prevData, country_code: value.value })); 
+                                }}
+                                countryOptions={countryCodeOptions}
+                            />
+                            <InputField
+                                label="Profile Image URL"
+                                type="text"
+                                name="image"
+                                value={staffInfo.image || ""}
+                                onChange={handleInputChange}
+                                placeholder="Enter image URL"
+                            />
+                        </div>
+                        <div className="inputs-row">
                             <InputField
                                 label="Password"
                                 type="password"
@@ -442,17 +451,8 @@ const Staff = () => {
                             />
                         </div>
 
-                        <InputField
-                            label="Profile Image URL"
-                            type="text"
-                            name="image"
-                            value={staffInfo.image || ""}
-                            onChange={handleInputChange}
-                            placeholder="Enter image URL"
-                        />
-
                         {isEditing && (
-                            <div className="pt-4 border-t border-gray-200">
+                            <div className="checkbox-container">
                                 <Checkbox
                                     label="Active Status"
                                     checked={staffInfo.status}
@@ -464,70 +464,95 @@ const Staff = () => {
                 );
             case 2:
                 return (
-                    <div className="space-y-6">
-                        <SelectInput
-                            label="Select Role"
-                            options={roles.map((role) => ({ label: role.name, value: role._id }))}
-                            selectedOption={selectedRole}
-                            onChange={handleRoleChange}
-                            required
-                        />
-
-                        <div className="bg-gray-50 rounded-lg p-4">
-                            <h4 className="font-medium text-gray-900 mb-4">Permissions</h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                {Array.from(new Set(permissions.map((p) => p.category))).map((category) => (
-                                    <div key={category} className="space-y-2">
-                                        <h5 className="text-sm font-medium text-gray-700">{category}</h5>
-                                        {permissions
-                                            .filter((p) => p.category === category)
-                                            .map((perm) => (
-                                                <Checkbox
-                                                    disable={selectedRole?.label === "Admin"}
-                                                    key={perm._id}
-                                                    label={perm.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                                                    checked={checkedPermissions[perm.name] || false}
-                                                    onChange={() => handlePermissionToggle(perm.name)}
-                                                />
-                                            ))}
-                                    </div>
-                                ))}
+                    <div className="inputs-container">
+                        <div className="inputs-row">
+                            <SelectInput
+                                label="Select Role"
+                                options={roles.map((role) => ({ label: role.name, value: role._id }))}
+                                selectedOption={selectedRole}
+                                onChange={handleRoleChange}
+                                required
+                            />
+                            <div style={{ visibility: "hidden" }}>
+                                <InputField label="Hidden" />
+                            </div>
+                        </div>
+                        <div className="permissions">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">Permissions</h4>
+                            <div className="table-overflow">
+                                <table className="checkbox-table">
+                                    <thead>
+                                        <tr>
+                                            <th>Category</th>
+                                            <th>Permissions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {Array.from(new Set(permissions.map((p) => p.category))).map((category) => (
+                                            <tr key={category}>
+                                                <td className="font-medium">{category}</td>
+                                                <td>
+                                                    <div className="flex flex-wrap gap-2">
+                                                        {permissions
+                                                            .filter((p) => p.category === category)
+                                                            .map((perm) => (
+                                                                <Checkbox
+                                                                    disable={selectedRole?.label === "Admin"}
+                                                                    key={perm._id}
+                                                                    label={perm.name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                                                                    checked={checkedPermissions[perm.name] || false}
+                                                                    onChange={() => handlePermissionToggle(perm.name)}
+                                                                />
+                                                            ))}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
                 );
             case 3:
                 return (
-                    <div className="space-y-6">
-                        <div>
-                            <h4 className="font-medium text-gray-900 mb-4">Select Brands</h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                {brands.map((item) => (
-                                    <Checkbox
-                                        key={item._id}
-                                        labelId={item._id}
-                                        label={item.full_name}
-                                        checked={staffInfo.brands.includes(item._id)}
-                                        onChange={() => handleBrandSelection(item._id)}
-                                    />
-                                ))}
+                    <div className="inputs-container">
+                        <div className="box">
+                            <div className="box-head">
+                                <h4 className="font-medium text-gray-900">Brand Permissions</h4>
                             </div>
-                        </div>
-
-                        <div>
-                            <h4 className="font-medium text-gray-900 mb-4">Select Outlets</h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                {outlets
-                                    .filter((item) => staffInfo.brands.includes(item.brand_id))
-                                    .map((item) => (
+                            <div className="box-body">
+                                <div className="brand-permissions">
+                                    {brands.map((item) => (
                                         <Checkbox
                                             key={item._id}
-                                            label={item.name}
                                             labelId={item._id}
-                                            checked={staffInfo.outlets.includes(item._id)}
-                                            onChange={() => handleOutletSelection(item._id)}
+                                            label={item.full_name}
+                                            checked={staffInfo.brands.includes(item._id)}
+                                            onChange={() => handleBrandSelection(item._id)}
                                         />
                                     ))}
+                                </div>
+                            </div>
+                        </div>
+                        <div className="box">
+                            <div className="box-head">
+                                <h4 className="font-medium text-gray-900">Outlet Permissions</h4>
+                            </div>
+                            <div className="box-body">
+                                <div className="brand-permissions">
+                                    {outlets
+                                        .filter((item) => staffInfo.brands.includes(item.brand_id))
+                                        .map((item) => (
+                                            <Checkbox
+                                                key={item._id}
+                                                label={item.name}
+                                                labelId={item._id}
+                                                checked={staffInfo.outlets.includes(item._id)}
+                                                onChange={() => handleOutletSelection(item._id)}
+                                            />
+                                        ))}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -542,64 +567,53 @@ const Staff = () => {
             {loading && <Loader />}
             
             {showPopup && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="p-6">
-                            <HeadingText title={isEditing ? "Edit Staff" : "Add New Staff"} />
-                            
-                            {/* Step Navigation */}
-                            <div className="flex items-center justify-center mb-8">
-                                {[
-                                    { step: 1, label: 'Profile', icon: User },
-                                    { step: 2, label: 'Role & Permissions', icon: Shield },
-                                    { step: 3, label: 'Access', icon: Building }
-                                ].map(({ step, label, icon: Icon }) => (
-                                    <div key={step} className="flex items-center">
-                                        <div className={`flex items-center justify-center w-10 h-10 rounded-full ${
-                                            currentStep === step 
-                                                ? 'bg-primary-gradient text-white' 
-                                                : currentStep > step 
-                                                    ? 'bg-green-500 text-white' 
-                                                    : 'bg-gray-200 text-gray-500'
-                                        }`}>
-                                            <Icon className="w-5 h-5" />
-                                        </div>
-                                        <span className={`ml-2 text-sm font-medium ${
-                                            currentStep === step ? 'text-primary-orange' : 'text-gray-500'
-                                        }`}>
-                                            {label}
-                                        </span>
-                                        {step < 3 && <div className="w-8 h-px bg-gray-300 mx-4" />}
-                                    </div>
-                                ))}
-                            </div>
+                <div className='card'>
+                    <HeadingText title={`${isEditing ? "Edit" : "Add"} Staff`} />
+                    
+                    {/* Step Navigation */}
+                    <div className="step-links">
+                        {[
+                            { step: 1, label: 'Profile Info', icon: User },
+                            { step: 2, label: 'Role & Permissions', icon: Shield },
+                            { step: 3, label: 'Brand & Outlet Access', icon: Building }
+                        ].map(({ step, label, icon: Icon }) => (
+                            <button
+                                key={step}
+                                className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
+                                    currentStep === step 
+                                        ? 'bg-primary-gradient text-white shadow-md' 
+                                        : currentStep > step 
+                                            ? 'bg-green-100 text-green-700' 
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                }`}
+                                onClick={() => setCurrentStep(step)}
+                            >
+                                <Icon className="w-4 h-4" />
+                                <span className="text-sm">{label}</span>
+                            </button>
+                        ))}
+                    </div>
 
-                            {renderStepContent()}
+                    {renderStepContent()}
 
-                            <div className="flex justify-between pt-6 border-t border-gray-200 mt-6">
-                                <div>
-                                    {currentStep > 1 && (
-                                        <Button clickAction={() => setCurrentStep(currentStep - 1)}>
-                                            Previous
-                                        </Button>
-                                    )}
-                                </div>
-                                <div className="flex gap-3">
-                                    <Button clickAction={() => setShowPopup(false)}>
-                                        Cancel
-                                    </Button>
-                                    {currentStep < 3 ? (
-                                        <GradientButton clickAction={() => setCurrentStep(currentStep + 1)}>
-                                            Next
-                                        </GradientButton>
-                                    ) : (
-                                        <GradientButton clickAction={handleStaffSave}>
-                                            {isEditing ? "Update" : "Create"}
-                                        </GradientButton>
-                                    )}
-                                </div>
-                            </div>
-                        </div>
+                    <div className="action-btns-container">
+                        {currentStep > 1 && (
+                            <Button clickAction={() => setCurrentStep(currentStep - 1)}>
+                                Previous
+                            </Button>
+                        )}
+                        <Button clickAction={() => setShowPopup(false)}>
+                            Close
+                        </Button>
+                        {currentStep < 3 ? (
+                            <GradientButton clickAction={() => setCurrentStep(currentStep + 1)}>
+                                Next
+                            </GradientButton>
+                        ) : (
+                            <GradientButton clickAction={handleStaffSave}>
+                                {isEditing ? "Update" : "Create"}
+                            </GradientButton>
+                        )}
                     </div>
                 </div>
             )}

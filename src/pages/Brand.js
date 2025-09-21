@@ -231,150 +231,142 @@ const Brand = () => {
             {loading && <Loader />}
 
             {showPopup && (
-                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-                    <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-                        <div className="p-6">
-                            <HeadingText title={isEditing ? "Edit Brand" : "Add New Brand"} />
-                            
-                            <div className="space-y-6">
-                                <div className="grid grid-cols-2 gap-4">
-                                    <InputField
-                                        label="Brand Name"
-                                        type="text"
-                                        value={fullName}
-                                        onChange={(e) => setFullName(e.target.value)}
-                                        placeholder="Enter brand name"
-                                        required
-                                    />
-                                    <InputField
-                                        label="Short Name"
-                                        type="text"
-                                        value={shortName}
-                                        onChange={(e) => setShortName(e.target.value)}
-                                        placeholder="Enter short name"
-                                        required
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <InputField
-                                        label="Email"
-                                        type="email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        placeholder="Enter email"
-                                        required
-                                    />
-                                    <PhoneNumberInput
-                                        phoneNumber={phone}
-                                        onPhoneNumberChange={setPhone}
-                                        selectedCountry={selectedCountryCode}
-                                        onCountryChange={setSelectedCountryCode}
-                                        countryOptions={countryCodeOptions}
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-3 gap-4">
-                                    <InputField
-                                        label="GST Number"
-                                        type="text"
-                                        value={gstNo}
-                                        onChange={(e) => setGstNo(e.target.value)}
-                                        placeholder="GST number"
-                                        required
-                                    />
-                                    <InputField
-                                        label="License Number"
-                                        type="text"
-                                        value={licenseNo}
-                                        onChange={(e) => setLicenseNo(e.target.value)}
-                                        placeholder="License number"
-                                        required
-                                    />
-                                    <InputField
-                                        label="Food License"
-                                        type="text"
-                                        value={foodLicense}
-                                        onChange={(e) => setFoodLicense(e.target.value)}
-                                        placeholder="Food license"
-                                        required
-                                    />
-                                </div>
-
-                                <InputField
-                                    label="Website"
-                                    type="url"
-                                    value={website}
-                                    onChange={(e) => setWebsite(e.target.value)}
-                                    placeholder="https://example.com"
-                                />
-
-                                <InputField
-                                    label="Street Address"
-                                    type="text"
-                                    value={address}
-                                    onChange={(e) => setAddress(e.target.value)}
-                                    placeholder="Enter street address"
-                                    required
-                                />
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <InputField
-                                        label="City"
-                                        type="text"
-                                        value={city}
-                                        onChange={(e) => setCity(e.target.value)}
-                                        placeholder="Enter city"
-                                        required
-                                    />
-                                    <InputField
-                                        label="State"
-                                        type="text"
-                                        value={state}
-                                        onChange={(e) => setState(e.target.value)}
-                                        placeholder="Enter state"
-                                        required
-                                    />
-                                </div>
-
-                                <div className="grid grid-cols-2 gap-4">
-                                    <SelectInput
-                                        label="Country"
-                                        selectedOption={selectedCountry}
-                                        onChange={setSelectedCountry}
-                                        options={countryOptions}
-                                        required
-                                    />
-                                    <InputField
-                                        label="Postal Code"
-                                        type="text"
-                                        value={postalCode}
-                                        onChange={(e) => setPostalCode(e.target.value)}
-                                        placeholder="Enter postal code"
-                                        required
-                                    />
-                                </div>
-
-                                {isEditing && (
-                                    <div className="pt-4 border-t border-gray-200">
-                                        <Checkbox
-                                            label="Active Status"
-                                            checked={status}
-                                            onChange={() => setStatus(!status)}
-                                        />
-                                    </div>
-                                )}
-                            </div>
-
-                            <div className="flex justify-end gap-3 pt-6 border-t border-gray-200 mt-6">
-                                <Button clickAction={() => setShowPopup(false)}>
-                                    Cancel
-                                </Button>
-                                <GradientButton clickAction={handleSave}>
-                                    {isEditing ? "Update" : "Create"}
-                                </GradientButton>
+                <div className='card'>
+                    <HeadingText title={`${isEditing ? "Edit" : "Add"} Brand`} />
+                    <div className="inputs-container">
+                        <div className="inputs-row">
+                            <InputField
+                                label="Brand Name"
+                                type="text"
+                                value={fullName}
+                                onChange={(e) => setFullName(e.target.value)}
+                                placeholder="Enter brand name"
+                                required
+                            />
+                            <InputField
+                                label="Short Name"
+                                type="text"
+                                value={shortName}
+                                onChange={(e) => setShortName(e.target.value)}
+                                placeholder="Enter short name"
+                                required
+                            />
+                        </div>
+                        <div className="inputs-row">
+                            <InputField
+                                label="Email"
+                                type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
+                                placeholder="Enter email"
+                                required
+                            />
+                            <PhoneNumberInput
+                                phoneNumber={phone}
+                                onPhoneNumberChange={setPhone}
+                                selectedCountry={selectedCountryCode}
+                                onCountryChange={setSelectedCountryCode}
+                                countryOptions={countryCodeOptions}
+                            />
+                        </div>
+                        <div className="inputs-row">
+                            <InputField
+                                label="GST Number"
+                                type="text"
+                                value={gstNo}
+                                onChange={(e) => setGstNo(e.target.value)}
+                                placeholder="GST number"
+                                required
+                            />
+                            <InputField
+                                label="License Number"
+                                type="text"
+                                value={licenseNo}
+                                onChange={(e) => setLicenseNo(e.target.value)}
+                                placeholder="License number"
+                                required
+                            />
+                        </div>
+                        <div className="inputs-row">
+                            <InputField
+                                label="Food License"
+                                type="text"
+                                value={foodLicense}
+                                onChange={(e) => setFoodLicense(e.target.value)}
+                                placeholder="Food license"
+                                required
+                            />
+                            <InputField
+                                label="Website"
+                                type="url"
+                                value={website}
+                                onChange={(e) => setWebsite(e.target.value)}
+                                placeholder="https://example.com"
+                            />
+                        </div>
+                        <div className="inputs-row">
+                            <InputField
+                                label="Street Address"
+                                type="text"
+                                value={address}
+                                onChange={(e) => setAddress(e.target.value)}
+                                placeholder="Enter street address"
+                                required
+                            />
+                            <InputField
+                                label="City"
+                                type="text"
+                                value={city}
+                                onChange={(e) => setCity(e.target.value)}
+                                placeholder="Enter city"
+                                required
+                            />
+                        </div>
+                        <div className="inputs-row">
+                            <InputField
+                                label="State"
+                                type="text"
+                                value={state}
+                                onChange={(e) => setState(e.target.value)}
+                                placeholder="Enter state"
+                                required
+                            />
+                            <SelectInput
+                                label="Country"
+                                selectedOption={selectedCountry}
+                                onChange={setSelectedCountry}
+                                options={countryOptions}
+                                required
+                            />
+                        </div>
+                        <div className="inputs-row">
+                            <InputField
+                                label="Postal Code"
+                                type="text"
+                                value={postalCode}
+                                onChange={(e) => setPostalCode(e.target.value)}
+                                placeholder="Enter postal code"
+                                required
+                            />
+                            <div style={{ visibility: "hidden" }}>
+                                <InputField label="Hidden" />
                             </div>
                         </div>
+                        {isEditing && (
+                            <div className="checkbox-container">
+                                <Checkbox
+                                    label="Active Status"
+                                    checked={status}
+                                    onChange={() => setStatus(!status)}
+                                />
+                            </div>
+                        )}
+                    </div>
+                    <div className="action-btns-container">
+                        <GradientButton clickAction={handleSave}>
+                            {isEditing ? "Update" : "Create"}
+                        </GradientButton>
+                        <Button clickAction={() => setShowPopup(false)}>Close</Button>
                     </div>
                 </div>
             )}
