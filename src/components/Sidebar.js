@@ -208,6 +208,7 @@ const Sidebar = () => {
                         {item.icon}
                       </span>
                       {!collapsed && <span>{item.title}</span>}
+                      }
                     </div>
                     {!collapsed && (
                       <ChevronDown className={`w-4 h-4 transition-transform ${openMenus.has(index) ? 'rotate-180' : ''}`} />
@@ -249,6 +250,7 @@ const Sidebar = () => {
                     {item.icon}
                   </span>
                   {!collapsed && <span>{item.title}</span>}
+                  }
                 </Link>
               )}
             </li>
