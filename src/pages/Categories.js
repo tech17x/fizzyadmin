@@ -1,10 +1,6 @@
 // src/pages/Brand.js
 
 import { useCallback, useContext, useEffect, useState } from 'react';
-import './Outlet.css';
-import './Staff.css';
-import './Tax.css';
-import './Categories.css';
 import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
 import SelectInput from '../components/SelectInput';
@@ -16,6 +12,7 @@ import axios from 'axios';
 import Loader from '../components/Loader';
 import useFilteredData from '../hooks/filterData';
 import TopBar from '../components/TopBar';
+import AuthContext from '../context/AuthContext';
 
 const weeks = [
     { label: "Sunday", value: "sunday" },

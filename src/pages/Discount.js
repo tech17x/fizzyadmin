@@ -1,10 +1,6 @@
 // src/pages/Brand.js
 
 import { useCallback, useContext, useEffect, useState } from 'react';
-import './Outlet.css';
-import './Staff.css';
-import './Tax.css';
-import './Discount.css';
 import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
 import SelectInput from '../components/SelectInput';
@@ -17,6 +13,7 @@ import TopBar from '../components/TopBar';
 import AuthContext from '../context/AuthContext';
 import useFilteredData from '../hooks/filterData';
 import HeadingText from '../components/HeadingText';
+import SectionHeading from '../components/SectionHeading';
 
 const weeks = [
     { label: "Sunday", value: "sunday" },

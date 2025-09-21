@@ -26,18 +26,14 @@ import {
   Phone,
   Mail,
   Clock,
-  Building2,
-  BriefcaseBusiness,
   BarChart3,
   FileTextIcon,
   Package,
   Tags,
   Plus,
-  UsersIcon,
   Calendar,
   XCircle,
   PieChart,
-  PieChartIcon,
   DollarSign,
 } from 'lucide-react';
 import AuthContext from '../context/AuthContext';

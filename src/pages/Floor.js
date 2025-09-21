@@ -1,10 +1,6 @@
 // src/pages/Brand.js
 
 import { useCallback, useContext, useEffect, useState } from 'react';
-import './Outlet.css';
-import './Staff.css';
-import './Tax.css';
-import './Table.css';
 import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
 import SelectInput from '../components/SelectInput';
@@ -16,6 +12,7 @@ import useFilteredData from '../hooks/filterData';
 import axios from 'axios';
 import TopBar from '../components/TopBar';
 import AuthContext from '../context/AuthContext';
+import HeadingText from '../components/HeadingText';
 
 const Floor = () => {
     const API = process.env.REACT_APP_API_URL;

@@ -1,11 +1,6 @@
 // src/pages/Brand.js
 
 import { useCallback, useContext, useEffect, useState } from 'react';
-import './Outlet.css';
-import './Staff.css';
-import './Tax.css';
-import './Discount.css';
-import '../components/TableStyles.css';
 import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
 import SelectInput from '../components/SelectInput';
@@ -19,6 +14,7 @@ import TopBar from '../components/TopBar';
 import HeadingText from '../components/HeadingText';
 import AuthContext from '../context/AuthContext';
 import PhoneNumberInput from '../components/PhoneNumberInput';
+import { countryCodeOptions, countryOptions } from '../constants/countryOptions';
 
 const Customer = () => {
     const API = process.env.REACT_APP_API_URL;

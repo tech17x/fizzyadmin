@@ -1,10 +1,6 @@
 // src/pages/Brand.js
 
 import { useCallback, useContext, useEffect, useState } from 'react';
-import './Outlet.css';
-import './Staff.css';
-import './Tax.css';
-import './Table.css';
 import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
 import SelectInput from '../components/SelectInput';
@@ -15,6 +11,7 @@ import axios from 'axios';
 import Loader from '../components/Loader';
 import TopBar from '../components/TopBar';
 import AuthContext from '../context/AuthContext';
+import useFilteredData from '../hooks/filterData';
 
 const tableTypes = [
     { label: "square", value: "square" },

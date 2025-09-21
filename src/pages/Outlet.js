@@ -3,8 +3,6 @@ import { countryOptions, countryCodeOptions } from '../constants/countryOptions'
 import CardAdd from '../components/CardAdd';
 import EditCard from '../components/EditCard';
 import InputField from '../components/InputField';
-import './Brand.css';
-import './Outlet.css';
 import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
 import SelectInput from '../components/SelectInput';

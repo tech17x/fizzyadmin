@@ -2,7 +2,6 @@ import { useContext, useEffect, useState } from "react";
 import CardAdd from "../components/CardAdd";
 import EditCard from "../components/EditCard";
 import InputField from "../components/InputField";
-import "./Brand.css";
 import GradientButton from "../components/GradientButton";
 import Button from "../components/Button";
 import Loader from "../components/Loader";
@@ -15,6 +14,7 @@ import PhoneNumberInput from "../components/PhoneNumberInput";
 import HeadingText from "../components/HeadingText";
 import SelectInput from "../components/SelectInput";
 import AuthContext from "../context/AuthContext";
+import { countryCodeOptions, countryOptions } from "../constants/countryOptions";
 
 const Brand = () => {
     const API = process.env.REACT_APP_API_URL;
