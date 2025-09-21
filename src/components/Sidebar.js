@@ -36,7 +36,8 @@ import {
   PieChart,
   DollarSign,
   Menu,
-  X
+  X,
+  LogOut
 } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
 
@@ -120,7 +121,7 @@ const Sidebar = () => {
   const [collapsed, setCollapsed] = useState(false);
   const [openMenus, setOpenMenus] = useState(new Set());
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const { staff } = useContext(AuthContext);
+  const { staff, logout } = useContext(AuthContext);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -167,7 +168,7 @@ const Sidebar = () => {
     <>
       {/* Mobile Menu Button */}
       <button
-        className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-white rounded-xl shadow-lg border border-gray-200"
+        className="lg:hidden fixed top-6 left-6 z-50 p-3 bg-white rounded-xl shadow-lg border border-gray-200"
         onClick={() => setIsMobileOpen(!isMobileOpen)}
       >
         {isMobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
@@ -184,71 +185,105 @@ const Sidebar = () => {
       {/* Sidebar */}
       <div className={`
         ${isMobileOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-        fixed lg:relative z-40 h-full bg-white border-r border-gray-200 flex flex-col transition-all duration-300
-        ${collapsed ? 'w-20' : 'w-72'}
+        fixed lg:relative z-40 h-screen bg-white shadow-xl flex flex-col transition-all duration-300 ease-in-out
+        ${collapsed ? 'w-20' : 'w-80'}
       `}>
-        {/* Logo */}
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">F</span>
-              </div>
-              {!collapsed && (
-                <div>
-                  <h1 className="text-xl font-bold text-gray-900">Fizzy</h1>
-                  <p className="text-sm text-gray-500">Admin Panel</p>
+        {/* Header */}
+        <div className="relative overflow-hidden">
+          <div className="absolute inset-0 bg-primary-gradient"></div>
+          <div className="relative z-10 p-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-white bg-opacity-20 backdrop-blur-sm rounded-xl flex items-center justify-center shadow-lg">
+                  <span className="text-xl font-bold text-white">F</span>
                 </div>
-              )}
+                {!collapsed && (
+                  <div>
+                    <h1 className="text-xl font-bold text-white">Fizzy Admin</h1>
+                    <p className="text-orange-100 text-sm">Restaurant Management</p>
+                  </div>
+                )}
+              </div>
+              <button 
+                className="hidden lg:flex p-2 text-white text-opacity-70 hover:text-white hover:bg-white hover:bg-opacity-20 rounded-lg transition-all duration-200"
+                onClick={() => setCollapsed(!collapsed)}
+              >
+                <ChevronRight className={`w-4 h-4 transition-transform ${collapsed ? '' : 'rotate-180'}`} />
+              </button>
             </div>
-            <button 
-              className="hidden lg:flex p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-              onClick={() => setCollapsed(!collapsed)}
-            >
-              <ChevronRight className={`w-4 h-4 transition-transform ${collapsed ? '' : 'rotate-180'}`} />
-            </button>
           </div>
         </div>
 
+        {/* User Profile Section */}
+        {!collapsed && (
+          <div className="px-6 py-4 border-b border-gray-100">
+            <button 
+              className="w-full flex items-center gap-3 p-3 bg-primary-light rounded-xl hover:bg-primary-lighter transition-all duration-200 group"
+              onClick={() => {
+                navigate("/profile");
+                setIsMobileOpen(false);
+              }}
+            >
+              <img 
+                src={staff?.image || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face"} 
+                alt="Profile" 
+                className="w-10 h-10 rounded-xl object-cover border-2 border-white shadow-sm"
+                onError={(e) => {
+                  e.target.src = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face";
+                }}
+              />
+              <div className="flex-1 text-left min-w-0">
+                <div className="font-semibold text-gray-900 truncate">{staff?.name}</div>
+                <div className="text-xs text-gray-600">{staff?.role?.name}</div>
+              </div>
+              <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-primary-orange transition-colors" />
+            </button>
+          </div>
+        )}
+
         {/* Navigation */}
-        <nav className="flex-1 overflow-y-auto py-4 px-3">
+        <nav className="flex-1 overflow-y-auto py-4 px-4">
           <ul className="space-y-2">
             {filteredMenuItems.map((item, index) => {
               const IconComponent = item.icon;
+              const isMenuOpen = openMenus.has(index);
+              const hasActiveSubmenu = item.submenu?.some(sub => isActive(sub.path));
+              
               return (
                 <li key={index}>
                   {item.submenu ? (
                     <div>
                       <button
-                        className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
-                          openMenus.has(index)
-                            ? 'bg-blue-50 text-blue-700' 
+                        className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 group ${
+                          isMenuOpen || hasActiveSubmenu
+                            ? 'bg-primary-light text-primary-orange shadow-sm' 
                             : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                         }`}
                         onClick={() => toggleMenu(index)}
                       >
                         <div className="flex items-center gap-3">
-                          <IconComponent className="w-5 h-5" />
+                          <IconComponent className={`w-5 h-5 ${isMenuOpen || hasActiveSubmenu ? 'text-primary-orange' : ''}`} />
                           {!collapsed && <span>{item.title}</span>}
-                          }
                         </div>
                         {!collapsed && (
-                          <ChevronDown className={`w-4 h-4 transition-transform ${openMenus.has(index) ? 'rotate-180' : ''}`} />
+                          <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''}`} />
                         )}
                       </button>
                       
-                      {openMenus.has(index) && !collapsed && (
-                        <ul className="mt-2 ml-6 space-y-1">
+                      {isMenuOpen && !collapsed && (
+                        <ul className="mt-2 ml-4 space-y-1 border-l-2 border-gray-100 pl-4">
                           {item.submenu.map((subItem, subIdx) => {
                             const SubIconComponent = subItem.icon;
+                            const isSubActive = isActive(subItem.path);
+                            
                             return (
                               <li key={subIdx}>
                                 <Link
                                   to={subItem.path}
                                   className={`flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-lg transition-all duration-200 ${
-                                    isActive(subItem.path) 
-                                      ? 'bg-blue-100 text-blue-700' 
-                                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                                    isSubActive 
+                                      ? 'bg-primary-gradient text-white shadow-md' 
+                                      : 'text-gray-600 hover:bg-primary-light hover:text-primary-orange'
                                   }`}
                                   onClick={() => setIsMobileOpen(false)}
                                 >
@@ -264,14 +299,15 @@ const Sidebar = () => {
                   ) : (
                     <Link
                       to={item.path}
-                      className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-all duration-200 ${
+                      className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-xl transition-all duration-200 ${
                         isActive(item.path) 
-                          ? 'bg-blue-50 text-blue-700' 
+                          ? 'bg-primary-gradient text-white shadow-md' 
                           : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                       }`}
                       onClick={() => setIsMobileOpen(false)}
                     >
                       <IconComponent className="w-5 h-5" />
+                      {!collapsed && <span>{item.title}</span>}
                     </Link>
                   )}
                 </li>
@@ -280,29 +316,16 @@ const Sidebar = () => {
           </ul>
         </nav>
 
-        {/* Profile */}
-        <div className="p-4 border-t border-gray-200">
-          <button 
-            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 rounded-lg transition-all duration-200"
-            onClick={() => {
-              navigate("/profile");
-              setIsMobileOpen(false);
-            }}
+        {/* Logout Button */}
+        <div className="p-4 border-t border-gray-100">
+          <button
+            onClick={logout}
+            className={`w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-600 hover:bg-red-50 rounded-xl transition-all duration-200 ${
+              collapsed ? 'justify-center' : ''
+            }`}
           >
-            <img 
-              src={staff?.image || "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face"} 
-              alt="Profile" 
-              className="w-8 h-8 rounded-lg object-cover"
-              onError={(e) => {
-                e.target.src = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=40&h=40&fit=crop&crop=face";
-              }}
-            />
-            {!collapsed && (
-              <div className="flex-1 text-left min-w-0">
-                <div className="font-medium text-gray-900 truncate">{staff?.name}</div>
-                <div className="text-xs text-gray-500">{staff?.role?.name}</div>
-              </div>
-            )}
+            <LogOut className="w-5 h-5" />
+            {!collapsed && <span>Sign Out</span>}
           </button>
         </div>
       </div>

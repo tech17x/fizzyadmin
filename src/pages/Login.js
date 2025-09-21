@@ -51,18 +51,18 @@ const Login = () => {
     return (
         <>
             {loading && <Loader />}
-            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 flex items-center justify-center p-6">
+            <div className="min-h-screen bg-gradient-to-br from-slate-50 via-orange-50 to-orange-100 flex items-center justify-center p-6">
                 <div className="w-full max-w-md">
                     <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
                         {/* Header */}
-                        <div className="px-8 py-12 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-center relative overflow-hidden">
-                            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-transparent"></div>
+                        <div className="px-8 py-12 bg-primary-gradient text-center relative overflow-hidden">
+                            <div className="absolute inset-0 bg-gradient-to-br from-orange-600/20 to-transparent"></div>
                             <div className="relative z-10">
                                 <div className="w-20 h-20 bg-white bg-opacity-20 backdrop-blur-sm rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg">
                                     <span className="text-3xl font-bold text-white">F</span>
                                 </div>
                                 <h1 className="text-3xl font-bold text-white mb-3">FIZZY ADMIN</h1>
-                                <p className="text-blue-100 text-sm font-medium">Restaurant Management System</p>
+                                <p className="text-orange-100 text-sm font-medium">Restaurant Management System</p>
                             </div>
                         </div>
 
@@ -102,13 +102,13 @@ const Login = () => {
                                     <label className="flex items-center">
                                         <input 
                                             type="checkbox" 
-                                            className="w-4 h-4 text-blue-600 border-2 border-gray-300 rounded focus:ring-blue-500 focus:ring-2" 
+                                            className="w-4 h-4 text-orange-600 border-2 border-gray-300 rounded focus:ring-orange-500 focus:ring-2" 
                                         />
                                         <span className="ml-3 text-sm text-gray-600 font-medium">Remember me</span>
                                     </label>
                                     <button 
                                         type="button"
-                                        className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                                        className="text-sm text-primary-orange hover:text-orange-700 font-medium transition-colors"
                                     >
                                         Forgot Password?
                                     </button>

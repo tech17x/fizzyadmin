@@ -3,6 +3,14 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --primary-gradient: linear-gradient(rgb(239, 162, 128) 0%, rgb(223, 98, 41) 100%);
+  --primary-light: #fef1ec;
+  --primary-lighter: #fee5de;
+  --primary-orange: rgb(223, 98, 41);
+  --primary-orange-light: rgb(239, 162, 128);
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -47,7 +55,8 @@ body {
 }
 
 .btn-primary {
-  @apply bg-blue-600 text-white hover:bg-blue-700 shadow-sm hover:shadow-md;
+  background: var(--primary-gradient);
+  @apply text-white shadow-sm hover:shadow-md;
 }
 
 .btn-secondary {
@@ -55,11 +64,23 @@ body {
 }
 
 .input {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200;
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm transition-all duration-200;
+}
+
+.input:focus {
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 3px rgba(223, 98, 41, 0.1);
+  outline: none;
 }
 
 .select {
-  @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white cursor-pointer focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200;
+  @apply w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white cursor-pointer transition-all duration-200;
+}
+
+.select:focus {
+  border-color: var(--primary-orange);
+  box-shadow: 0 0 0 3px rgba(223, 98, 41, 0.1);
+  outline: none;
 }
 
 .table {
@@ -67,7 +88,8 @@ body {
 }
 
 .table th {
-  @apply bg-gray-50 px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border-b border-gray-200;
+  background-color: var(--primary-lighter);
+  @apply px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider border-b border-gray-200;
 }
 
 .table td {
@@ -75,7 +97,7 @@ body {
 }
 
 .table tr:hover {
-  @apply bg-gray-50;
+  background-color: var(--primary-light);
 }
 
 .status {
@@ -83,7 +105,8 @@ body {
 }
 
 .status.active {
-  @apply bg-green-100 text-green-800;
+  background-color: var(--primary-light);
+  color: var(--primary-orange);
 }
 
 .status.inactive {
@@ -132,4 +155,117 @@ body {
 
 .animate-slide-in {
   animation: slideIn 0.3s ease-out;
+}
+
+/* Custom gradient utilities */
+.bg-primary-gradient {
+  background: var(--primary-gradient);
+}
+
+.bg-primary-light {
+  background-color: var(--primary-light);
+}
+
+.bg-primary-lighter {
+  background-color: var(--primary-lighter);
+}
+
+.text-primary-orange {
+  color: var(--primary-orange);
+}
+
+.border-primary-orange {
+  border-color: var(--primary-orange);
+}
+
+/* Status badges */
+.status-badge {
+  @apply inline-flex items-center px-3 py-1 rounded-full text-xs font-medium;
+}
+
+.status-active {
+  background-color: var(--primary-light);
+  color: var(--primary-orange);
+}
+
+.status-inactive {
+  @apply bg-red-100 text-red-800;
+}
+
+/* Tax action buttons */
+.tax-action-btns {
+  @apply flex items-center gap-2;
+}
+
+.tax-action-btns button {
+  @apply p-2 rounded-lg transition-all duration-200 hover:bg-gray-100;
+}
+
+/* Form grid layouts */
+.form-grid {
+  @apply grid gap-4;
+}
+
+.form-grid-2 {
+  @apply grid-cols-1 md:grid-cols-2;
+}
+
+.form-grid-3 {
+  @apply grid-cols-1 md:grid-cols-3;
+}
+
+/* Add new staff info */
+.add-new-staff-info {
+  @apply space-y-6;
+}
+
+.add-new-staff-info .right-shift {
+  @apply flex gap-4 flex-wrap justify-end;
+}
+
+/* File upload styles */
+.file-upload {
+  @apply flex items-center gap-3;
+}
+
+.custom-file-label {
+  @apply flex items-center border border-gray-300 rounded-lg overflow-hidden cursor-pointer text-sm;
+}
+
+.file-name {
+  @apply bg-white px-3 py-2 text-gray-700 max-w-48 truncate;
+}
+
+.browse-btn {
+  background: var(--primary-gradient);
+  @apply text-white px-4 py-2 font-medium;
+}
+
+.hidden-file-input {
+  @apply hidden;
+}
+
+/* Phone input styles */
+.phone-input__row {
+  @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+}
+
+.phone-input__row .input-field__container > input {
+  @apply w-full;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .inputs-row {
+    @apply grid-cols-1;
+  }
+  
+  .form-grid-2,
+  .form-grid-3 {
+    @apply grid-cols-1;
+  }
+  
+  .phone-input__row {
+    @apply grid-cols-1;
+  }
 }

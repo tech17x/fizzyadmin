@@ -72,17 +72,16 @@ const InputField = ({
   return (
     <div className="space-y-2">
       {label && (
-        <label className={`block text-sm font-medium ${disabled ? 'text-gray-400' : 'text-gray-700'}`}>
+        <label className={`block text-sm font-semibold ${disabled ? 'text-gray-400' : 'text-gray-700'}`}>
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
-          }
         </label>
       )}
 
       <div className="relative">
         <input
           type={type === "password" ? (showPassword ? "text" : "password") : type}
-          className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500 transition-all duration-200 ${className}`}
+          className={`w-full px-4 py-3 border border-gray-300 rounded-xl text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500 disabled:bg-gray-50 disabled:text-gray-500 transition-all duration-200 ${className}`}
           value={value !== undefined && value !== null ? value : ""}
           name={name}
           onChange={handleInputChange}

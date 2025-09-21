@@ -76,7 +76,7 @@ const SelectInput = ({
     return (
         <div className={`space-y-2 ${className}`} ref={dropdownRef}>
             {label && (
-                <label className={`block text-sm font-medium ${disable ? 'text-gray-400' : 'text-gray-700'}`}>
+                <label className={`block text-sm font-semibold ${disable ? 'text-gray-400' : 'text-gray-700'}`}>
                     {label}
                     {required && <span className="text-red-500 ml-1">*</span>}
                 </label>
@@ -85,10 +85,10 @@ const SelectInput = ({
             <div className="relative">
                 <button
                     type="button"
-                    className={`w-full px-4 py-3 border border-gray-300 rounded-lg text-sm bg-white text-left flex items-center justify-between transition-all duration-200 ${
+                    className={`w-full px-4 py-3 border border-gray-300 rounded-xl text-sm bg-white text-left flex items-center justify-between transition-all duration-200 ${
                         disable 
                             ? 'bg-gray-50 text-gray-400 cursor-not-allowed' 
-                            : 'cursor-pointer hover:border-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                            : 'cursor-pointer hover:border-orange-400 focus:ring-2 focus:ring-orange-500 focus:border-orange-500'
                     }`}
                     onClick={handleToggleDropdown}
                     disabled={disable}
@@ -99,19 +99,19 @@ const SelectInput = ({
                                 {selectedOption.slice(0, 2).map((option) => (
                                     <span
                                         key={option.value}
-                                        className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded-md font-medium"
+                                        className="inline-flex items-center gap-1 px-2 py-1 bg-primary-light text-primary-orange text-xs rounded-lg font-medium"
                                     >
                                         {option.label}
                                         <button
                                             onClick={(e) => removeOption(option, e)}
-                                            className="hover:bg-blue-200 rounded-full p-0.5 transition-colors"
+                                            className="hover:bg-primary-lighter rounded-full p-0.5 transition-colors"
                                         >
                                             <X className="w-3 h-3" />
                                         </button>
                                     </span>
                                 ))}
                                 {selectedOption.length > 2 && (
-                                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-md">
+                                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-lg">
                                         +{selectedOption.length - 2} more
                                     </span>
                                 )}
@@ -126,7 +126,7 @@ const SelectInput = ({
                 </button>
 
                 {isOpen && !disable && (
-                    <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                    <div className="absolute z-50 w-full mt-2 bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-y-auto">
                         {options.length === 0 ? (
                             <div className="px-4 py-6 text-sm text-gray-500 text-center">
                                 No options available
@@ -138,13 +138,13 @@ const SelectInput = ({
                                     <button
                                         key={option.value}
                                         type="button"
-                                        className={`w-full text-left px-4 py-3 text-sm hover:bg-gray-50 transition-colors flex items-center justify-between ${
-                                            selected ? 'bg-blue-50 text-blue-600 font-medium' : 'text-gray-700'
+                                        className={`w-full text-left px-4 py-3 text-sm hover:bg-primary-light transition-colors flex items-center justify-between first:rounded-t-xl last:rounded-b-xl ${
+                                            selected ? 'bg-primary-light text-primary-orange font-medium' : 'text-gray-700'
                                         }`}
                                         onClick={() => handleSelectOption(option)}
                                     >
                                         <span className="truncate">{option.label}</span>
-                                        {selected && <Check className="w-4 h-4 flex-shrink-0 text-blue-600" />}
+                                        {selected && <Check className="w-4 h-4 flex-shrink-0 text-primary-orange" />}
                                     </button>
                                 );
                             })
