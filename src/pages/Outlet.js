@@ -394,64 +394,6 @@ const Outlet = () => {
                         <Button clickAction={() => setShowPopup(false)}>Close</Button>
                     </div>
                 </div>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Hours</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Location</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {filteredData.map((outlet) => (
-                                    <tr key={outlet._id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="flex items-center">
-                                                <div className="w-10 h-10 bg-primary-gradient rounded-lg flex items-center justify-center">
-                                                    <span className="text-white font-bold">{outlet.name.charAt(0)}</span>
-                                                </div>
-                                                <div className="ml-4">
-                                                    <div className="text-sm font-medium text-gray-900">{outlet.name}</div>
-                                                    <div className="text-sm text-gray-500">Code: {outlet.code}</div>
-                                                </div>
-                                            </div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{outlet.email}</div>
-                                            <div className="text-sm text-gray-500">{outlet.phone}</div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{outlet.opening_time} - {outlet.closing_time}</div>
-                                            <div className="text-sm text-gray-500">{outlet.timezone?.label?.split(')')[0]}</div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <div className="text-sm text-gray-900">{outlet.city}</div>
-                                            <div className="text-sm text-gray-500">{outlet.state}, {outlet.country}</div>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap">
-                                            <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
-                                                outlet.status === 'active' 
-                                                    ? 'bg-green-100 text-green-800' 
-                                                    : 'bg-red-100 text-red-800'
-                                            }`}>
-                                                {outlet.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            <button
-                                                onClick={() => handleOutletEdit(outlet)}
-                                                className="text-primary-orange hover:text-orange-700"
-                                            >
-                                                Edit
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            )}
-            </div>
         </>
     );
 };
