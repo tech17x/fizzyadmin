@@ -1,8 +1,4 @@
-// src/pages/OrderType.js
-
 import { useCallback, useContext, useEffect, useState } from 'react';
-import CardAdd from '../components/CardAdd';
-import EditCard from '../components/EditCard';
 import InputField from '../components/InputField';
 import GradientButton from '../components/GradientButton';
 import Button from '../components/Button';
@@ -13,8 +9,8 @@ import axios from 'axios';
 import useFilteredData from '../hooks/filterData';
 import Loader from '../components/Loader';
 import TopBar from '../components/TopBar';
-import HeadingText from '../components/HeadingText';
 import AuthContext from '../context/AuthContext';
+import { Type, Building, Store, Plus, ShoppingCart, Truck, Coffee, Users } from 'lucide-react';
 
 const category = [
     { label: "Pickup", value: "pickup" },
@@ -30,7 +26,6 @@ const OrderType = () => {
 
     const [brands, setBrands] = useState([]);
     const [outlets, setOutlets] = useState([]);
-
 
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('');
@@ -77,7 +72,6 @@ const OrderType = () => {
     useEffect(() => {
         fetchOrderTypes();
     }, [fetchOrderTypes]);
-
 
     const handleAdd = () => {
         setIsEditing(false);
@@ -133,7 +127,7 @@ const OrderType = () => {
 
     const handleSave = async () => {
         setLoading(true);
-        // Front-end Validation
+        
         if (!orderTypeInfo.name || orderTypeInfo.name.trim().length < 3) {
             toast.error("Name must be at least 3 characters long.");
             setLoading(false);
@@ -165,35 +159,27 @@ const OrderType = () => {
             return;
         }
 
-        // Uniqueness check
         const isDuplicate = (field) => {
             return orderTypes?.some((type) => {
                 return (
                     type.outlet_id._id === selectedOutlet?.value &&
                     type[field]?.trim().toLowerCase() === (orderTypeInfo[field]?.trim().toLowerCase() || selectedCategory.value) &&
-                    type._id !== orderTypeInfo._id // exclude self if editing
+                    type._id !== orderTypeInfo._id
                 );
             });
         };
 
-        // Check for category duplication (skip if category is "third-party")
-        if (
-            selectedCategory?.value !== "third-party" &&
-            isDuplicate("category")
-        ) {
+        if (selectedCategory?.value !== "third-party" && isDuplicate("category")) {
             toast.error("Category already exists for this outlet.");
             setLoading(false);
             return;
         }
-
 
         if (orderTypeInfo.name && isDuplicate("name")) {
             toast.error("Name already exists for this brand.");
             setLoading(false);
             return;
         }
-
-
 
         const payload = {
             name: orderTypeInfo.name.trim(),
@@ -229,109 +215,263 @@ const OrderType = () => {
         }
     };
 
+    const getCategoryIcon = (categoryValue) => {
+        switch (categoryValue) {
+            case 'pickup': return Coffee;
+            case 'dine-in': return Users;
+            case 'delivery': return Truck;
+            case 'quick-service': return ShoppingCart;
+            default: return Type;
+        }
+    };
 
     const filteredData = useFilteredData({
         data: orderTypes,
         searchTerm: search,
         searchKeys: ["name", "category", "brand_id.full_name", "outlet_id.name"],
-        filters: {
-            status: status,
-        },
+        filters: { status: status },
     });
 
     return (
         <>
-            {
-                loading && <Loader />
-            }
+            {loading && <Loader />}
 
             {showPopup ? (
-                <div className='card'>
-                    <HeadingText title={`${isEditing ? "Edit" : "Add"} Order Type`} />
-                    <div className="inputs-container">
-                        <div className="inputs-row">
-                            <SelectInput
-                                label="Select Brand"
-                                selectedOption={selectedBrand}
-                                onChange={handleBrandSelection}
-                                options={brands.map(o => ({ label: o.full_name, value: o._id }))}
-                            />
-                            <SelectInput
-                                disable={filteredOutlets.length === 0}
-                                label="Outlet"
-                                selectedOption={selectedOutlet}
-                                onChange={setSelectedOutlet}
-                                options={filteredOutlets.map(o => ({ label: o.name, value: o._id }))}
-                                placeholder={
-                                    !selectedBrand
-                                        ? "Select a brand first"
-                                        : "Select outlet"
-                                }
-                            />
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+                    <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full">
+                        {/* Modal Header */}
+                        <div className="bg-gradient-to-r from-orange-400 to-orange-600 px-8 py-6">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-white bg-opacity-20 rounded-xl flex items-center justify-center">
+                                    <Type className="w-6 h-6 text-white" />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-bold text-white">
+                                        {isEditing ? "Edit Order Type" : "Create Order Type"}
+                                    </h2>
+                                    <p className="text-orange-100">Configure order type settings</p>
+                                </div>
+                            </div>
                         </div>
-                        <div className="inputs-row">
-                            <SelectInput
-                                label="Category"
-                                selectedOption={selectedCategory}
-                                onChange={setSelectedCategory}
-                                options={category}
-                            />
-                            <InputField
-                                label="Type Name"
-                                name="name"
-                                type="text"
-                                value={orderTypeInfo.name}
-                                onChange={handleInputChange}
-                                placeholder="Enter Order Type name"
-                            />
+
+                        <div className="p-8">
+                            <div className="space-y-6">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <SelectInput
+                                        label="Select Brand"
+                                        selectedOption={selectedBrand}
+                                        onChange={handleBrandSelection}
+                                        options={brands.map(o => ({ label: o.full_name, value: o._id }))}
+                                        required
+                                    />
+                                    <SelectInput
+                                        disable={filteredOutlets.length === 0}
+                                        label="Select Outlet"
+                                        selectedOption={selectedOutlet}
+                                        onChange={setSelectedOutlet}
+                                        options={filteredOutlets.map(o => ({ label: o.name, value: o._id }))}
+                                        placeholder={!selectedBrand ? "Select a brand first" : "Select outlet"}
+                                        required
+                                    />
+                                </div>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <SelectInput
+                                        label="Order Category"
+                                        selectedOption={selectedCategory}
+                                        onChange={setSelectedCategory}
+                                        options={category}
+                                        required
+                                    />
+                                    <InputField
+                                        label="Order Type Name"
+                                        name="name"
+                                        type="text"
+                                        value={orderTypeInfo.name}
+                                        onChange={handleInputChange}
+                                        placeholder="Enter order type name"
+                                        required
+                                    />
+                                </div>
+
+                                {isEditing && (
+                                    <div className="p-6 bg-gray-50 rounded-xl">
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Status Settings</h3>
+                                        <Checkbox
+                                            label="Active Status"
+                                            checked={orderTypeInfo.status === 'active'}
+                                            onChange={() =>
+                                                setOrderTypeInfo(prev => ({
+                                                    ...prev,
+                                                    status: prev.status === 'active' ? 'inactive' : 'active',
+                                                }))
+                                            }
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div className="flex justify-end gap-4 pt-8 border-t border-gray-200 mt-8">
+                                <Button clickAction={() => setShowPopup(false)}>
+                                    Cancel
+                                </Button>
+                                <GradientButton clickAction={handleSave}>
+                                    {isEditing ? 'Update Order Type' : 'Create Order Type'}
+                                </GradientButton>
+                            </div>
                         </div>
-                        <div className="checkbox-container">
-                            {isEditing && (
-                                <Checkbox
-                                    label="Active"
-                                    checked={orderTypeInfo.status === 'active'}
-                                    onChange={() =>
-                                        setOrderTypeInfo(prev => ({
-                                            ...prev,
-                                            status: prev.status === 'active' ? 'inactive' : 'active',
-                                        }))
-                                    }
-                                />
-                            )}
-                        </div>
-                    </div>
-                    <div className="action-btns-container">
-                        <GradientButton clickAction={handleSave}>
-                            {isEditing ? 'Update' : 'Create'}
-                        </GradientButton>
-                        <Button clickAction={() => setShowPopup(false)}>Close</Button>
                     </div>
                 </div>
-            ) :
-                <div className="order-type-container" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+            ) : (
+                <div className="space-y-6">
                     <TopBar
-                        title="Staff"
+                        title="Order Type Management"
                         searchText={search}
                         setSearchText={setSearch}
                         selectedFilter={status}
                         setSelectedFilter={setStatus}
                     />
-                    <div className="cards-container card">
-                        {
-                            filteredData.map(type => (
-                                <EditCard
-                                    key={type._id}
-                                    title={type.name}
-                                    role={type.outlet_id?.name || "All Outlets"}
-                                    status={type.status}
-                                    handleEdit={() => handleEdit(type)}
-                                />
-                            ))
-                        }
-                        <CardAdd handleAdd={handleAdd} />
+                    
+                    {/* Stats Cards */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-orange-100 rounded-xl flex items-center justify-center">
+                                    <Type className="w-6 h-6 text-orange-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Total Order Types</p>
+                                    <p className="text-2xl font-bold text-gray-900">{orderTypes.length}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center">
+                                    <Type className="w-6 h-6 text-green-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Active Types</p>
+                                    <p className="text-2xl font-bold text-gray-900">
+                                        {orderTypes.filter(o => o.status === 'active').length}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center">
+                                    <Building className="w-6 h-6 text-blue-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Categories</p>
+                                    <p className="text-2xl font-bold text-gray-900">
+                                        {new Set(orderTypes.map(o => o.category)).size}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm">
+                            <div className="flex items-center gap-4">
+                                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                                    <Store className="w-6 h-6 text-purple-600" />
+                                </div>
+                                <div>
+                                    <p className="text-sm text-gray-600">Outlets</p>
+                                    <p className="text-2xl font-bold text-gray-900">
+                                        {new Set(orderTypes.map(o => o.outlet_id?._id)).size}
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Order Types Grid */}
+                    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+                        <div className="flex justify-between items-center mb-6">
+                            <div>
+                                <h2 className="text-xl font-bold text-gray-900">Order Types</h2>
+                                <p className="text-gray-600">Configure different order categories</p>
+                            </div>
+                            <GradientButton clickAction={handleAdd}>
+                                <Plus className="w-4 h-4" />
+                                Add Order Type
+                            </GradientButton>
+                        </div>
+                        
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                            {filteredData.map((type) => {
+                                const IconComponent = getCategoryIcon(type.category);
+                                return (
+                                    <div key={type._id} className="group">
+                                        <div className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-all duration-300 hover:border-orange-300">
+                                            <div className="flex flex-col space-y-4">
+                                                <div className="flex items-start justify-between">
+                                                    <div className="flex items-center gap-3">
+                                                        <div className="w-12 h-12 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+                                                            <IconComponent className="w-6 h-6 text-white" />
+                                                        </div>
+                                                        <div>
+                                                            <h3 className="text-lg font-semibold text-gray-900">{type.name}</h3>
+                                                            <p className="text-sm text-orange-600 font-medium capitalize">
+                                                                {type.category.replace('-', ' ')}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+                                                        type.status === 'active' 
+                                                            ? 'bg-green-100 text-green-800' 
+                                                            : 'bg-red-100 text-red-800'
+                                                    }`}>
+                                                        {type.status.charAt(0).toUpperCase() + type.status.slice(1)}
+                                                    </span>
+                                                </div>
+                                                
+                                                <div className="space-y-2 text-sm text-gray-600">
+                                                    <div className="flex items-center gap-2">
+                                                        <Building className="w-4 h-4 text-gray-400" />
+                                                        <span className="truncate">{type.brand_id?.full_name}</span>
+                                                    </div>
+                                                    <div className="flex items-center gap-2">
+                                                        <Store className="w-4 h-4 text-gray-400" />
+                                                        <span className="truncate">{type.outlet_id?.name || "All Outlets"}</span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="pt-4 border-t border-gray-100">
+                                                    <button
+                                                        onClick={() => handleEdit(type)}
+                                                        className="w-full px-4 py-2 bg-orange-50 text-orange-600 rounded-lg hover:bg-orange-100 transition-colors font-medium"
+                                                    >
+                                                        Edit Order Type
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                            
+                            {/* Add New Card */}
+                            <div className="group">
+                                <button 
+                                    onClick={handleAdd}
+                                    className="w-full h-full min-h-[200px] border-2 border-dashed border-gray-300 rounded-xl hover:border-orange-400 hover:bg-orange-50 transition-all duration-300 flex flex-col items-center justify-center text-center p-6"
+                                >
+                                    <div className="w-16 h-16 bg-gradient-to-br from-orange-400 to-orange-600 rounded-xl flex items-center justify-center mb-4 group-hover:scale-105 transition-transform duration-300 shadow-lg">
+                                        <Plus className="w-6 h-6 text-white" />
+                                    </div>
+                                    <span className="text-lg font-semibold text-gray-600 group-hover:text-orange-600 transition-colors">
+                                        Add Order Type
+                                    </span>
+                                    <span className="text-sm text-gray-400 mt-2">Click to create new order type</span>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
-            }
+            )}
         </>
     );
 };
