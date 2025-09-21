@@ -257,6 +257,7 @@ const Sidebar = () => {
                         <div className="flex items-center gap-3">
                           <IconComponent className={`w-5 h-5 ${isMenuOpen || hasActiveSubmenu ? 'text-orange-600' : 'text-gray-500'}`} />
                           {!collapsed && <span>{item.title}</span>}
+                          }
                         </div>
                         {!collapsed && (
                           <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isMenuOpen ? 'rotate-180' : ''} ${isMenuOpen || hasActiveSubmenu ? 'text-orange-600' : 'text-gray-400'}`} />
@@ -301,6 +302,7 @@ const Sidebar = () => {
                     >
                       <IconComponent className="w-5 h-5" />
                       {!collapsed && <span>{item.title}</span>}
+                      }
                     </Link>
                   )}
                 </li>
@@ -319,6 +321,7 @@ const Sidebar = () => {
           >
             <LogOut className="w-5 h-5" />
             {!collapsed && <span>Sign Out</span>}
+            }
           </button>
         </div>
       </div>
