@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Filter, Check, Search, X } from 'lucide-react';
+import { Filter, Check, Search, X, ChevronDown } from 'lucide-react';
 
 const filterOptions = [
     { label: 'All Status', value: '' },
