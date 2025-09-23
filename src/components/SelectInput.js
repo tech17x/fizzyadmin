@@ -1,127 +1,100 @@
 import React, { useState } from "react";
 import { ChevronDown } from "lucide-react";
-import "./InputField.css";
 
 const SelectInput = ({
-    label,
-    options,
-    selectedOption,
-    onChange,
-    disable = false,
-    multiple = false, // ✅ optional multiple select
+  label,
+  options,
+  selectedOption,
+  onChange,
+  disable = false,
+  multiple = false,
 }) => {
-    const [isOpen, setIsOpen] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
 
-    // ✅ Handle initial state differently for multiple/single
-    const [selectedValues, setSelectedValues] = useState(
-        multiple
-            ? selectedOption?.map((opt) => opt?.value) || []
-            : selectedOption?.value || ""
-    );
+  const [selectedValues, setSelectedValues] = useState(
+    multiple ? selectedOption?.map((o) => o.value) || [] : selectedOption?.value || ""
+  );
 
-    const [selectedLabels, setSelectedLabels] = useState(
-        multiple
-            ? selectedOption?.map((opt) => opt?.label) || []
-            : selectedOption?.label || ""
-    );
+  const [selectedLabels, setSelectedLabels] = useState(
+    multiple ? selectedOption?.map((o) => o.label) || [] : selectedOption?.label || ""
+  );
 
-    const handleToggleDropdown = () => {
-        if (!disable) setIsOpen(!isOpen);
-    };
+  const handleSelectOption = (option) => {
+    if (multiple) {
+      let newValues = [...selectedValues];
+      let newLabels = [...selectedLabels];
+      if (newValues.includes(option.value)) {
+        newValues = newValues.filter((val) => val !== option.value);
+        newLabels = newLabels.filter((lbl) => lbl !== option.label);
+      } else {
+        newValues.push(option.value);
+        newLabels.push(option.label);
+      }
+      setSelectedValues(newValues);
+      setSelectedLabels(newLabels);
+      onChange(options.filter((opt) => newValues.includes(opt.value)));
+    } else {
+      setSelectedValues(option.value);
+      setSelectedLabels(option.label);
+      onChange(option);
+      setIsOpen(false);
+    }
+  };
 
-    const handleSelectOption = (option) => {
-        if (multiple) {
-            let newValues = [...selectedValues];
-            let newLabels = [...selectedLabels];
+  return (
+    <div className="w-full flex flex-col gap-1 relative">
+      {label && (
+        <label className={`text-sm font-medium ${disable ? "text-gray-400" : "text-gray-700"}`}>
+          {label}
+        </label>
+      )}
+      <div
+        className={`w-full px-4 py-2.5 text-sm rounded-full border shadow-sm flex items-center justify-between cursor-pointer transition
+          ${disable ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed" : "bg-white text-gray-800 border-gray-300 hover:border-gray-400"}`}
+        onClick={() => !disable && setIsOpen(!isOpen)}
+      >
+        <span className="truncate">
+          {multiple
+            ? selectedLabels.length > 0
+              ? selectedLabels.join(", ")
+              : "Select options"
+            : selectedLabels || "Select an option"}
+        </span>
+        <ChevronDown
+          size={16}
+          className={`transition-transform ${isOpen ? "rotate-180" : ""}`}
+        />
+      </div>
 
-            if (newValues.includes(option.value)) {
-                // remove if already selected
-                newValues = newValues?.filter((val) => val !== option.value);
-                newLabels = newLabels?.filter((lbl) => lbl !== option.label);
-            } else {
-                // add if not selected
-                newValues.push(option.value);
-                newLabels.push(option.label);
-            }
-
-            setSelectedValues(newValues);
-            setSelectedLabels(newLabels);
-            onChange(options.filter((opt) => newValues.includes(opt.value)));
-        } else {
-            // single select
-            setSelectedValues(option.value);
-            setSelectedLabels(option.label);
-            onChange(option);
-            setIsOpen(false);
-        }
-    };
-
-    return (
-        <div className="select-input">
-            {label && (
-                <label
-                    className="select-input__label"
-                    style={{ color: disable ? "#9ca3af" : "#374151" }}
-                >
-                    {label}
-                </label>
-            )}
-
-            <div className="select-input__container">
-                <div
-                    className={`select-input__custom-select ${disable ? "select-input__custom-select--disabled" : ""
-                        }`}
-                    onClick={handleToggleDropdown}
-                    style={{ cursor: disable ? "not-allowed" : "pointer" }}
-                    role="button"
-                    aria-expanded={isOpen}
-                >
-                    <span className="select-input__selected-option">
-                        {multiple
-                            ? selectedLabels.length > 0
-                                ? selectedLabels.join(", ")
-                                : "Select options"
-                            : selectedLabels || "Select an option"}
-                    </span>
-                    <ChevronDown
-                        className={`select-input__icon ${isOpen ? "select-input__icon--open" : ""
-                            }`}
-                        size={12}
-                        strokeWidth={2.2}
-                    />
-                </div>
-
-                {isOpen && !disable && (
-                    <ul className="select-input__options-list">
-                        {options.map((option) => {
-                            const isSelected = multiple
-                                ? selectedValues?.includes(option.value)
-                                : option.value === selectedValues;
-
-                            return (
-                                <li
-                                    key={option.value}
-                                    className={`select-input__option ${isSelected ? "select-input__option--selected" : ""
-                                        }`}
-                                    onClick={() => handleSelectOption(option)}
-                                >
-                                    {multiple && (
-                                        <input
-                                            type="checkbox"
-                                            checked={isSelected}
-                                            readOnly
-                                            style={{ marginRight: "6px" }}
-                                        />
-                                    )}
-                                    {option.label}
-                                </li>
-                            );
-                        })}
-                    </ul>
+      {isOpen && !disable && (
+        <ul className="absolute mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg z-10 max-h-60 overflow-y-auto text-sm">
+          {options.map((option) => {
+            const isSelected = multiple
+              ? selectedValues.includes(option.value)
+              : option.value === selectedValues;
+            return (
+              <li
+                key={option.value}
+                onClick={() => handleSelectOption(option)}
+                className={`px-4 py-2 cursor-pointer hover:bg-gray-100 transition
+                  ${isSelected ? "bg-[rgba(255,232,225,0.85)] font-medium" : ""}`}
+              >
+                {multiple && (
+                  <input
+                    type="checkbox"
+                    checked={isSelected}
+                    readOnly
+                    className="mr-2 accent-black"
+                  />
                 )}
-            </div>
-        </div>
-    );
+                {option.label}
+              </li>
+            );
+          })}
+        </ul>
+      )}
+    </div>
+  );
 };
 
 export default SelectInput;

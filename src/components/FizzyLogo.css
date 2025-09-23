@@ -9,7 +9,8 @@
 }
 
 .brand {
-  color: #DF6229;
+  /* color: #DF6229; */
+  color: #111;
   letter-spacing: 2px;
   text-transform: lowercase;
 }

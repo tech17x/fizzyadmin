@@ -1,24 +1,33 @@
-// src/layouts/AdminLayout.js
-
-import React from 'react';
+import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
 import { Outlet } from 'react-router-dom';
 import './AdminLayout.css';
+import { HamIcon } from 'lucide-react';
 
 const AdminLayout = () => {
-  return (
-    <div className="admin-layout">
 
-      {/* Container for sidebar and main content */}
-      <div className="admin-body">
-        <aside className="admin-sidebar">
-          <Sidebar />
-        </aside>
-        
-        <main className="admin-main-content">
-          <Outlet /> {/* Nested route components go here */}
-        </main>
+  const [toggleMenu, setToggleMenu] = useState(false);
+
+  const updateToggleMenu = (state) => {
+    setToggleMenu(state);
+  }
+
+  return (
+    <div className="admin-body">
+      {/* Bubbles container */}
+      <div className="bubbles-container">
+        {[...Array(10)].map((_, i) => (
+          <div key={i} className="bubble"></div>
+        ))}
       </div>
+
+      <aside className={`admin-sidebar ${window.innerWidth < 768 ? toggleMenu ? 'mobile-menu' : 'hidden' : ''}`}>
+        <Sidebar updateToggleMenu={updateToggleMenu} />
+      </aside>
+
+      <main className="admin-main-content">
+        <Outlet updateToggleMenu={updateToggleMenu} />
+      </main>
     </div>
   );
 };

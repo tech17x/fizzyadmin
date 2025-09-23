@@ -60,12 +60,15 @@ import {
   PieChart,
   PieChartIcon,
   DollarSign,
+  Cross,
+  CornerLeftUp,
+  CrossIcon,
 } from 'lucide-react';
 import Popup from './Popup';
 import FizzyLogo from './FizzyLogo';
 import AuthContext from '../context/AuthContext';
 
-const menuItems = [
+const mobileMenuItems = [
   {
     title: 'Payroll',
     icon: <Contact2 color="#DF6229" size={15} />,
@@ -199,8 +202,56 @@ const menuItems = [
   },
 ];
 
-const Sidebar = () => {
-  const [collapsed, setCollapsed] = useState(window.innerWidth < 768 ? true : false);
+const desktopMenuItems = [
+  {
+    title: 'Payroll',
+    path: '/staff-overview',
+    icon: <Contact2 color="#DF6229" size={15} />,
+    permission: 'brand_manage',
+  },
+  {
+    title: 'Reports',
+    path: '/sales',
+    icon: <PieChart color="#DF6229" size={15} />,
+    permission: 'dashboard_view',
+  },
+  {
+    title: 'Brand Configuration',
+    path: '/brand',
+    icon: <Settings color="#DF6229" size={15} />,
+    permission: 'brand_manage',
+  },
+  {
+    title: 'Master Configuration',
+    path: '/tax',
+    icon: <Layers color="#DF6229" size={15} />,
+    permission: 'tax_manage',
+  },
+  {
+    title: 'Menu Configuration',
+    path: '/categories',
+    icon: <MenuSquare color="#DF6229" size={15} />,
+    permission: 'category_manage',
+  },
+  {
+    title: 'CRM',
+    path: '/customer',
+    icon: <Contact2 color="#DF6229" size={15} />,
+    permission: 'customers_view',
+  },
+  {
+    title: 'Support',
+    path: 'tel:+18001001001',
+    icon: <Headset color="#DF6229" size={15} />,
+  },
+];
+
+
+const Sidebar = ({updateToggleMenu}) => {
+  const [collapsed, setCollapsed] = useState(window.innerWidth < 768 ? false : false);
+  // const [collapsed, setCollapsed] = useState(window.innerWidth < 768 ? true : false);
+  const [menuItems] = useState(window.innerWidth > 768 ? desktopMenuItems : mobileMenuItems);
+  // const [menuItems] = useState(desktopMenuItems);
   const [openIndex, setOpenIndex] = useState(null);
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const [showNotificationPopup, setShowNotificationPopup] = useState(false);
@@ -235,8 +286,8 @@ const Sidebar = () => {
 
   const handleLinkClick = () => {
     if (window.innerWidth < 768) {
-      if (!collapsed) setCollapsed(true);
-      setHoveredIndex(null)
+      // if (!collapsed) setCollapsed(true);
+      // setHoveredIndex(null)
     } else {
       if (collapsed) setCollapsed(false);
     }
@@ -283,9 +334,13 @@ const Sidebar = () => {
         <div className="logo-section">
           <FizzyLogo oneWord={collapsed} />
           {
-            !collapsed && (
+            (window.innerWidth > 767 && !collapsed) ? (
               <button className="toggle-btn" onClick={() => setCollapsed(!collapsed)}>
                 <PanelLeftClose color='#DF6229' size={15} />
+              </button>
+            ) : (
+              <button onClick={() => updateToggleMenu(false)}>
+                <XCircle color='#DF6229' size={20} />
               </button>
             )
           }
@@ -345,7 +400,7 @@ const Sidebar = () => {
         </nav>
 
         <div className={`bottom-section ${collapsed ? "align-center" : ""}`}>
-          {/* <ul>
+          <ul>
             <li>
               <Link onClick={() => { handleLinkClick(); setShowNotificationPopup(true); }} className={`link-span ${isActive('/notifications') ? 'active-link' : ''}`}>
                 <Bell color="#DF6229" size={15} />
@@ -358,7 +413,7 @@ const Sidebar = () => {
                 {!collapsed && <GradientText>Logout</GradientText>}
               </Link>
             </li>
-          </ul> */}
+          </ul>
 
           <div className="sidebar-profile" onClick={() => { handleLinkClick(); navigate("/profile"); }}>
             <img src="https://cdn.pixabay.com/photo/2014/04/02/10/25/man-303792_1280.png" alt="user" />
@@ -371,6 +426,7 @@ const Sidebar = () => {
           </div>
         </div>
       </aside>
+
       {showNotificationPopup && (
         <Popup title="Notifications" showCloseBtn={true} closePopup={() => setShowNotificationPopup(false)}>
           <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>

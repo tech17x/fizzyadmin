@@ -6,6 +6,7 @@ import SelectInput from '../components/SelectInput.js';
 import DateRangeFilter from './shared/DateRangeFilter.jsx';
 import AuthContext from '../context/AuthContext.js';
 import { toast } from 'react-toastify';
+import SubLinks from '../components/SubLinks.js';
 
 const API = process.env.REACT_APP_API_URL || 'http://localhost:5000';
 
@@ -150,30 +151,90 @@ export const StaffOverview = () => {
 
     return (
         <>
+            <SubLinks
+                links={[
+                    { name: "Overview", url: "/staff-overview" },
+                    { name: "Daily Shifts", url: "/shifts" },
+                    { name: "Payroll", url: "/payroll" },
+                    { name: "Timeline", url: "/timeline" },
+                ]}
+            />
+
             {/* Filters */}
-            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
+            <main className="w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+                <div
+                    className="bg-white/90 backdrop-blur-md 
+               rounded-2xl shadow-lg border border-gray-200 
+               p-4 sm:p-6 lg:p-10"
+                >
+                    {/* Header */}
                     <div className="text-center">
-                        <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Filters to View Data</h3>
-                        <p className="text-gray-600 mb-6">Choose a brand, outlet, and date range to load staff analytics</p>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto">
+                        <h3 className="text-lg sm:text-xl lg:text-2xl font-bold text-gray-900 mb-2">
+                            Staff Analytics Filters
+                        </h3>
+                        <p className="text-sm sm:text-base text-gray-600 max-w-2xl mx-auto">
+                            Use the filters below to narrow down analytics by brand, outlet, and
+                            date range.
+                        </p>
+
+                        {/* Divider line */}
+                        <div className="h-1 w-16 bg-[rgba(255,232,225,0.85)] rounded-full mx-auto mt-6 mb-8"></div>
+                    </div>
+
+                    {/* Filters grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 w-full">
+                        <div className="w-full">
                             <SelectInput
                                 label="Select Brand"
                                 selectedOption={selectedBrand}
                                 onChange={setSelectedBrand}
-                                options={brands.map(b => ({ label: b.full_name, value: b._id }))}
+                                options={brands.map((b) => ({ label: b.full_name, value: b._id }))}
+                                className="w-full"
                             />
+                        </div>
+
+                        <div className="w-full">
                             <SelectInput
                                 label="Select Outlet"
                                 selectedOption={selectedOutlet}
                                 onChange={setSelectedOutlet}
-                                options={filteredOutlets.map(o => ({ label: o.name, value: o._id }))}
+                                options={filteredOutlets.map((o) => ({ label: o.name, value: o._id }))}
+                                className="w-full"
                             />
+                        </div>
+
+                        <div className="w-full">
                             <DateRangeFilter value={dateRange} onChange={setDateRange} />
                         </div>
                     </div>
+
+                    {/* Action buttons */}
+                    <div className="mt-8 flex flex-col sm:flex-row gap-4 sm:justify-center w-full">
+                        <button
+                            onClick={() => console.log("Apply Filters")}
+                            className="w-full sm:w-auto px-6 py-2.5 rounded-full 
+                   bg-black text-white text-sm font-medium 
+                   shadow hover:bg-gray-800 transition"
+                        >
+                            Apply Filters
+                        </button>
+                        <button
+                            onClick={() => {
+                                setSelectedBrand(null);
+                                setSelectedOutlet(null);
+                                setDateRange({ start: "", end: "" });
+                            }}
+                            className="w-full sm:w-auto px-6 py-2.5 rounded-full 
+                   bg-gray-100 border border-gray-300 
+                   text-sm font-medium text-gray-700 
+                   shadow-sm hover:bg-gray-200 transition"
+                        >
+                            Reset
+                        </button>
+                    </div>
                 </div>
             </main>
+
 
             {/* Staff Overview Cards and Details */}
             <div className="space-y-6 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">

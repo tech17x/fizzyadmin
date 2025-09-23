@@ -1,47 +1,28 @@
 import React, { useState } from "react";
-import "./InputField.css";
 
 const applyFormat = (value, format) => {
   if (!format) return value;
-
-  let formatted = "";
-  let formatIndex = 0;
-  let valueIndex = 0;
-
+  let formatted = "", formatIndex = 0, valueIndex = 0;
   while (formatIndex < format.length && valueIndex < value.length) {
     const formatChar = format[formatIndex];
     const inputChar = value[valueIndex];
-
     const isDigit = /\d/.test(inputChar);
     const isAlpha = /[a-zA-Z]/.test(inputChar);
     const isAlphanumeric = /[a-zA-Z0-9]/.test(inputChar);
 
-    if (formatChar === "#") {
-      if (isDigit) {
-        formatted += inputChar;
-        formatIndex++;
-      }
-      valueIndex++;
-    } else if (formatChar === "A") {
-      if (isAlpha) {
-        formatted += inputChar;
-        formatIndex++;
-      }
-      valueIndex++;
-    } else if (formatChar === "*") {
-      if (isAlphanumeric) {
-        formatted += inputChar;
-        formatIndex++;
-      }
-      valueIndex++;
-    } else {
-      // Static characters in the format (like dashes or spaces)
+    if (formatChar === "#" && isDigit) {
+      formatted += inputChar; formatIndex++;
+    } else if (formatChar === "A" && isAlpha) {
+      formatted += inputChar; formatIndex++;
+    } else if (formatChar === "*" && isAlphanumeric) {
+      formatted += inputChar; formatIndex++;
+    } else if (!["#", "A", "*"].includes(formatChar)) {
       formatted += formatChar;
       if (inputChar === formatChar) valueIndex++;
       formatIndex++;
     }
+    valueIndex++;
   }
-
   return formatted;
 };
 
@@ -59,50 +40,35 @@ const InputField = ({
   const [showPassword, setShowPassword] = useState(false);
 
   const handleInputChange = (e) => {
-    const rawName = e.target.name;
-    const rawValue = e.target.value;
-    const formattedValue = format ? applyFormat(rawValue, format) : rawValue;
-    onChange({ ...e, target: { ...e.target, value: formattedValue, name: rawName } });
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
+    const formattedValue = format ? applyFormat(e.target.value, format) : e.target.value;
+    onChange({ ...e, target: { ...e.target, value: formattedValue, name: e.target.name } });
   };
 
   return (
-    <div className="input-field">
+    <div className="w-full flex flex-col gap-1">
       {label && (
-        <label
-          className="input-field__label"
-          style={{ color: disabled ? "#9ca3af" : "#374151" }}
-        >
+        <label className={`text-sm font-medium ${disabled ? "text-gray-400" : "text-gray-700"}`}>
           {label}
         </label>
       )}
-
-      <div className="input-field__container">
+      <div className="relative">
         <input
           type={type === "password" ? (showPassword ? "text" : "password") : type}
-          className="input-field__input"
-          value={value !== undefined && value !== null ? value : ""}
           name={name}
+          value={value ?? ""}
           onChange={handleInputChange}
           placeholder={placeholder}
           required={required}
           disabled={disabled}
+          className={`w-full px-4 py-2.5 text-sm rounded-full border shadow-sm focus:ring-2 focus:ring-[rgba(255,232,225,0.85)] focus:border-[rgba(255,232,225,0.85)] outline-none transition
+            ${disabled ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed" : "bg-white text-gray-800 border-gray-300"}`}
         />
         {type === "password" && (
-          <span className="input-field__toggle-password" onClick={togglePasswordVisibility}>
-            {showPassword ? (
-              <svg width="18" height="16" viewBox="0 0 24 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M1 8C1 8 5 1 12 1C19 1 23 8 23 8C23 8 19 15 12 15C5 15 1 8 1 8Z" stroke="#4B5563" strokeWidth="2" />
-                <circle cx="12" cy="8" r="3" stroke="#4B5563" strokeWidth="2" />
-              </svg>
-            ) : (
-              <svg width="18" height="18" viewBox="0 0 24 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M3 3L21 21M1 8C1 8 5 1 12 1C14.7 1 17 2.1 19 3.8M23 8C23 8 19 15 12 15C9.3 15 7 13.9 5 12.2M12 12C11.2044 12 10.4413 11.6839 9.87868 11.1213C9.31607 10.5587 9 9.79565 9 9C9 8.20435 9.31607 7.44129 9.87868 6.87868C10.4413 6.31607 11.2044 6 12 6C12.7956 6 13.5587 6.31607 14.1213 6.87868C14.6839 7.44129 15 8.20435 15 9" stroke="#4B5563" strokeWidth="2" />
-              </svg>
-            )}
+          <span
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-gray-500 hover:text-gray-700"
+          >
+            {showPassword ? "👁️" : "🙈"}
           </span>
         )}
       </div>
