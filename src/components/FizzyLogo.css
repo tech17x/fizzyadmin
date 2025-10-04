@@ -1,39 +1,60 @@
+/* Center wrapper inside cards */
+.logo-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+/* Main logo row */
 .logo {
   display: flex;
   align-items: center;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-weight: bold;
-  font-size: 30px;
-  color: #fff;
-  position: relative;
+  font-family: "Inter", "Segoe UI", sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  gap: 10px;
 }
 
+/* Fizzy word uses theme var */
 .brand {
-  /* color: #DF6229; */
-  color: #111;
-  letter-spacing: 2px;
-  text-transform: lowercase;
+  letter-spacing: 1.5px;
+  color: var(--text-primary);  /* this changes automatically with theme */
+  transition: color 0.3s ease;
 }
 
+/* Accent "Admin" */
+.brand .accent {
+  color: var(--text-accent);   /* also from theme */
+  margin-left: 6px;
+  font-weight: 600;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+/* Animated dot */
 .dot {
   width: 12px;
   height: 12px;
-  background-color: #DF6229;
+  background-color: #df6229;
   border-radius: 50%;
-  margin-right: 10px;
-  animation: bubble 1.2s infinite ease-in-out;
+  animation: bubble 1.6s infinite ease-in-out;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-@keyframes bubble {
+/* Use same theme variable for dot in dark */
+[data-theme="dark"] .dot {
+  background-color: #f97316;
+  box-shadow: 0 0 8px rgba(249, 115, 22, 0.7);
+}
 
-  0%,
-  100% {
+/* Bubble animation */
+@keyframes bubble {
+  0%, 100% {
     transform: translateY(0px);
     opacity: 1;
   }
-
   50% {
-    transform: translateY(-10px);
-    opacity: 0.7;
+    transform: translateY(-6px);
+    opacity: 0.8;
   }
 }

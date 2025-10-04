@@ -1,20 +1,25 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext"; // Import Auth Context
+import { AuthProvider } from "./context/AuthContext";
 import PrivateRoute from "./components/PrivateRoute";
+import {
+    ThemeProvider,
+    CssBaseline,
+    createTheme,
+} from "@mui/material";
+import { ThemeProviderCustom, useThemeCustom } from "./context/ThemeContext";
+
+// Import all pages
 import Brand from "./pages/Brand";
 import Login from "./pages/Login";
 import Outlet from "./pages/Outlet";
 import Staff from "./pages/Staff";
 import OrderType from "./pages/OrderType";
 import Tax from "./pages/Tax";
-// import Table from "./pages/Table";
 import Discount from "./pages/Discount";
 import BuyXGetY from "./pages/BuyXGetY";
 import Categories from "./pages/Categories";
 import Menu from "./pages/Menu";
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
 import PaymentType from "./pages/PaymentType";
 import Floor from "./pages/Floor";
 import Table from "./pages/Table";
@@ -31,18 +36,81 @@ import StaffPerformance from "./pages/StaffPerformance";
 import PaymentSummary from "./pages/PaymentSummary";
 import DayEndSummary from "./pages/DayEndSummary";
 import CancellationReport from "./pages/CancellationReport";
-// import Payroll from "./pages/Payroll";
 import { StaffOverview } from "./pages/StaffOverview";
 import { ShiftTimeline } from "./pages/ShiftTimeline";
 import { PayrollSummary } from "./pages/PayrollSummary";
 import { DailyShifts } from "./pages/DailyShifts";
 import NewVsRepeatCustomers from "./pages/NewVsRepeatCustomers";
-// import { payrollData } from "./data/payrollData";
 
-function App() {
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+function AppWithTheme() {
+    const { theme } = useThemeCustom();
+
+    const muiTheme = createTheme({
+        palette: {
+            mode: theme,
+            primary: { main: "#6366f1" },
+            secondary: { main: "#9333ea" },
+            background: {
+                default: theme === "dark" ? "#0b1220" : "#f6f7fb",
+                paper: theme === "dark" ? "rgba(17,24,39,0.6)" : "rgba(255,255,255,0.7)",
+            },
+            text: {
+                primary: theme === "dark" ? "#f8fafc" : "#0f1724",
+                secondary: theme === "dark" ? "#cdd6e2" : "#475569",
+            },
+        },
+        shape: { borderRadius: 14 },
+        typography: {
+            fontFamily: "Inter, Roboto, sans-serif",
+            fontSize: 14,
+        },
+        components: {
+            MuiPaper: {
+                styleOverrides: {
+                    root: {
+                        backdropFilter: "blur(14px)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        boxShadow:
+                            theme === "dark"
+                                ? "0 8px 30px rgba(0,0,0,0.6)"
+                                : "0 8px 30px rgba(16,24,40,0.08)",
+                    },
+                },
+            },
+            MuiCard: {
+                styleOverrides: {
+                    root: {
+                        backdropFilter: "blur(14px)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                        boxShadow:
+                            theme === "dark"
+                                ? "0 6px 24px rgba(0,0,0,0.6)"
+                                : "0 6px 24px rgba(16,24,40,0.08)",
+                    },
+                },
+            },
+            MuiAppBar: {
+                styleOverrides: {
+                    root: {
+                        backdropFilter: "blur(14px)",
+                        backgroundColor:
+                            theme === "dark"
+                                ? "rgba(17,24,39,0.6)"
+                                : "rgba(255,255,255,0.6)",
+                        borderBottom: "1px solid rgba(255,255,255,0.1)",
+                    },
+                },
+            },
+        },
+    });
+
     return (
-        <>
-            <Router> {/* ✅ Keep only one Router (BrowserRouter alias) */}
+        <ThemeProvider theme={muiTheme}>
+            <CssBaseline />
+            <Router>
                 <AuthProvider>
                     <Routes>
                         <Route path="/login" element={<Login />} />
@@ -81,14 +149,19 @@ function App() {
                             <Route path="/timeline" element={<DailyShifts />} />
                         </Route>
 
-                        {/* Redirect unknown routes to login */}
                         <Route path="*" element={<Navigate to="/login" />} />
                     </Routes>
                 </AuthProvider>
             </Router>
             <ToastContainer position="top-right" autoClose={3000} />
-        </>
+        </ThemeProvider>
     );
 }
 
-export default App;
+export default function App() {
+    return (
+        <ThemeProviderCustom>
+            <AppWithTheme />
+        </ThemeProviderCustom>
+    );
+}

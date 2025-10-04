@@ -133,10 +133,10 @@ const Menu = () => {
         try {
             if (isEditing) {
                 // Assuming you're keeping track of the selected tax to edit
-                await axios.put(`https://api.techseventeen.com/api/menus/update/${menuId}`, payload, { withCredentials: true });
+                await axios.put(`http://localhost:5002/api/menus/update/${menuId}`, payload, { withCredentials: true });
                 toast.success("Category updated successfully");
             } else {
-                await axios.post("https://api.techseventeen.com/api/menus/create", payload, { withCredentials: true });
+                await axios.post("http://localhost:5002/api/menus/create", payload, { withCredentials: true });
                 toast.success("Category added successfully!")
             }
             setShowPopup(false);
