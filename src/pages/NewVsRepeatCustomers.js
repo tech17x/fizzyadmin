@@ -1,596 +1,975 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { format } from 'date-fns';
-import axios from 'axios';
-import { toast } from 'react-toastify';
-import AuthContext from '../context/AuthContext';
-import SelectInput from '../components/SelectInput';
-import DateRangeFilter from './shared/DateRangeFilter.jsx';
+// src/pages/NewVsRepeatCustomers.jsx
+import React, { useEffect, useState, useContext, useRef } from "react";
+import axios from "axios";
+import dayjs from "dayjs";
+import {
+    Box,
+    Typography,
+    Paper,
+    Stack,
+    FormControl,
+    Select,
+    MenuItem,
+    Card,
+    CardContent,
+    Divider,
+    Avatar,
+    CircularProgress,
+    Alert,
+    IconButton,
+    Tooltip,
+    Collapse,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    Button,
+    Menu,
+    MenuItem as MUIMenuItem,
+    Divider as MUIDivider,
+    useTheme,
+    useMediaQuery,
+} from "@mui/material";
 import {
     Calendar,
     RefreshCw,
-    Users,
+    Download,
+    FileText,
+    FilePlus,
     ChevronDown,
     ChevronRight,
-    Eye,
     CreditCard,
-} from 'lucide-react';
+    Users,
+} from "lucide-react";
+import { toast } from "react-toastify";
+import AuthContext from "../context/AuthContext";
+import FilterDateRange from "../components/FilterDateRange"; // dayjs-based filter component
+import SelectInput from "../components/SelectInput";
 
-const API = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
 
-const COLORS = [
-    'bg-blue-100 text-blue-700',
-    'bg-green-100 text-green-700',
-    'bg-purple-100 text-purple-700',
-    'bg-yellow-100 text-yellow-700',
-    'bg-pink-100 text-pink-700',
-];
+const currency = (v) =>
+    new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(
+        Number(v || 0)
+    );
 
-function NewVsRepeatCustomers() {
+export default function NewVsRepeatCustomers() {
     const { staff, logout } = useContext(AuthContext);
+    const theme = useTheme();
+    const isSm = useMediaQuery(theme.breakpoints.down("sm"));
 
     // Filters
-    const [dateRange, setDateRange] = useState({
-        start: new Date().toISOString().split('T')[0],
-        end: new Date().toISOString().split('T')[0],
-    });
     const [brands, setBrands] = useState([]);
     const [outlets, setOutlets] = useState([]);
-    const [selectedBrand, setSelectedBrand] = useState(null);
     const [filteredOutlets, setFilteredOutlets] = useState([]);
-    const [selectedOutlet, setSelectedOutlet] = useState(null);
+    const [selectedBrand, setSelectedBrand] = useState("");
+    const [selectedOutlet, setSelectedOutlet] = useState("");
+    const [dateRange, setDateRange] = useState([
+        dayjs().startOf("day"),
+        dayjs().endOf("day"),
+    ]);
 
-    // Data & UI states
-    const [newVsRepeatData, setNewVsRepeatData] = useState(null);
+    // Data & UI
+    const [data, setData] = useState(null); // response.data
     const [loading, setLoading] = useState(false);
+    const [isRefreshing, setIsRefreshing] = useState(false);
+    const [error, setError] = useState(null);
     const [expandedCustomers, setExpandedCustomers] = useState({});
     const [expandedOrders, setExpandedOrders] = useState({});
+    const [exportAnchor, setExportAnchor] = useState(null);
 
-    // Initialize brands/outlets
+    const reportRef = useRef(null);
+
+    // init brands/outlets
     useEffect(() => {
-        if (staff?.permissions?.includes('tax_manage')) {
-            setOutlets(staff.outlets || []);
+        if (staff?.permissions?.includes("tax_manage")) {
             setBrands(staff.brands || []);
+            setOutlets(staff.outlets || []);
         } else {
             logout();
         }
     }, [staff, logout]);
 
-    // Convert local date string to ISO string in UTC
-    const toLocalISOString = (dateString, endOfDay = false) => {
-        const d = new Date(dateString + 'T00:00:00');
-        if (endOfDay) d.setHours(23, 59, 59, 999);
-        return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString();
+    // filter outlets when brand selected
+    useEffect(() => {
+        if (selectedBrand) {
+            const filtered = outlets.filter((o) => o.brand_id === selectedBrand);
+            setFilteredOutlets(filtered);
+            setSelectedOutlet("");
+            if (filtered.length === 0) toast.error("Selected brand has no outlets.");
+        } else {
+            setFilteredOutlets([]);
+            setSelectedOutlet("");
+        }
+    }, [selectedBrand, outlets]);
+
+    // helper: to ISO using dayjs date objects (convert local to UTC ISO as your API expects)
+    const toISO = (d, endOfDay = false) => {
+        if (!d) return null;
+        const dt = d.toDate();
+        if (endOfDay) dt.setHours(23, 59, 59, 999);
+        return new Date(dt.getTime() - dt.getTimezoneOffset() * 60000).toISOString();
     };
 
-    // Fetch new vs repeat customers data on filter change
+    // fetch data when filters change
     useEffect(() => {
-        if (selectedBrand && selectedOutlet && dateRange.start && dateRange.end) {
-            fetchNewVsRepeatCustomers();
-        }
+        const fetchData = async () => {
+            if (!selectedBrand || !selectedOutlet || !dateRange?.[0] || !dateRange?.[1]) return;
+            setLoading(true);
+            setError(null);
+            try {
+                const resp = await axios.get(`${API}/api/reports/new-vs-repeat-customers`, {
+                    params: {
+                        brand_id: selectedBrand,
+                        outlet_id: selectedOutlet,
+                        start_date: toISO(dateRange[0], false),
+                        end_date: toISO(dateRange[1], true),
+                    },
+                    withCredentials: true,
+                });
+
+                if (resp.data?.success) {
+                    setData(resp.data);
+                    toast.success("Customer analytics loaded");
+                } else {
+                    setError("Failed to load data");
+                }
+            } catch (err) {
+                console.error(err);
+                setError("Error fetching data");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
     }, [selectedBrand, selectedOutlet, dateRange]);
 
-    const fetchNewVsRepeatCustomers = async () => {
-        setLoading(true);
+    // refresh
+    const handleRefresh = async () => {
+        setIsRefreshing(true);
         try {
-            const start = toLocalISOString(dateRange.start, false);
-            const end = toLocalISOString(dateRange.end, true);
-
-            const response = await axios.get(`${API}/api/reports/new-vs-repeat-customers`, {
+            if (!selectedBrand || !selectedOutlet) {
+                toast.info("Please select brand and outlet");
+                setIsRefreshing(false);
+                return;
+            }
+            setLoading(true);
+            const resp = await axios.get(`${API}/api/reports/new-vs-repeat-customers`, {
                 params: {
-                    brand_id: selectedBrand.value,
-                    outlet_id: selectedOutlet.value,
-                    start_date: start,
-                    end_date: end,
+                    brand_id: selectedBrand,
+                    outlet_id: selectedOutlet,
+                    start_date: toISO(dateRange[0], false),
+                    end_date: toISO(dateRange[1], true),
                 },
                 withCredentials: true,
             });
-
-            if (response.data.success) {
-                setNewVsRepeatData(response.data.data);
-                toast.success('New vs Repeat customers data loaded successfully');
+            if (resp.data?.success) {
+                setData(resp.data);
+                toast.success("Refreshed");
             } else {
-                toast.error('Failed to load new vs repeat customers data');
+                toast.error("Refresh failed");
             }
-        } catch (error) {
-            toast.error('Failed to fetch new vs repeat customers data');
-            console.error(error);
+        } catch (err) {
+            console.error(err);
+            toast.error("Refresh failed");
         } finally {
+            setIsRefreshing(false);
             setLoading(false);
         }
     };
 
-    // Format date range display
-    const formatDateRange = (start, end) => {
-        if (!start || !end) return 'Select date range';
-        const startDate = new Date(start).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        const endDate = new Date(end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-        return `${startDate} - ${endDate}`;
+    const toggleCustomer = (id) =>
+        setExpandedCustomers((s) => ({ ...s, [id]: !s[id] }));
+    const toggleOrder = (id) => setExpandedOrders((s) => ({ ...s, [id]: !s[id] }));
+
+    const formatDate = (d) => {
+        if (!d) return "N/A";
+        return dayjs(d).format("MMM DD, YYYY");
     };
 
-    // Toggle expand customer orders
-    const toggleCustomerDetails = (customerId) => {
-        setExpandedCustomers((prev) => ({
-            ...prev,
-            [customerId]: !prev[customerId],
-        }));
+    // Export helpers (CSV / XLSX)
+    const exportToCSV = (filename = "customers_report.csv") => {
+        if (!data) {
+            toast.error("No data to export");
+            return;
+        }
+
+        const rows = [];
+        rows.push(["New vs Repeat Customers Report"]);
+        rows.push([]);
+        rows.push(["Summary"]);
+        rows.push(["New Customers", data.data?.newCustomersCount ?? 0]);
+        rows.push(["Repeat Customers", data.data?.repeatCustomersCount ?? 0]);
+        rows.push(["Total Customers", data.data?.totalCustomers ?? 0]);
+        rows.push([]);
+        rows.push(["Repeat Customers"]);
+        rows.push(["CustomerId", "Name", "Email", "Phone", "OrdersInPeriod", "TotalSpent"]);
+        (data.data?.repeatCustomers || []).forEach((c) => {
+            const total = (c.orders || []).filter((o) => o.status === "settle").reduce((s, o) => s + (o.total || 0), 0);
+            rows.push([
+                c.customerId || "",
+                c.customerInfo?.name || "",
+                c.customerInfo?.email || "",
+                c.customerInfo?.phone || "",
+                c.orders?.length || 0,
+                total.toFixed(2),
+            ]);
+        });
+
+        rows.push([]);
+        rows.push(["New Customers"]);
+        rows.push(["CustomerId", "Name", "Email", "Phone", "OrdersInPeriod", "TotalSpent"]);
+        (data.data?.newCustomers || []).forEach((c) => {
+            const total = (c.orders || []).filter((o) => o.status === "settle").reduce((s, o) => s + (o.total || 0), 0);
+            rows.push([
+                c.customerId || "",
+                c.customerInfo?.name || "",
+                c.customerInfo?.email || "",
+                c.customerInfo?.phone || "",
+                c.orders?.length || 0,
+                total.toFixed(2),
+            ]);
+        });
+
+        const csv = rows.map((r) => r.map((c) => `"${String(c || "").replace(/"/g, '""')}"`).join(",")).join("\n");
+        const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        toast.success("CSV exported");
     };
 
-    // Toggle expand single order details
-    const toggleOrderDetails = (orderId) => {
-        setExpandedOrders((prev) => ({
-            ...prev,
-            [orderId]: !prev[orderId],
-        }));
-    };
-
-    // Format currency
-    const formatCurrency = (amount) => {
-        return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount || 0);
-    };
-
-    // Format date
-    const formatDate = (dateStr) => {
-        if (!dateStr) return 'N/A';
-        return format(new Date(dateStr), 'MMM dd, yyyy');
-    };
-
-    // Get status badge styles
-    const getStatusBadgeClass = (status) => {
-        switch (status) {
-            case 'settle': return 'bg-green-100 text-green-800';
-            case 'pending': return 'bg-yellow-100 text-yellow-800';
-            case 'refund': return 'bg-red-100 text-red-800';
-            default: return 'bg-gray-100 text-gray-800';
+    const exportToXLSX = async (filename = "customers_report.xlsx") => {
+        try {
+            const XLSX = await import("xlsx").then((m) => m.default || m);
+            const rows = [
+                ["CustomerId", "Name", "Email", "Phone", "Category", "OrdersInPeriod", "TotalSpent"],
+            ];
+            const pushRow = (c, category) => {
+                const total = (c.orders || []).filter((o) => o.status === "settle").reduce((s, o) => s + (o.total || 0), 0);
+                rows.push([
+                    c.customerId || "",
+                    c.customerInfo?.name || "",
+                    c.customerInfo?.email || "",
+                    c.customerInfo?.phone || "",
+                    category,
+                    c.orders?.length || 0,
+                    total,
+                ]);
+            };
+            (data.data?.repeatCustomers || []).forEach((c) => pushRow(c, "Repeat"));
+            (data.data?.newCustomers || []).forEach((c) => pushRow(c, "New"));
+            const ws = XLSX.utils.aoa_to_sheet(rows);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Customers");
+            XLSX.writeFile(wb, filename);
+            toast.success("XLSX exported");
+        } catch (err) {
+            console.warn("xlsx not available:", err);
+            exportToCSV(filename.replace(/\.xlsx?$/, ".csv"));
         }
     };
 
-    // Get payment method icon (simple emoji fallback)
-    const getPaymentMethodIcon = (methodName) => {
-        if (!methodName) return '💳';
-        const name = methodName.toLowerCase();
-        if (name.includes('card')) return '💳';
-        if (name.includes('cash')) return '💵';
-        if (name.includes('upi')) return '📲';
-        return '💸';
-    };
+    const handleExportOpen = (e) => setExportAnchor(e.currentTarget);
+    const handleExportClose = () => setExportAnchor(null);
 
-    // Handle brand selection change
-    const handleBrandSelection = (brand) => {
-        setSelectedBrand(brand);
-        const filtered = outlets.filter((o) => o.brand_id === brand.value);
-        setFilteredOutlets(filtered);
-        setSelectedOutlet(null);
-        if (filtered.length === 0) {
-            toast.error('Selected brand has no outlets.');
-        }
-    };
+    // small loading state
+    if (loading) {
+        return (
+            <Box p={{ xs: 2, md: 3 }}>
+                <Paper sx={{ p: { xs: 2, md: 3 }, mb: 4 }}>
+                    <Typography variant="subtitle1" fontWeight={700} mb={2}>
+                        Filters
+                    </Typography>
+                    <Box display="flex" gap={2}>
+                        <Box sx={{ width: 200, height: 44, bgcolor: "grey.100", borderRadius: 1 }} />
+                        <Box sx={{ width: 200, height: 44, bgcolor: "grey.100", borderRadius: 1 }} />
+                        <Box sx={{ flex: 1, height: 44, bgcolor: "grey.100", borderRadius: 1 }} />
+                    </Box>
+                </Paper>
 
-    // Handle outlet selection change
-    const handleOutletSelection = (outlet) => {
-        setSelectedOutlet(outlet);
-    };
-
-    // Build summary cards for display
-    const summaryCards = [
-        {
-            title: 'New Customers',
-            value: newVsRepeatData?.newCustomersCount || 0,
-            description: 'Customers with first order in period',
-            color: 'blue',
-            icon: '👤',
-        },
-        {
-            title: 'Repeat Customers',
-            value: newVsRepeatData?.repeatCustomersCount || 0,
-            description: 'Customers with prior orders',
-            color: 'green',
-            icon: '👥',
-        },
-        {
-            title: 'Total Customers',
-            value: newVsRepeatData?.totalCustomers || 0,
-            description: 'All customers ordered in period',
-            color: 'gray',
-            icon: '📊',
-        },
-    ];
+                <Box display="grid" gap={2}>
+                    <Box sx={{ height: 120, bgcolor: "grey.100", borderRadius: 1 }} />
+                    <Box sx={{ height: 280, bgcolor: "grey.100", borderRadius: 1 }} />
+                </Box>
+            </Box>
+        );
+    }
 
     return (
-        <div className="min-h-screen bg-gray-50">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Header */}
-                <div className="mb-8">
-                    <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-                        <div>
-                            <h1 className="text-3xl font-bold text-gray-900 mb-2">Customer Analytics Report</h1>
-                            <p className="text-gray-600">Comprehensive overview of customer activity and order statistics</p>
-                        </div>
+        <Box p={{ xs: 2, md: 3 }}>
+            {/* Filter Bar */}
+            <Paper
+                sx={{
+                    p: { xs: 2, md: 3 },
+                    mb: 4,
+                    borderRadius: 0,
+                    bgcolor: "background.paper",
+                    boxShadow: "0 6px 18px rgba(20,20,30,0.05)",
+                }}
+            >
+                <Typography variant="subtitle1" fontWeight={700} mb={2}>
+                    Filters
+                </Typography>
 
-                        <div className="mt-4 lg:mt-0 lg:text-right">
-                            <div className="inline-flex items-center space-x-2 bg-white border border-gray-200 rounded-lg px-4 py-2">
-                                <span className="text-sm text-gray-500">📅</span>
-                                <div>
-                                    <div className="text-sm font-medium text-gray-900">
-                                        {formatDateRange(dateRange.start, dateRange.end)}
-                                    </div>
-                                    <div className="text-xs text-gray-500">{newVsRepeatData?.timezone?.label || 'Unknown Timezone'}</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="mt-6 h-px bg-gradient-to-r from-blue-200 via-purple-200 to-pink-200"></div>
-                </div>
-
-                {/* Filters */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-3xl mx-auto mb-8">
-                    <SelectInput
-                        label="Brand"
-                        selectedOption={selectedBrand}
-                        onChange={handleBrandSelection}
-                        options={brands.map((b) => ({ label: b.full_name, value: b._id }))}
+                <Box mb={2}>
+                    <FilterDateRange
+                        value={dateRange}
+                        onChange={(r) => setDateRange(r)}
+                        calendars={isSm ? 1 : 2}
                     />
-                    <SelectInput
-                        label="Outlet"
-                        selectedOption={selectedOutlet}
-                        onChange={handleOutletSelection}
-                        options={filteredOutlets.map((o) => ({ label: o.name, value: o._id }))}
-                    />
-                    <DateRangeFilter value={dateRange} onChange={setDateRange} />
-                </div>
+                </Box>
 
-                {/* Summary Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 max-w-4xl mx-auto">
-                    {summaryCards.map((card, index) => (
-                        <div
-                            key={index}
-                            className={`p-6 rounded-xl border border-gray-200 text-center cursor-default ${card.color === 'blue'
-                                ? 'bg-blue-50 text-blue-900'
-                                : card.color === 'green'
-                                    ? 'bg-green-50 text-green-900'
-                                    : 'bg-gray-50 text-gray-900'
-                                }`}
+                <Stack
+                    direction={{ xs: "column", sm: "row" }}
+                    spacing={2}
+                    alignItems="center"
+                    mt={2}
+                >
+                    <FormControl fullWidth size="small" sx={{ minWidth: 220 }}>
+                        <Select
+                            value={selectedBrand}
+                            onChange={(e) => setSelectedBrand(e.target.value)}
+                            displayEmpty
+                            sx={{ height: 44 }}
+                            renderValue={(value) =>
+                                value ? brands.find((b) => b._id === value)?.full_name : "Select Brand"
+                            }
                         >
-                            <div className="text-5xl">{card.icon}</div>
-                            <h3 className="text-2xl font-bold my-2">{card.value}</h3>
-                            <p className="text-sm opacity-90">{card.title}</p>
-                            <p className="text-xs opacity-70">{card.description}</p>
-                        </div>
+                            <MenuItem value="">
+                                <em>Select Brand</em>
+                            </MenuItem>
+                            {brands.map((b) => (
+                                <MenuItem key={b._id} value={b._id}>
+                                    {b.full_name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+
+                    <FormControl fullWidth size="small" sx={{ minWidth: 220 }}>
+                        <Select
+                            value={selectedOutlet}
+                            onChange={(e) => setSelectedOutlet(e.target.value)}
+                            displayEmpty
+                            sx={{ height: 44 }}
+                            renderValue={(value) =>
+                                value ? filteredOutlets.find((o) => o._id === value)?.name : "Select Outlet"
+                            }
+                        >
+                            <MenuItem value="">
+                                <em>Select Outlet</em>
+                            </MenuItem>
+                            {filteredOutlets.map((o) => (
+                                <MenuItem key={o._id} value={o._id}>
+                                    {o.name}
+                                </MenuItem>
+                            ))}
+                        </Select>
+                    </FormControl>
+
+                    <Box sx={{ ml: "auto", display: "flex", gap: 1 }}>
+                        <Tooltip title="Refresh">
+                            <IconButton onClick={handleRefresh} disabled={isRefreshing}>
+                                <RefreshCw className={isRefreshing ? "animate-spin" : ""} />
+                            </IconButton>
+                        </Tooltip>
+
+                        <Tooltip title="Export">
+                            <IconButton onClick={handleExportOpen}>
+                                <Download />
+                            </IconButton>
+                        </Tooltip>
+
+                        <Menu anchorEl={exportAnchor} open={Boolean(exportAnchor)} onClose={handleExportClose}>
+                            <MUIMenuItem
+                                onClick={() => {
+                                    handleExportClose();
+                                    exportToCSV(`new_vs_repeat_${selectedBrand || "brand"}_${dayjs().format("YYYYMMDD")}.csv`);
+                                }}
+                            >
+                                <FileText size={16} style={{ marginRight: 8 }} />
+                                Export CSV
+                            </MUIMenuItem>
+                            <MUIMenuItem
+                                onClick={() => {
+                                    handleExportClose();
+                                    exportToXLSX(`new_vs_repeat_${selectedBrand || "brand"}_${dayjs().format("YYYYMMDD")}.xlsx`);
+                                }}
+                            >
+                                <FilePlus size={16} style={{ marginRight: 8 }} />
+                                Export XLSX
+                            </MUIMenuItem>
+                        </Menu>
+                    </Box>
+                </Stack>
+
+                <Typography variant="caption" color="text.secondary" mt={2} display="block">
+                    Showing data for{" "}
+                    <b>{dateRange[0]?.format("DD/MM/YYYY")}</b> → <b>{dateRange[1]?.format("DD/MM/YYYY")}</b>
+                    {selectedBrand && `, Brand: ${brands.find((b) => b._id === selectedBrand)?.full_name}`}
+                    {selectedOutlet && `, Outlet: ${filteredOutlets.find((o) => o._id === selectedOutlet)?.name}`}
+                </Typography>
+            </Paper>
+
+            {error && (
+                <Alert severity="error" sx={{ mb: 3 }}>
+                    {error}
+                </Alert>
+            )}
+
+            {/* Report */}
+            <div ref={reportRef}>
+                {/* Summary cards */}
+                <Box
+                    sx={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+                        gap: 2,
+                        mb: 4,
+                    }}
+                >
+                    {[
+                        {
+                            title: "New Customers",
+                            value: data?.data?.newCustomersCount ?? 0,
+                            subtitle: "Customers with first order in period",
+                            icon: <Users size={18} />,
+                            color: "#10B981",
+                        },
+                        {
+                            title: "Repeat Customers",
+                            value: data?.data?.repeatCustomersCount ?? 0,
+                            subtitle: "Customers with prior orders",
+                            icon: <Users size={18} />,
+                            color: "#6366F1",
+                        },
+                        {
+                            title: "Total Customers",
+                            value: data?.data?.totalCustomers ?? 0,
+                            subtitle: "All customers in period",
+                            icon: <Users size={18} />,
+                            color: "#3B82F6",
+                        },
+                    ].map((s, i) => (
+                        <Card
+                            key={i}
+                            sx={{
+                                borderRadius: 1.5,
+                                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                                "&:hover": {
+                                    transform: "translateY(-3px)",
+                                    boxShadow: "0 6px 18px rgba(0,0,0,0.08)",
+                                },
+                                transition: "all 0.18s ease",
+                            }}
+                        >
+                            <CardContent sx={{ textAlign: "center" }}>
+                                <Avatar sx={{ bgcolor: s.color, width: 44, height: 44, mx: "auto", mb: 1 }}>
+                                    {s.icon}
+                                </Avatar>
+                                <Typography variant="body2" color="text.secondary">
+                                    {s.title}
+                                </Typography>
+                                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                    {s.value}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary">
+                                    {s.subtitle}
+                                </Typography>
+                            </CardContent>
+                        </Card>
                     ))}
-                </div>
+                </Box>
 
                 {/* Repeat Customers */}
-                <section className="bg-white rounded-xl border border-gray-200 p-6 mb-8 max-w-7xl mx-auto">
-                    <h3 className="text-xl font-bold text-gray-900 mb-6">Repeat Customers</h3>
-                    {newVsRepeatData?.repeatCustomers?.length > 0 ? (
-                        newVsRepeatData.repeatCustomers.map((customer, idx) => {
-                            const isExpanded = !!expandedCustomers[customer.customerId];
-                            const totalSpent = customer.orders
-                                .filter((o) => o.status === 'settle')
-                                .reduce((sum, o) => sum + o.total, 0);
+                <Card sx={{ mb: 4 }}>
+                    <CardContent>
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                            <div>
+                                <Typography variant="h6">Repeat Customers</Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Customers who returned during the selected period
+                                </Typography>
+                            </div>
+                            <Box>
+                                <Typography variant="caption" color="text.secondary">
+                                    {data?.timezone?.label ?? "Timezone unknown"}
+                                </Typography>
+                            </Box>
+                        </Box>
 
-                            return (
-                                <div
-                                    key={customer.customerId}
-                                    className={`border border-gray-200 rounded-xl p-6 mb-6 shadow-sm hover:shadow-md transition`}
-                                >
-                                    <div className="flex justify-between items-center mb-4">
-                                        <div className="flex items-center space-x-4">
-                                            <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                                                {customer.customerInfo.name?.charAt(0)?.toUpperCase() || '?'}
-                                            </div>
-                                            <div>
-                                                <h4 className="text-lg font-semibold text-gray-900">
-                                                    {customer.customerInfo.name || 'Unknown Customer'}
-                                                </h4>
-                                                <div className="flex space-x-4 text-sm text-gray-500">
-                                                    <span>ID: {customer.customerId}</span>
-                                                    {customer.customerInfo.email && <span>📧 {customer.customerInfo.email}</span>}
-                                                    {customer.customerInfo.phone && <span>📞 {customer.customerInfo.phone}</span>}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-2xl font-bold text-gray-900">{formatCurrency(totalSpent)}</div>
-                                            <div className="text-sm text-gray-500">Total Spent</div>
-                                        </div>
-                                    </div>
+                        <Divider sx={{ mb: 2 }} />
 
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                        <div className="bg-blue-50 text-blue-800 rounded-lg p-3 text-center">
-                                            <div className="text-sm mb-1 font-semibold">Total Orders</div>
-                                            <div className="text-xl font-bold">{customer.orderCount}</div>
-                                        </div>
-                                        <div className="bg-green-50 text-green-800 rounded-lg p-3 text-center">
-                                            <div className="text-sm mb-1 font-semibold">Period Orders</div>
-                                            <div className="text-xl font-bold">{customer.orders.length}</div>
-                                        </div>
-                                        <div className="bg-purple-50 text-purple-800 rounded-lg p-3 text-center">
-                                            <div className="text-sm mb-1 font-semibold">First Order</div>
-                                            <div className="text-sm font-medium">{formatDate(customer.firstOrderDate)}</div>
-                                        </div>
-                                    </div>
+                        {data?.data?.repeatCustomers?.length > 0 ? (
+                            data.data.repeatCustomers.map((cust) => {
+                                const id = cust.customerId;
+                                const expanded = !!expandedCustomers[id];
+                                const totalSpent = (cust.orders || []).filter((o) => o.status === "settle")
+                                    .reduce((s, o) => s + (o.total || 0), 0);
 
-                                    <div className="flex justify-between items-center mb-4">
-                                        <span className="text-sm text-gray-500">
-                                            {customer.orders.length} order{customer.orders.length !== 1 ? 's' : ''} in this period
-                                        </span>
-                                        <button
-                                            onClick={() => toggleCustomerDetails(customer.customerId)}
-                                            className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-                                        >
-                                            {isExpanded ? 'Hide Orders' : 'View Orders'}
-                                        </button>
-                                    </div>
+                                return (
+                                    <Box
+                                        key={id}
+                                        sx={{
+                                            borderRadius: 1,
+                                            border: "1px solid",
+                                            borderColor: "divider",
+                                            p: 2,
+                                            mb: 2,
+                                            bgcolor: "background.paper",
+                                        }}
+                                    >
+                                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                                            <Box display="flex" alignItems="center" gap={2}>
+                                                <Avatar sx={{
+                                                    bgcolor: "linear-gradient(45deg,#06b6d4,#7c3aed)",
+                                                    width: 48,
+                                                    height: 48,
+                                                }}>
+                                                    {(cust.customerInfo?.name || "?").charAt(0)}
+                                                </Avatar>
+                                                <Box>
+                                                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                                        {cust.customerInfo?.name || "Unknown Customer"}
+                                                    </Typography>
+                                                    <Typography variant="caption" color="text.secondary">
+                                                        ID: {cust.customerId} {cust.customerInfo?.email ? ` • ${cust.customerInfo.email}` : ""}
+                                                    </Typography>
+                                                </Box>
+                                            </Box>
 
-                                    {isExpanded && (
-                                        <div className="space-y-4">
-                                            {customer.orders.map((order) => {
-                                                const isOrderExpanded = !!expandedOrders[order.order_id];
-                                                return (
-                                                    <div
-                                                        key={order.order_id}
-                                                        className="bg-gray-50 border border-gray-200 rounded-lg p-4"
-                                                    >
-                                                        <div className="flex justify-between mb-2">
-                                                            <div className="flex items-center space-x-3">
-                                                                <span className="font-mono text-gray-600">#{order.order_id.split('_')[1]}</span>
-                                                                <span
-                                                                    className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(order.status)
-                                                                        }`}
-                                                                >
-                                                                    {order.status.toUpperCase()}
-                                                                </span>
-                                                            </div>
-                                                            <button
-                                                                onClick={() => toggleOrderDetails(order.order_id)}
-                                                                className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                                                            >
-                                                                {isOrderExpanded ? 'Hide Details' : 'View Details'}
-                                                            </button>
-                                                        </div>
+                                            <Box textAlign="right">
+                                                <Typography variant="h6">{currency(totalSpent)}</Typography>
+                                                <Typography variant="caption" color="text.secondary">
+                                                    Total Spent
+                                                </Typography>
+                                            </Box>
+                                        </Box>
 
-                                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
-                                                            <div>
-                                                                <div className="text-xs text-gray-500">Order Total</div>
-                                                                <div className="font-semibold">${order.total.toFixed(2)}</div>
-                                                            </div>
-                                                            <div>
-                                                                <div className="text-xs text-gray-500">Items</div>
-                                                                <div className="font-semibold">{order.itemCount}</div>
-                                                            </div>
-                                                            <div>
-                                                                <div className="text-xs text-gray-500">Date</div>
-                                                                <div className="font-semibold text-sm">{formatDate(order.createdAt)}</div>
-                                                            </div>
-                                                            <div>
-                                                                <div className="text-xs text-gray-500">Payment</div>
-                                                                <div className="flex space-x-1">
-                                                                    {order.paymentInfo?.payments?.map((p, i) => (
-                                                                        <span key={i} title={p.typeName}>
-                                                                            {getPaymentMethodIcon(p.typeName)}
-                                                                        </span>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                        <Box display="flex" gap={2} mb={1}>
+                                            <Box sx={{ flex: 1 }}>
+                                                <Typography variant="caption" color="text.secondary">Total Orders</Typography>
+                                                <Typography variant="h6">{cust.orderCount ?? (cust.orders?.length ?? 0)}</Typography>
+                                            </Box>
+                                            <Box sx={{ flex: 1 }}>
+                                                <Typography variant="caption" color="text.secondary">Orders in Period</Typography>
+                                                <Typography variant="h6">{cust.orders?.length ?? 0}</Typography>
+                                            </Box>
+                                            <Box sx={{ flex: 1 }}>
+                                                <Typography variant="caption" color="text.secondary">First Order</Typography>
+                                                <Typography variant="body2">{formatDate(cust.firstOrderDate)}</Typography>
+                                            </Box>
+                                        </Box>
 
-                                                        {isOrderExpanded && order.paymentInfo && (
-                                                            <div>
-                                                                <div className="text-sm font-medium mb-2">Payment Details</div>
-                                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm bg-white border border-gray-200 rounded-lg p-3">
-                                                                    <div>
-                                                                        <span className="text-gray-600">Total Paid:</span>{' '}
-                                                                        <span className="font-semibold">${order.paymentInfo.totalPaid.toFixed(2)}</span>
-                                                                    </div>
-                                                                    <div>
-                                                                        <span className="text-gray-600">Customer Paid:</span>{' '}
-                                                                        <span className="font-semibold">${order.paymentInfo.customerPaid.toFixed(2)}</span>
-                                                                    </div>
-                                                                    {order.paymentInfo.return > 0 && (
-                                                                        <div className="text-orange-600">
-                                                                            <span className="text-gray-600">Return:</span>{' '}
-                                                                            <span className="font-semibold">${order.paymentInfo.return.toFixed(2)}</span>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
+                                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
+                                            <Typography variant="caption" color="text.secondary">
+                                                {cust.orders?.length ?? 0} order{(cust.orders?.length || 0) !== 1 ? "s" : ""} in this period
+                                            </Typography>
+                                            <Button size="small" onClick={() => toggleCustomer(id)}>
+                                                {expanded ? "Hide Orders" : "View Orders"}
+                                            </Button>
+                                        </Box>
 
-                                                                <div className="mt-3">
-                                                                    <div className="text-sm font-medium mb-2">Payment Methods</div>
-                                                                    {order.paymentInfo.payments.map((p, i) => (
-                                                                        <div
-                                                                            key={i}
-                                                                            className="flex justify-between items-center border border-gray-200 rounded-lg p-2 mb-2"
-                                                                        >
-                                                                            <span>{getPaymentMethodIcon(p.typeName)}</span>
-                                                                            <span>{p.typeName}</span>
-                                                                            <span className="font-semibold">${p.amount.toFixed(2)}</span>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })
-                    ) : (
-                        <p className="text-gray-600">No repeat customers found in this period.</p>
-                    )}
-                </section>
+                                        <Collapse in={expanded}>
+                                            <Box mt={1} display="grid" gap={1}>
+                                                {(cust.orders || []).map((order) => {
+                                                    const oid = order.order_id || order._id;
+                                                    const orderExpanded = !!expandedOrders[oid];
+                                                    return (
+                                                        <Card key={oid} variant="outlined" sx={{ bgcolor: "background.default" }}>
+                                                            <CardContent sx={{ p: 1.5 }}>
+                                                                <Box display="flex" justifyContent="space-between" alignItems="center">
+                                                                    <Box>
+                                                                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                                                            #{(order.order_id || oid).split("_")?.[1] ?? oid}
+                                                                        </Typography>
+                                                                        <Typography variant="caption" color="text.secondary">
+                                                                            {formatDate(order.createdAt)} • {order.itemCount ?? (order.items?.length ?? 0)} items
+                                                                        </Typography>
+                                                                    </Box>
+
+                                                                    <Box display="flex" alignItems="center" gap={2}>
+                                                                        <Typography variant="subtitle2">{currency(order.total)}</Typography>
+                                                                        <Button size="small" onClick={() => toggleOrder(oid)}>
+                                                                            {orderExpanded ? <><ChevronDown /> Hide</> : <><ChevronRight /> Details</>}
+                                                                        </Button>
+                                                                    </Box>
+                                                                </Box>
+
+                                                                <Collapse in={orderExpanded}>
+                                                                    <Box mt={1}>
+                                                                        <Divider sx={{ my: 1 }} />
+                                                                        <Box display="grid" gridTemplateColumns={{ xs: "1fr", md: "1fr 300px" }} gap={2}>
+                                                                            <Box>
+                                                                                {(order.items || []).map((it, idx) => (
+                                                                                    <Box key={idx} display="flex" justifyContent="space-between" py={0.8} borderBottom="1px solid" borderColor="divider">
+                                                                                        <Box>
+                                                                                            <Typography variant="body2" sx={{ fontWeight: 600 }}>{it.name}</Typography>
+                                                                                            <Typography variant="caption" color="text.secondary">{it.category_name}</Typography>
+                                                                                        </Box>
+                                                                                        <Box textAlign="right">
+                                                                                            <Typography variant="body2">{currency(it.total_price ?? it.price)}</Typography>
+                                                                                            <Typography variant="caption" color="text.secondary">Qty: {it.quantity ?? 1}</Typography>
+                                                                                        </Box>
+                                                                                    </Box>
+                                                                                ))}
+                                                                            </Box>
+
+                                                                            <Box>
+                                                                                <Typography variant="subtitle2">Payment Info</Typography>
+                                                                                <Divider sx={{ my: 1 }} />
+                                                                                <Typography variant="caption" color="text.secondary">Total Paid</Typography>
+                                                                                <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                                                                                    {currency(order.paymentInfo?.totalPaid ?? order.total ?? 0)}
+                                                                                </Typography>
+
+                                                                                <Box mt={1}>
+                                                                                    <Typography variant="caption" color="text.secondary">Tip</Typography>
+                                                                                    <Typography variant="body2">{currency(order.paymentInfo?.tip ?? 0)}</Typography>
+                                                                                </Box>
+
+                                                                                <Box mt={1}>
+                                                                                    <Typography variant="caption" color="text.secondary">Return</Typography>
+                                                                                    <Typography variant="body2">{currency(order.paymentInfo?.return ?? 0)}</Typography>
+                                                                                </Box>
+
+                                                                                <Box mt={2}>
+                                                                                    <Typography variant="caption" color="text.secondary">Payment Methods</Typography>
+                                                                                    <Box mt={1} display="flex" flexDirection="column" gap={1}>
+                                                                                        {(order.paymentInfo?.payments || []).length ? (
+                                                                                            order.paymentInfo.payments.map((p, pi) => (
+                                                                                                <Box key={pi} sx={{
+                                                                                                    display: "flex",
+                                                                                                    alignItems: "center",
+                                                                                                    justifyContent: "space-between",
+                                                                                                    p: 1,
+                                                                                                    borderRadius: 1,
+                                                                                                    bgcolor: theme.palette.mode === "dark" ? "grey.900" : "grey.100",
+                                                                                                    border: "1px solid",
+                                                                                                    borderColor: "divider",
+                                                                                                }}>
+                                                                                                    <Box display="flex" alignItems="center" gap={1}>
+                                                                                                        <CreditCard size={14} />
+                                                                                                        <Typography variant="body2">{p.typeName}</Typography>
+                                                                                                    </Box>
+                                                                                                    <Typography variant="body2" sx={{ fontWeight: 700 }}>{currency(p.amount)}</Typography>
+                                                                                                </Box>
+                                                                                            ))
+                                                                                        ) : (
+                                                                                            <Typography variant="caption" color="text.secondary">No payment details</Typography>
+                                                                                        )}
+                                                                                    </Box>
+                                                                                </Box>
+                                                                            </Box>
+                                                                        </Box>
+                                                                    </Box>
+                                                                </Collapse>
+                                                            </CardContent>
+                                                        </Card>
+                                                    );
+                                                })}
+                                            </Box>
+                                        </Collapse>
+                                    </Box>
+                                );
+                            })
+                        ) : (
+                            <Typography color="text.secondary">No repeat customers in this period.</Typography>
+                        )}
+                    </CardContent>
+                </Card>
 
                 {/* New Customers */}
-                <section className="bg-white rounded-xl border border-gray-200 p-6 mb-8 max-w-7xl mx-auto">
-                    <h3 className="text-xl font-bold text-gray-900 mb-6">New Customers</h3>
-                    {newVsRepeatData?.newCustomers?.length > 0 ? (
-                        newVsRepeatData.newCustomers.map((customer) => {
-                            const isExpanded = !!expandedCustomers[customer.customerId];
-                            const totalSpent = customer.orders
-                                .filter((o) => o.status === 'settle')
-                                .reduce((sum, o) => sum + o.total, 0);
+                <Card sx={{ mb: 6 }}>
+                    <CardContent>
+                        <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
+                            <div>
+                                <Typography variant="h6">New Customers</Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    Customers whose first order falls into the selected period
+                                </Typography>
+                            </div>
+                        </Box>
 
-                            return (
-                                <div
-                                    key={customer.customerId}
-                                    className="border border-gray-200 rounded-xl p-6 mb-6 shadow-sm hover:shadow-md transition"
-                                >
-                                    <div className="flex justify-between items-center mb-4">
-                                        <div className="flex items-center space-x-4">
-                                            <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-teal-600 rounded-full flex items-center justify-center text-white font-bold text-lg">
-                                                {customer.customerInfo.name?.charAt(0)?.toUpperCase() || '?'}
-                                            </div>
-                                            <div>
-                                                <h4 className="text-lg font-semibold text-gray-900">
-                                                    {customer.customerInfo.name || "Unknown Customer"}
-                                                </h4>
-                                                <div className="flex space-x-4 text-sm text-gray-500">
-                                                    <span>ID: {customer.customerId}</span>
-                                                    {customer.customerInfo.email && <span>📧 {customer.customerInfo.email}</span>}
-                                                    {customer.customerInfo.phone && <span>📞 {customer.customerInfo.phone}</span>}
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-2xl font-bold text-gray-900">{formatCurrency(totalSpent)}</div>
-                                            <div className="text-sm text-gray-500">Total Spent</div>
-                                        </div>
-                                    </div>
+                        <Divider sx={{ mb: 2 }} />
 
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                        <div className="bg-green-50 text-green-800 rounded-lg p-3 text-center">
-                                            <div className="text-sm mb-1 font-semibold">Total Orders</div>
-                                            <div className="text-xl font-bold">{customer.orderCount}</div>
-                                        </div>
-                                        <div className="bg-teal-50 text-teal-800 rounded-lg p-3 text-center">
-                                            <div className="text-sm mb-1 font-semibold">Period Orders</div>
-                                            <div className="text-xl font-bold">{customer.orders.length}</div>
-                                        </div>
-                                        <div className="bg-purple-50 text-purple-800 rounded-lg p-3 text-center">
-                                            <div className="text-sm mb-1 font-semibold">First Order</div>
-                                            <div className="text-sm font-medium">{formatDate(customer.firstOrderDate)}</div>
-                                        </div>
-                                    </div>
+                        {data?.data?.newCustomers?.length > 0 ? (
+                            data.data.newCustomers.map((cust) => {
+                                const id = cust.customerId;
+                                const expanded = !!expandedCustomers[id];
+                                const totalSpent = (cust.orders || []).filter((o) => o.status === "settle")
+                                    .reduce((s, o) => s + (o.total || 0), 0);
 
-                                    <div className="flex justify-between items-center mb-4">
-                                        <span className="text-sm text-gray-500">
-                                            {customer.orders.length} order{customer.orders.length !== 1 ? "s" : ""} in this period
-                                        </span>
-                                        <button
-                                            onClick={() => toggleCustomerDetails(customer.customerId)}
-                                            className="text-green-600 hover:text-green-800 font-medium text-sm"
-                                        >
-                                            {isExpanded ? "Hide Orders" : "View Orders"}
-                                        </button>
-                                    </div>
+                                return (
+                                    <Box key={id} sx={{ borderRadius: 1, border: "1px solid", borderColor: "divider", p: 2, mb: 2 }}>
+                                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                                            <Box display="flex" alignItems="center" gap={2}>
+                                                <Avatar sx={{ bgcolor: "linear-gradient(45deg,#10b981,#06b6d4)", width: 48, height: 48 }}>
+                                                    {(cust.customerInfo?.name || "?").charAt(0)}
+                                                </Avatar>
+                                                <Box>
+                                                    <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{cust.customerInfo?.name || "Unknown"}</Typography>
+                                                    <Typography variant="caption" color="text.secondary">ID: {cust.customerId}</Typography>
+                                                </Box>
+                                            </Box>
 
-                                    {isExpanded && (
-                                        <div className="space-y-4">
-                                            {customer.orders.map((order) => {
-                                                const isOrderExpanded = !!expandedOrders[order.order_id];
-                                                return (
-                                                    <div
-                                                        key={order.order_id}
-                                                        className="bg-gray-50 border border-gray-200 rounded-lg p-4"
-                                                    >
-                                                        <div className="flex justify-between mb-2">
-                                                            <div className="flex items-center space-x-3">
-                                                                <span className="font-mono text-gray-600">#{order.order_id.split("_")[1]}</span>
-                                                                <span
-                                                                    className={`px-2 py-1 rounded-full text-xs font-semibold ${getStatusBadgeClass(
-                                                                        order.status
-                                                                    )}`}
-                                                                >
-                                                                    {order.status.toUpperCase()}
-                                                                </span>
-                                                            </div>
-                                                            <button
-                                                                onClick={() => toggleOrderDetails(order.order_id)}
-                                                                className="text-green-600 hover:text-green-800 text-sm font-medium"
-                                                            >
-                                                                {isOrderExpanded ? "Hide Details" : "View Details"}
-                                                            </button>
-                                                        </div>
+                                            <Box textAlign="right">
+                                                <Typography variant="h6">{currency(totalSpent)}</Typography>
+                                                <Typography variant="caption" color="text.secondary">Total Spent</Typography>
+                                            </Box>
+                                        </Box>
 
-                                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
-                                                            <div>
-                                                                <div className="text-xs text-gray-500">Order Total</div>
-                                                                <div className="font-semibold">${order.total.toFixed(2)}</div>
-                                                            </div>
-                                                            <div>
-                                                                <div className="text-xs text-gray-500">Items</div>
-                                                                <div className="font-semibold">{order.itemCount}</div>
-                                                            </div>
-                                                            <div>
-                                                                <div className="text-xs text-gray-500">Date</div>
-                                                                <div className="font-semibold text-sm">{formatDate(order.createdAt)}</div>
-                                                            </div>
-                                                            <div>
-                                                                <div className="text-xs text-gray-500">Payment</div>
-                                                                <div className="flex space-x-1">
-                                                                    {order.paymentInfo?.payments?.map((p, i) => (
-                                                                        <span key={i} title={p.typeName}>
-                                                                            {getPaymentMethodIcon(p.typeName)}
-                                                                        </span>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        </div>
+                                        <Box display="flex" gap={2} mt={1} mb={1}>
+                                            <Box sx={{ flex: 1 }}>
+                                                <Typography variant="caption" color="text.secondary">Total Orders</Typography>
+                                                <Typography variant="h6">{cust.orderCount ?? (cust.orders?.length ?? 0)}</Typography>
+                                            </Box>
+                                            <Box sx={{ flex: 1 }}>
+                                                <Typography variant="caption" color="text.secondary">Orders in Period</Typography>
+                                                <Typography variant="h6">{cust.orders?.length ?? 0}</Typography>
+                                            </Box>
+                                            <Box sx={{ flex: 1 }}>
+                                                <Typography variant="caption" color="text.secondary">First Order</Typography>
+                                                <Typography variant="body2">{formatDate(cust.firstOrderDate)}</Typography>
+                                            </Box>
+                                        </Box>
 
-                                                        {isOrderExpanded && order.paymentInfo && (
-                                                            <div>
-                                                                <div className="text-sm font-medium mb-2">Payment Details</div>
-                                                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm bg-white border border-gray-200 rounded-lg p-3">
-                                                                    <div>
-                                                                        <span className="text-gray-600">Total Paid:</span>{" "}
-                                                                        <span className="font-semibold">${order.paymentInfo.totalPaid.toFixed(2)}</span>
-                                                                    </div>
-                                                                    <div>
-                                                                        <span className="text-gray-600">Customer Paid:</span>{" "}
-                                                                        <span className="font-semibold">${order.paymentInfo.customerPaid.toFixed(2)}</span>
-                                                                    </div>
-                                                                    {order.paymentInfo.return > 0 && (
-                                                                        <div className="text-orange-600">
-                                                                            <span className="text-gray-600">Return:</span>{" "}
-                                                                            <span className="font-semibold">${order.paymentInfo.return.toFixed(2)}</span>
-                                                                        </div>
-                                                                    )}
-                                                                </div>
+                                        <Box display="flex" justifyContent="space-between" alignItems="center">
+                                            <Typography variant="caption" color="text.secondary">
+                                                {cust.orders?.length ?? 0} order{(cust.orders?.length || 0) !== 1 ? "s" : ""} in this period
+                                            </Typography>
+                                            <Button size="small" onClick={() => toggleCustomer(id)}>{expanded ? "Hide Orders" : "View Orders"}</Button>
+                                        </Box>
 
-                                                                <div className="mt-3">
-                                                                    <div className="text-sm font-medium mb-2">Payment Methods</div>
-                                                                    {order.paymentInfo.payments.map((p, i) => (
-                                                                        <div
-                                                                            key={i}
-                                                                            className="flex justify-between items-center border border-gray-200 rounded-lg p-2 mb-2"
+                                        <Collapse in={expanded}>
+                                            <Box mt={1} display="grid" gap={1}>
+                                                {(cust.orders || []).map((order) => {
+                                                    const oid = order.order_id || order._id;
+                                                    const orderExpanded = !!expandedOrders[oid];
+                                                    return (
+                                                        <Card key={oid} variant="outlined">
+                                                            <CardContent sx={{ p: 1.5 }}>
+                                                                <Box display="flex" justifyContent="space-between" alignItems="center">
+                                                                    <Box>
+                                                                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                                                            #{(order.order_id || oid).split("_")?.[1] ?? oid}
+                                                                        </Typography>
+                                                                        <Typography variant="caption" color="text.secondary">
+                                                                            {formatDate(order.createdAt)} • {order.itemCount ?? (order.items?.length ?? 0)} items
+                                                                        </Typography>
+                                                                    </Box>
+
+                                                                    <Box display="flex" alignItems="center" gap={2}>
+                                                                        <Typography variant="subtitle2">{currency(order.total)}</Typography>
+                                                                        <Button size="small" onClick={() => toggleOrder(oid)}>
+                                                                            {orderExpanded ? <><ChevronDown /> Hide</> : <><ChevronRight /> Details</>}
+                                                                        </Button>
+                                                                    </Box>
+                                                                </Box>
+
+                                                                <Collapse in={orderExpanded}>
+                                                                    <Box mt={2}>
+                                                                        <Divider sx={{ my: 2 }} />
+
+                                                                        <Box
+                                                                            sx={{
+                                                                                display: "flex",
+                                                                                flexDirection: "column",
+                                                                                gap: 2,
+                                                                                bgcolor: theme.palette.mode === "dark" ? "background.default" : "grey.50",
+                                                                                borderRadius: 1.5,
+                                                                                p: 2,
+                                                                                border: "1px solid",
+                                                                                borderColor: "divider",
+                                                                            }}
                                                                         >
-                                                                            <span>{getPaymentMethodIcon(p.typeName)}</span>
-                                                                            <span>{p.typeName}</span>
-                                                                            <span className="font-semibold">${p.amount.toFixed(2)}</span>
-                                                                        </div>
-                                                                    ))}
-                                                                </div>
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
-                                </div>
-                            );
-                        })
-                    ) : (
-                        <p className="text-gray-600">No new customers found in this period.</p>
-                    )}
-                </section>
+                                                                            {/* 🧾 ORDER ITEMS SECTION */}
+                                                                            <Box>
+                                                                                <Typography
+                                                                                    variant="subtitle2"
+                                                                                    sx={{ mb: 1, fontWeight: 600, color: "text.secondary" }}
+                                                                                >
+                                                                                    Order Items
+                                                                                </Typography>
 
+                                                                                {(order.items || []).length ? (
+                                                                                    order.items.map((it, idx) => (
+                                                                                        <Box
+                                                                                            key={idx}
+                                                                                            sx={{
+                                                                                                display: "flex",
+                                                                                                justifyContent: "space-between",
+                                                                                                alignItems: "flex-start",
+                                                                                                py: 0.8,
+                                                                                                borderBottom: "1px solid",
+                                                                                                borderColor: "divider",
+                                                                                            }}
+                                                                                        >
+                                                                                            <Box>
+                                                                                                <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                                                                                    {it.name}
+                                                                                                </Typography>
+                                                                                                <Typography variant="caption" color="text.secondary">
+                                                                                                    {it.category_name}
+                                                                                                </Typography>
+                                                                                                {it.activeAddons?.length ? (
+                                                                                                    <Box mt={0.5}>
+                                                                                                        <Typography variant="caption" color="text.secondary">
+                                                                                                            Add-ons:
+                                                                                                        </Typography>
+                                                                                                        <Box mt={0.5} display="flex" gap={1} flexWrap="wrap">
+                                                                                                            {it.activeAddons.map((a, ai) => (
+                                                                                                                <Box
+                                                                                                                    key={ai}
+                                                                                                                    sx={{
+                                                                                                                        px: 1,
+                                                                                                                        py: 0.4,
+                                                                                                                        borderRadius: 1,
+                                                                                                                        bgcolor:
+                                                                                                                            theme.palette.mode === "dark"
+                                                                                                                                ? "grey.800"
+                                                                                                                                : "grey.100",
+                                                                                                                        fontSize: 12,
+                                                                                                                    }}
+                                                                                                                >
+                                                                                                                    {a.name}
+                                                                                                                </Box>
+                                                                                                            ))}
+                                                                                                        </Box>
+                                                                                                    </Box>
+                                                                                                ) : null}
+                                                                                            </Box>
+
+                                                                                            <Box textAlign="right">
+                                                                                                <Typography variant="body2" sx={{ fontWeight: 500 }}>
+                                                                                                    {currency(it.total_price ?? it.price)}
+                                                                                                </Typography>
+                                                                                                <Typography variant="caption" color="text.secondary">
+                                                                                                    Qty: {it.quantity ?? 1}
+                                                                                                </Typography>
+                                                                                            </Box>
+                                                                                        </Box>
+                                                                                    ))
+                                                                                ) : (
+                                                                                    <Typography variant="caption" color="text.secondary">
+                                                                                        No items found
+                                                                                    </Typography>
+                                                                                )}
+                                                                            </Box>
+
+                                                                            {/* 💳 PAYMENT DETAILS */}
+                                                                            <Box>
+                                                                                <Typography
+                                                                                    variant="subtitle2"
+                                                                                    sx={{ mb: 1, fontWeight: 600, color: "text.secondary" }}
+                                                                                >
+                                                                                    Payment Info
+                                                                                </Typography>
+                                                                                <Divider sx={{ mb: 1 }} />
+
+                                                                                <Box
+                                                                                    sx={{
+                                                                                        display: "grid",
+                                                                                        gridTemplateColumns: { xs: "1fr", sm: "repeat(3, 1fr)" },
+                                                                                        gap: 2,
+                                                                                        mb: 2,
+                                                                                    }}
+                                                                                >
+                                                                                    <Box>
+                                                                                        <Typography variant="caption" color="text.secondary">
+                                                                                            Total Paid
+                                                                                        </Typography>
+                                                                                        <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                                                                                            {currency(order.paymentInfo?.totalPaid ?? order.total ?? 0)}
+                                                                                        </Typography>
+                                                                                    </Box>
+                                                                                    <Box>
+                                                                                        <Typography variant="caption" color="text.secondary">
+                                                                                            Tip
+                                                                                        </Typography>
+                                                                                        <Typography variant="body2">
+                                                                                            {currency(order.paymentInfo?.tip ?? 0)}
+                                                                                        </Typography>
+                                                                                    </Box>
+                                                                                    <Box>
+                                                                                        <Typography variant="caption" color="text.secondary">
+                                                                                            Return
+                                                                                        </Typography>
+                                                                                        <Typography variant="body2">
+                                                                                            {currency(order.paymentInfo?.return ?? 0)}
+                                                                                        </Typography>
+                                                                                    </Box>
+                                                                                </Box>
+
+                                                                                <Typography variant="caption" color="text.secondary">
+                                                                                    Payment Methods
+                                                                                </Typography>
+                                                                                <Box mt={1} display="flex" flexDirection="column" gap={1}>
+                                                                                    {(order.paymentInfo?.payments || []).length ? (
+                                                                                        order.paymentInfo.payments.map((p, pi) => (
+                                                                                            <Box
+                                                                                                key={pi}
+                                                                                                sx={{
+                                                                                                    display: "flex",
+                                                                                                    alignItems: "center",
+                                                                                                    justifyContent: "space-between",
+                                                                                                    p: 1,
+                                                                                                    borderRadius: 1,
+                                                                                                    bgcolor:
+                                                                                                        theme.palette.mode === "dark" ? "grey.900" : "grey.100",
+                                                                                                    border: "1px solid",
+                                                                                                    borderColor: "divider",
+                                                                                                }}
+                                                                                            >
+                                                                                                <Box display="flex" alignItems="center" gap={1}>
+                                                                                                    <CreditCard size={14} />
+                                                                                                    <Typography variant="body2">{p.typeName}</Typography>
+                                                                                                </Box>
+                                                                                                <Typography variant="body2" sx={{ fontWeight: 700 }}>
+                                                                                                    {currency(p.amount)}
+                                                                                                </Typography>
+                                                                                            </Box>
+                                                                                        ))
+                                                                                    ) : (
+                                                                                        <Typography variant="caption" color="text.secondary">
+                                                                                            No payment details available
+                                                                                        </Typography>
+                                                                                    )}
+                                                                                </Box>
+                                                                            </Box>
+                                                                        </Box>
+                                                                    </Box>
+                                                                </Collapse>
+
+                                                            </CardContent>
+                                                        </Card>
+                                                    );
+                                                })}
+                                            </Box>
+                                        </Collapse>
+                                    </Box>
+                                );
+                            })
+                        ) : (
+                            <Typography color="text.secondary">No new customers in this period.</Typography>
+                        )}
+                    </CardContent>
+                </Card>
             </div>
-        </div>
+
+            {/* Footer note */}
+            <Box mt={2}>
+                <Typography variant="caption" color="text.secondary">
+                    Tip: Export CSV/XLSX from the export button in the filter bar.
+                </Typography>
+            </Box>
+        </Box>
     );
 }
-
-export default NewVsRepeatCustomers;

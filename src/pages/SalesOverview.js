@@ -516,37 +516,89 @@ export default function SalesOverview() {
         >
           {[
             {
-              label: "Total Sales",
+              title: "Total Sales",
               value: `$${(summary.withTaxSales ?? 0).toFixed(2)}`,
+              subtitle: `$${(summary.withoutTaxSales ?? 0).toFixed(2)} without tax`,
               icon: <DollarSign size={18} />,
               color: "#3B82F6",
             },
             {
-              label: "Completed Orders",
+              title: "Completed Orders",
               value: summary.completedOrders ?? 0,
+              subtitle: `${summary.cancelledOrders ?? 0} cancelled`,
               icon: <ShoppingCart size={18} />,
               color: "#10B981",
             },
             {
-              label: "Refunds",
+              title: "Payment Methods",
+              value: Object.keys(salesData?.paymentsWithTax || {}).length,
+              subtitle: "Active methods",
+              icon: <CreditCard size={18} />,
+              color: "#8B5CF6",
+            },
+            {
+              title: "Refunds",
               value: `$${(summary.refundTotal ?? 0).toFixed(2)}`,
+              subtitle: `${summary.refundedOrders ?? 0} orders`,
               icon: <RefreshCw size={18} />,
               color: "#F59E0B",
             },
             {
-              label: "Tips",
+              title: "Tips",
               value: `$${(summary.totalTips ?? 0).toFixed(2)}`,
+              subtitle: "Total tips earned",
               icon: <TrendingUp size={18} />,
-              color: "#8B5CF6",
+              color: "#14B8A6",
+            },
+            {
+              title: "Order Types",
+              value: Object.keys(salesData?.orderTypes || {}).length,
+              subtitle: "Different types",
+              icon: <Users size={18} />,
+              color: "#6366F1",
             },
           ].map((stat, i) => (
-            <Card key={i} sx={{ borderRadius: 0 }}>
-              <CardContent sx={{ textAlign: "center" }}>
-                <Avatar sx={{ bgcolor: stat.color, mx: "auto", mb: 1 }}>{stat.icon}</Avatar>
+            <Card
+              key={i}
+              sx={{
+                borderRadius: 1.5,
+                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease",
+                "&:hover": {
+                  transform: "translateY(-3px)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                },
+              }}
+            >
+              <CardContent
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  textAlign: "center",
+                  py: 2.5,
+                  gap: 0.5,
+                }}
+              >
+                <Avatar
+                  sx={{
+                    bgcolor: stat.color,
+                    width: 44,
+                    height: 44,
+                    mb: 1,
+                  }}
+                >
+                  {stat.icon}
+                </Avatar>
                 <Typography variant="body2" color="text.secondary">
-                  {stat.label}
+                  {stat.title}
                 </Typography>
-                <Typography variant="h6">{stat.value}</Typography>
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  {stat.value}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {stat.subtitle}
+                </Typography>
               </CardContent>
             </Card>
           ))}
@@ -574,7 +626,7 @@ export default function SalesOverview() {
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="label" />
                   <YAxis />
-                  <RechartTooltip formatter={(val) => `$${(Number(val) || 0).toFixed(2)}`} />
+                  <RechartTooltip formatter={(val) => `$${(Number(val) || 0).toFixed(2)}`} contentStyle={{ color : "#333" }} />
                   <Line type="monotone" dataKey="total" stroke="#3B82F6" strokeWidth={2} dot />
                 </LineChart>
               </ResponsiveContainer>
@@ -591,16 +643,62 @@ export default function SalesOverview() {
                 Distribution of payment types
               </Typography>
               <Divider sx={{ mb: 2 }} />
+
               <Box sx={{ height: 300 }}>
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie data={pieData} dataKey="value" nameKey="name" outerRadius={90} label>
+                  <BarChart
+                    layout="vertical"
+                    data={pieData.map((d) => ({
+                      name: d.name,
+                      value: Number(d.value.toFixed(2)),
+                    }))}
+                    margin={{ top: 10, right: 30, left: 60, bottom: 10 }}
+                  >
+                    <CartesianGrid
+                      strokeDasharray="3 3"
+                      stroke={theme.palette.mode === "dark" ? "#444" : "#e0e0e0"}
+                    />
+                    <XAxis
+                      type="number"
+                      tickFormatter={(val) =>
+                        new Intl.NumberFormat("en-US", {
+                          style: "currency",
+                          currency: "USD",
+                          maximumFractionDigits: 0,
+                        }).format(val)
+                      }
+                    />
+                    <YAxis
+                      dataKey="name"
+                      type="category"
+                      tick={{ fill: theme.palette.text.primary }}
+                      width={100}
+                    />
+                    <RechartTooltip
+                      contentStyle={{
+                        backgroundColor: "#fff",
+                        border: `1px solid ${theme.palette.divider}`,
+                        borderRadius: 8,
+                        boxShadow:
+                          theme.palette.mode === "dark"
+                            ? "0 2px 6px rgba(0,0,0,0.5)"
+                            : "0 2px 6px rgba(0,0,0,0.1)",
+                        color: "#333"
+                      }}
+                      formatter={(val) =>
+                        new Intl.NumberFormat("en-US", {
+                          style: "currency",
+                          currency: "USD",
+                          minimumFractionDigits: 2,
+                        }).format(val)
+                      }
+                    />
+                    <Bar dataKey="value" radius={[4, 4, 4, 4]}>
                       {pieData.map((entry, idx) => (
                         <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
                       ))}
-                    </Pie>
-                    <RechartTooltip formatter={(val) => `$${(Number(val) || 0).toFixed(2)}`} />
-                  </PieChart>
+                    </Bar>
+                  </BarChart>
                 </ResponsiveContainer>
               </Box>
             </CardContent>
@@ -619,7 +717,7 @@ export default function SalesOverview() {
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis dataKey="method" />
                     <YAxis />
-                    <RechartTooltip formatter={(val) => `$${(Number(val) || 0).toFixed(2)}`} />
+                    <RechartTooltip formatter={(val) => `$${(Number(val) || 0).toFixed(2)}`} contentStyle={{ color : "#333" }} />
                     <Legend />
                     <Bar dataKey="withTax" fill="#3B82F6" name="With Tax" />
                     <Bar dataKey="withoutTax" fill="#10B981" name="Without Tax" />
@@ -640,19 +738,85 @@ export default function SalesOverview() {
             <Divider sx={{ mb: 2 }} />
             <Box sx={{ height: 260 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={orderTypeData} margin={{ top: 10, right: 30, left: 20, bottom: 5 }}>
+                <BarChart
+                  data={orderTypeData}
+                  margin={{ top: 10, right: 30, left: 20, bottom: 5 }}
+                >
                   <CartesianGrid strokeDasharray="3 3" />
                   <XAxis dataKey="type" />
                   <YAxis />
                   <RechartTooltip
-                    formatter={(value, name) =>
-                      name === "count" ? [value, "Orders"] : [`$${(Number(value) || 0).toFixed(2)}`, name]
-                    }
+                    contentStyle={{ color : "#333" }}
+                    formatter={(value, name) => {
+                      if (name === "count" || name === "Orders") {
+                        return [Number(value), "Orders"];
+                      }
+                      return [`$${(Number(value) || 0).toFixed(2)}`, name];
+                    }}
+                    labelFormatter={(label) => `Order Type: ${label}`}
                   />
                   <Bar dataKey="count" fill="#8B5CF6" name="Orders" />
                   <Bar dataKey="sales" fill="#3B82F6" name="Sales" />
+                  <Bar dataKey="salesWithoutTax" fill="#10B981" name="Without Tax" />
                 </BarChart>
               </ResponsiveContainer>
+            </Box>
+
+            {/* Order Type Details Grid */}
+            <Box
+              sx={{
+                mt: 3,
+                display: "grid",
+                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr 1fr" },
+                gap: 2,
+              }}
+            >
+              {orderTypeData.map((item, index) => (
+                <Box
+                  key={item.type}
+                  sx={{
+                    bgcolor: "background.default",
+                    borderRadius: 1.5,
+                    p: 2,
+                    border: "1px solid",
+                    borderColor: "divider",
+                    transition: "all 0.2s ease",
+                    "&:hover": {
+                      boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
+                      transform: "translateY(-2px)",
+                    },
+                  }}
+                >
+                  <Typography
+                    variant="subtitle2"
+                    sx={{ color: "text.primary", mb: 1, fontWeight: 600 }}
+                  >
+                    {item.type}
+                  </Typography>
+                  <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
+                    <Typography variant="caption" color="text.secondary">
+                      Orders:{" "}
+                      <Typography component="span" variant="body2" fontWeight={500}>
+                        {item.count}
+                      </Typography>
+                    </Typography>
+
+                    <Typography variant="caption" color="text.secondary">
+                      Sales:{" "}
+                      <Typography component="span" variant="body2" fontWeight={500}>
+                        ${item.sales.toFixed(2)}
+                      </Typography>
+                    </Typography>
+
+                    <Typography variant="caption" color="text.secondary">
+                      Without tax:{" "}
+                      <Typography component="span" variant="body2" fontWeight={500}>
+                        ${item.salesWithoutTax.toFixed(2)}
+                      </Typography>
+                    </Typography>
+                  </Box>
+                </Box>
+              ))}
             </Box>
           </CardContent>
         </Card>
@@ -686,7 +850,6 @@ export default function SalesOverview() {
                       <TableCell>Items</TableCell>
                       <TableCell>Total</TableCell>
                       <TableCell>Status</TableCell>
-                      <TableCell>Actions</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -753,13 +916,6 @@ export default function SalesOverview() {
                               </Box>
                             </TableCell>
 
-                            <TableCell>
-                              <Tooltip title="View details">
-                                <IconButton size="small">
-                                  <Download /> {/* adjust action if needed */}
-                                </IconButton>
-                              </Tooltip>
-                            </TableCell>
                           </TableRow>
 
                           {/* Expanded details */}
@@ -767,60 +923,165 @@ export default function SalesOverview() {
                             <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
                               <Collapse in={expandedOrder === id} timeout="auto" unmountOnExit>
                                 <Box sx={{ margin: 2 }}>
-                                  <Box mb={2} display="flex" gap={2} flexDirection={{ xs: "column", md: "row" }}>
-                                    <Card sx={{ flex: 1 }}>
+                                  <Box
+                                    mb={2}
+                                    display="flex"
+                                    gap={2}
+                                    flexDirection={{ xs: "column", md: "row" }}
+                                  >
+                                    {/* --- Order Items --- */}
+                                    <Card
+                                      sx={{
+                                        flex: 1,
+                                        bgcolor: "background.paper",
+                                        border: "1px solid",
+                                        borderColor: "divider",
+                                        boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+                                      }}
+                                    >
                                       <CardContent>
-                                        <Typography variant="subtitle2">Order Items</Typography>
-                                        <Divider sx={{ my: 1 }} />
+                                        <Typography variant="subtitle2" sx={{ mb: 1 }}>
+                                          Order Items
+                                        </Typography>
+                                        <Divider sx={{ mb: 1.5 }} />
+
                                         {order.items?.map((item, idx) => (
-                                          <Box key={idx} display="flex" justifyContent="space-between" py={1} borderBottom="1px solid rgba(0,0,0,0.04)">
+                                          <Box
+                                            key={idx}
+                                            display="flex"
+                                            justifyContent="space-between"
+                                            py={1.2}
+                                            sx={{
+                                              borderBottom: "1px solid",
+                                              borderColor: "divider",
+                                            }}
+                                          >
                                             <Box>
-                                              <Typography variant="body2" sx={{ fontWeight: 600 }}>{item.name}</Typography>
-                                              <Typography variant="caption" color="text.secondary">{item.category_name}</Typography>
-                                              {item.activeAddons?.length ? (
-                                                <Box mt={0.5}>
-                                                  <Typography variant="caption" color="text.secondary">Add-ons:</Typography>
-                                                  <Box display="flex" gap={1} flexWrap="wrap" mt={0.5}>
-                                                    {item.activeAddons.map((a, ai) => <Box key={ai} sx={{ px: 1, py: 0.5, bgcolor: "grey.100", borderRadius: 1, fontSize: 12 }}>{a.name}</Box>)}
+                                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                                {item.name}
+                                              </Typography>
+                                              <Typography variant="caption" color="text.secondary">
+                                                {item.category_name}
+                                              </Typography>
+
+                                              {item.activeAddons?.length > 0 && (
+                                                <Box mt={0.6}>
+                                                  <Typography
+                                                    variant="caption"
+                                                    color="text.secondary"
+                                                    sx={{ display: "block" }}
+                                                  >
+                                                    Add-ons:
+                                                  </Typography>
+                                                  <Box display="flex" flexWrap="wrap" gap={1} mt={0.5}>
+                                                    {item.activeAddons.map((a, ai) => (
+                                                      <Box
+                                                        key={ai}
+                                                        sx={{
+                                                          px: 1,
+                                                          py: 0.4,
+                                                          borderRadius: 1,
+                                                          fontSize: 12,
+                                                          bgcolor: theme.palette.mode === "dark"
+                                                            ? "grey.800"
+                                                            : "grey.100",
+                                                          color: "text.primary",
+                                                          border: "1px solid",
+                                                          borderColor: "divider",
+                                                        }}
+                                                      >
+                                                        {a.name}
+                                                      </Box>
+                                                    ))}
                                                   </Box>
                                                 </Box>
-                                              ) : null}
+                                              )}
                                             </Box>
+
                                             <Box textAlign="right">
-                                              <Typography variant="body2">${(item.total_price ?? item.price ?? 0).toFixed(2)}</Typography>
-                                              <Typography variant="caption" color="text.secondary">Qty: {item.quantity || 1}</Typography>
+                                              <Typography variant="body2">
+                                                ${(item.total_price ?? item.price ?? 0).toFixed(2)}
+                                              </Typography>
+                                              <Typography variant="caption" color="text.secondary">
+                                                Qty: {item.quantity || 1}
+                                              </Typography>
                                             </Box>
                                           </Box>
                                         ))}
                                       </CardContent>
                                     </Card>
 
-                                    <Card sx={{ width: 320 }}>
+                                    {/* --- Payment Info --- */}
+                                    <Card
+                                      sx={{
+                                        width: { xs: "100%", md: 320 },
+                                        bgcolor: "background.paper",
+                                        border: "1px solid",
+                                        borderColor: "divider",
+                                        boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+                                      }}
+                                    >
                                       <CardContent>
                                         <Typography variant="subtitle2">Payment Info</Typography>
-                                        <Divider sx={{ my: 1 }} />
-                                        <Typography variant="caption" color="text.secondary">Total Paid</Typography>
-                                        <Typography variant="body2" sx={{ fontWeight: 700 }}>${(order.paymentInfo?.totalPaid ?? 0).toFixed(2)}</Typography>
+                                        <Divider sx={{ my: 1.5 }} />
 
-                                        <Box mt={1}>
-                                          <Typography variant="caption" color="text.secondary">Tip</Typography>
-                                          <Typography variant="body2">${(order.paymentInfo?.tip ?? 0).toFixed(2)}</Typography>
+                                        <Box display="grid" gap={0.8}>
+                                          <Typography variant="caption" color="text.secondary">
+                                            Total Paid
+                                          </Typography>
+                                          <Typography variant="body2" fontWeight={700}>
+                                            ${(order.paymentInfo?.totalPaid ?? 0).toFixed(2)}
+                                          </Typography>
+
+                                          <Typography variant="caption" color="text.secondary">
+                                            Tip
+                                          </Typography>
+                                          <Typography variant="body2">
+                                            ${(order.paymentInfo?.tip ?? 0).toFixed(2)}
+                                          </Typography>
+
+                                          <Typography variant="caption" color="text.secondary">
+                                            Return
+                                          </Typography>
+                                          <Typography variant="body2">
+                                            ${(order.paymentInfo?.return ?? 0).toFixed(2)}
+                                          </Typography>
                                         </Box>
 
-                                        <Box mt={1}>
-                                          <Typography variant="caption" color="text.secondary">Return</Typography>
-                                          <Typography variant="body2">${(order.paymentInfo?.return ?? 0).toFixed(2)}</Typography>
-                                        </Box>
-
-                                        <Box mt={2}>
-                                          <Typography variant="caption" color="text.secondary">Payment Methods</Typography>
-                                          <Box mt={1} display="flex" flexDirection="column" gap={1}>
-                                            {order.paymentInfo?.payments?.length ? order.paymentInfo.payments.map((p, pi) => (
-                                              <Box key={pi} sx={{ display: "flex", alignItems: "center", gap: 1, p: 1, bgcolor: "grey.100", borderRadius: 1 }}>
-                                                <CreditCard className="icon" />
-                                                <Typography variant="body2">{p.typeName}: ${Number(p.amount || 0).toFixed(2)}</Typography>
-                                              </Box>
-                                            )) : <Typography variant="caption" color="text.secondary">No payment details</Typography>}
+                                        <Box mt={2.5}>
+                                          <Typography variant="caption" color="text.secondary">
+                                            Payment Methods
+                                          </Typography>
+                                          <Box mt={1.2} display="flex" flexDirection="column" gap={1}>
+                                            {order.paymentInfo?.payments?.length ? (
+                                              order.paymentInfo.payments.map((p, pi) => (
+                                                <Box
+                                                  key={pi}
+                                                  sx={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 1,
+                                                    p: 1,
+                                                    borderRadius: 1,
+                                                    bgcolor:
+                                                      theme.palette.mode === "dark"
+                                                        ? "grey.800"
+                                                        : "grey.100",
+                                                    border: "1px solid",
+                                                    borderColor: "divider",
+                                                  }}
+                                                >
+                                                  <CreditCard size={14} />
+                                                  <Typography variant="body2">
+                                                    {p.typeName}: ${Number(p.amount || 0).toFixed(2)}
+                                                  </Typography>
+                                                </Box>
+                                              ))
+                                            ) : (
+                                              <Typography variant="caption" color="text.secondary">
+                                                No payment details
+                                              </Typography>
+                                            )}
                                           </Box>
                                         </Box>
                                       </CardContent>
@@ -830,6 +1091,7 @@ export default function SalesOverview() {
                               </Collapse>
                             </TableCell>
                           </TableRow>
+
                         </React.Fragment>
                       );
                     })}
