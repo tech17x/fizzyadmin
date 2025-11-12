@@ -1,1118 +1,493 @@
-// src/pages/SalesOverview.jsx
-import React, { useEffect, useState, useContext, useRef } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import axios from "axios";
 import dayjs from "dayjs";
-import {
-  Box,
-  Typography,
-  Paper,
-  Stack,
-  FormControl,
-  Select,
-  MenuItem,
-  Card,
-  CardContent,
-  Divider,
-  Avatar,
-  CircularProgress,
-  Alert,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  IconButton,
-  Button,
-  Tooltip,
-  Collapse,
-  Menu,
-  MenuItem as MUIMenuItem,
-  Divider as MUIDivider,
-  Skeleton,
-  useTheme,
-  useMediaQuery,
-} from "@mui/material";
 import {
   DollarSign,
   ShoppingCart,
   CreditCard,
   RefreshCw,
   TrendingUp,
+  XOctagon,
+  PrinterIcon,
   Users,
-  Calendar,
-  ChevronRight,
-  ChevronDown,
-  Download,
+  BarChart3,
+  FileDown,
   FileText,
-  Printer,
-  FilePlus,
+  Gift,
+  Grid,
+  ListChecks,
+  Folder,
+  Table as TableIcon,
 } from "lucide-react";
+import { toast } from "react-toastify";
+import AuthContext from "../context/AuthContext";
+import PageHeader from "../components/PageHeader";
+import FilterPanel from "../components/FilterPanel";
 import {
+  ResponsiveContainer,
   LineChart,
   Line,
   XAxis,
   YAxis,
   CartesianGrid,
   Tooltip as RechartTooltip,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
   BarChart,
   Bar,
   Legend,
 } from "recharts";
-import { format } from "date-fns";
-import { toast } from "react-toastify";
-import AuthContext from "../context/AuthContext";
-import SelectInput from "../components/SelectInput";
-import DateRangeFilter from "./shared/DateRangeFilter.jsx";
-import FilterDateRange from "../components/FilterDateRange"; // if you use the dayjs version
-// NOTE: If you have only one date component, point to the correct import above.
 
 const API = process.env.REACT_APP_API_URL || "http://localhost:5000";
-const COLORS = ["#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6"];
 
-export default function SalesOverview() {
+const SalesOverview = () => {
   const { staff, logout } = useContext(AuthContext);
-  const theme = useTheme();
-  const isSm = useMediaQuery(theme.breakpoints.down("sm"));
-
-  // Filters
   const [brands, setBrands] = useState([]);
   const [outlets, setOutlets] = useState([]);
   const [filteredOutlets, setFilteredOutlets] = useState([]);
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedOutlet, setSelectedOutlet] = useState("");
   const [dateRange, setDateRange] = useState([
-    dayjs().startOf("day"),
+    dayjs().startOf("month"),
     dayjs().endOf("day"),
   ]);
-
-  // Data
-  const [salesData, setSalesData] = useState(null); // response.data
-  const [saleOrders, setSaleOrders] = useState([]); // response.data
-  const [salesTrends, setSalesTrends] = useState([]);
+  const [tab, setTab] = useState("overview");
   const [loading, setLoading] = useState(false);
-  const [isRefreshing, setIsRefreshing] = useState(false);
   const [error, setError] = useState(null);
-
-  // UI state
+  const [salesData, setSalesData] = useState({});
+  const [orders, setOrders] = useState([]);
+  const [trends, setTrends] = useState([]);
   const [expandedOrder, setExpandedOrder] = useState(null);
-  const [exportAnchor, setExportAnchor] = useState(null);
   const reportRef = useRef(null);
 
-  // init brands/outlets
+  const quickRanges = [
+    { label: "Today", range: [dayjs().startOf("day"), dayjs().endOf("day")] },
+    { label: "This Week", range: [dayjs().startOf("week"), dayjs().endOf("week")] },
+    {
+      label: "Last Week",
+      range: [
+        dayjs().subtract(1, "week").startOf("week"),
+        dayjs().subtract(1, "week").endOf("week"),
+      ],
+    },
+    { label: "This Month", range: [dayjs().startOf("month"), dayjs().endOf("month")] },
+    {
+      label: "Last Month",
+      range: [
+        dayjs().subtract(1, "month").startOf("month"),
+        dayjs().subtract(1, "month").endOf("month"),
+      ],
+    },
+    { label: "Last 3 Months", range: [dayjs().subtract(3, "month").startOf("month"), dayjs()] },
+    { label: "Last 6 Months", range: [dayjs().subtract(6, "month").startOf("month"), dayjs()] },
+  ];
+
+  // Load user brands/outlets
   useEffect(() => {
-    if (staff?.permissions?.includes("tax_manage")) {
+    if (staff?.permissions?.includes("dashboard_view")) {
       setBrands(staff.brands || []);
       setOutlets(staff.outlets || []);
-    } else {
-      logout();
-    }
+    } else logout?.();
   }, [staff, logout]);
 
-  // filter outlets when brand selected
   useEffect(() => {
     if (selectedBrand) {
       const filtered = outlets.filter((o) => o.brand_id === selectedBrand);
       setFilteredOutlets(filtered);
       setSelectedOutlet("");
-      if (filtered.length === 0) toast.error("Selected brand has no outlets.");
-    } else {
-      setFilteredOutlets([]);
-      setSelectedOutlet("");
-    }
+    } else setFilteredOutlets([]);
   }, [selectedBrand, outlets]);
 
-  // build ISO from dayjs
-  const toISO = (d, endOfDay = false) => {
-    if (!d) return null;
-    const dt = d.toDate();
-    if (endOfDay) dt.setHours(23, 59, 59, 999);
-    return new Date(dt.getTime() - dt.getTimezoneOffset() * 60000).toISOString();
-  };
-
-  // fetch sales
+  // Fetch sales data
   useEffect(() => {
     const fetchSales = async () => {
-      if (!selectedBrand || !selectedOutlet || !dateRange?.[0] || !dateRange?.[1]) {
-        return;
-      }
+      if (!selectedBrand || !selectedOutlet) return;
       setLoading(true);
       setError(null);
-
       try {
-        const response = await axios.get(`${API}/api/reports/sales`, {
+        const res = await axios.get(`${API}/api/reports/sales`, {
           params: {
             brand_id: selectedBrand,
             outlet_id: selectedOutlet,
-            start_date: toISO(dateRange[0], false),
-            end_date: toISO(dateRange[1], true),
+            start_date: dateRange[0].toISOString(),
+            end_date: dateRange[1].toISOString(),
           },
           withCredentials: true,
         });
-
-        if (response.data?.success) {
-          // response shape (your server):
-          // { success: true, data: { summary, orderTypes, ... }, salesTrends, orders, ... }
-          setSalesData(response.data.data);
-          setSaleOrders(response.data.orders);
-          setSalesTrends(response.data.salesTrends || []);
-          toast.success("Sales data loaded");
-        } else {
-          setError("Failed to load sales data");
-        }
+        if (res.data?.success) {
+          setSalesData(res.data.data || {});
+          setOrders(res.data.orders || []);
+          setTrends(res.data.salesTrends || []);
+        } else setError("Failed to fetch sales data.");
       } catch (err) {
-        console.error("Sales fetch error", err);
-        setError("Error fetching sales data");
+        console.error(err);
+        setError("Error fetching sales data.");
       } finally {
         setLoading(false);
       }
     };
-
     fetchSales();
   }, [selectedBrand, selectedOutlet, dateRange]);
 
-  // refresh handler
-  const handleRefresh = async () => {
-    setIsRefreshing(true);
-    try {
-      // re-run the fetch effect by toggling dateRange to same value (or simply call direct)
-      if (selectedBrand && selectedOutlet && dateRange?.[0] && dateRange?.[1]) {
-        setLoading(true);
-        const response = await axios.get(`${API}/api/reports/sales`, {
-          params: {
-            brand_id: selectedBrand,
-            outlet_id: selectedOutlet,
-            start_date: toISO(dateRange[0], false),
-            end_date: toISO(dateRange[1], true),
-          },
-          withCredentials: true,
-        });
-        if (response.data?.success) {
-          setSalesData(response.data.data || response.data);
-          setSaleOrders(response.data.orders);
-          setSalesTrends(response.data.salesTrends || []);
-          toast.success("Sales refreshed");
-        } else {
-          toast.error("Failed to refresh sales");
-        }
-      } else {
-        toast.info("Please pick a brand, outlet and date range");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Refresh failed");
-    } finally {
-      setIsRefreshing(false);
-      setLoading(false);
-    }
-  };
-
-  // helpers
-  const toggleExpanded = (id) => setExpandedOrder(expandedOrder === id ? null : id);
-
-  const getStatusColor = (status) => {
-    switch ((status || "").toLowerCase()) {
-      case "settle":
-        return { bgcolor: "success.light", color: "success.dark" };
-      case "cancel":
-      case "cancelled":
-        return { bgcolor: "error.light", color: "error.dark" };
-      case "refund":
-      case "refunded":
-        return { bgcolor: "warning.light", color: "warning.dark" };
-      default:
-        return { bgcolor: "grey.100", color: "text.primary" };
-    }
-  };
-
-  // charts data (safe defaults)
   const summary = salesData?.summary || {};
-  const pieData = Object.entries(salesData?.paymentsWithTax || {}).map(([k, v]) => ({
-    name: k,
-    value: v,
+  const payments = salesData?.paymentsWithTax || {};
+  const paymentData = Object.entries(payments).map(([k, v]) => ({ name: k, value: v }));
+  const orderTypeData = Object.entries(salesData?.orderTypes || {}).map(([k, v]) => ({
+    type: k,
+    count: v,
+    sales: salesData?.orderTypeSales?.[k]?.withTax || 0,
   }));
-  const barData = Object.entries(salesData?.paymentsWithTax || {}).map(([k, withTax]) => ({
+  const taxData = Object.entries(salesData?.paymentsWithTax || {}).map(([k, v]) => ({
     method: k,
-    withTax,
-    withoutTax: (salesData?.paymentsWithoutTax && salesData.paymentsWithoutTax[k]) || 0,
-  }));
-  const orderTypeData = Object.entries(salesData?.orderTypes || {}).map(([type, count]) => ({
-    type,
-    count,
-    sales: (salesData?.orderTypeSales?.[type]?.withTax) || 0,
-    salesWithoutTax: (salesData?.orderTypeSales?.[type]?.withoutTax) || 0,
+    withTax: v,
+    withoutTax: salesData?.paymentsWithoutTax?.[k] || 0,
   }));
 
-  // format date range summary
-  const formatDateRange = () => {
-    if (!dateRange?.[0] || !dateRange?.[1]) return "Select date range";
-    const s = dateRange[0].toDate();
-    const e = dateRange[1].toDate();
-    return `${s.toLocaleDateString()} - ${e.toLocaleDateString()}`;
-  };
+  const toggleExpanded = (id) =>
+    setExpandedOrder(expandedOrder === id ? null : id);
 
-  // ----- EXPORTS -----
-  // CSV export
-  const exportToCSV = (filename = "sales_report.csv") => {
-    if (!salesData) {
-      toast.error("No data to export");
-      return;
-    }
-
-    const rows = [];
-    // summary block
-    rows.push(["Sales Summary"]);
-    rows.push(["Total with tax", summary.withTaxSales || 0]);
-    rows.push(["Total without tax", summary.withoutTaxSales || 0]);
-    rows.push(["Completed orders", summary.completedOrders || 0]);
-    rows.push([]);
-    // orders table headers
-    rows.push(["OrderId", "CreatedAt", "Customer", "Total(withTax)", "Status"]);
-    const orders = saleOrders || [];
-    orders.forEach((o) => {
-      rows.push([
-        o.order_id || o._id || "",
-        o.createdAt ? new Date(o.createdAt).toISOString() : "",
-        o.customer?.name || "",
-        (o.summary?.total != null) ? o.summary.total : "",
-        o.status || "",
-      ]);
-    });
-
-    const csv = rows.map((r) => r.map((c) => `"${String(c || "").replace(/"/g, '""')}"`).join(",")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success("CSV downloaded");
-  };
-
-  // XLSX export (optional — uses xlsx lib if present)
-  const exportToXLSX = async (filename = "sales_report.xlsx") => {
-    try {
-      const XLSX = await import("xlsx").then((m) => m.default || m);
-      // create table array
-      const orders = salesData?.orders || [];
-      const wsData = [
-        ["OrderId", "CreatedAt", "Customer", "Total(withTax)", "Status"],
-        ...orders.map((o) => [
-          o.order_id || o._id || "",
-          o.createdAt ? new Date(o.createdAt).toISOString() : "",
-          o.customer?.name || "",
-          o.summary?.total || 0,
-          o.status || "",
-        ]),
-      ];
-      const ws = XLSX.utils.aoa_to_sheet(wsData);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Orders");
-      XLSX.writeFile(wb, filename);
-      toast.success("XLSX downloaded");
-    } catch (err) {
-      console.warn("xlsx not available, falling back to CSV", err);
-      exportToCSV(filename.replace(/\.xlsx?$/, ".csv"));
+  // Export handler
+  const handleExport = (type) => {
+    if (type === "Overview") {
+      const csv = [
+        ["Metric", "Value"],
+        ["Total Sales (With Tax)", summary.withTaxSales],
+        ["Total Sales (Without Tax)", summary.withoutTaxSales],
+        ["Completed Orders", summary.completedOrders],
+        ["Cancelled Orders", summary.cancelledOrders],
+      ]
+        .map((r) => r.join(","))
+        .join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `sales_overview_${dayjs().format("YYYYMMDD")}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast.success("Sales Overview exported");
+    } else if (type === "Print") {
+      const w = window.open("", "_blank");
+      w.document.write("<pre>" + JSON.stringify(salesData, null, 2) + "</pre>");
+      w.print();
     }
   };
-
-  // PDF export (optional) - uses html2canvas + jspdf if installed
-  const exportToPDF = async (filename = "sales_report.pdf") => {
-    try {
-      const [html2canvasModule, jsPDFModule] = await Promise.all([
-        import("html2canvas").then((m) => m.default || m),
-        import("jspdf").then((m) => m.jsPDF || m.default || m),
-      ]);
-
-      if (!reportRef.current) {
-        toast.error("Nothing to export");
-        return;
-      }
-
-      const node = reportRef.current;
-      // create a high-res canvas (scale for crispness)
-      const canvas = await html2canvasModule(node, { scale: 2, useCORS: true, backgroundColor: null });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDFModule("p", "mm", "a4");
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const imgProps = pdf.getImageProperties(imgData);
-      const imgWidth = pageWidth - 16; // small margins
-      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
-      let position = 8;
-      pdf.addImage(imgData, "PNG", 8, position, imgWidth, imgHeight);
-      pdf.save(filename);
-      toast.success("PDF exported");
-    } catch (err) {
-      console.error("PDF export error", err);
-      toast.error("PDF export failed (missing libs). Install html2canvas and jspdf for PDF export.");
-    }
-  };
-
-  const handleExportMenuOpen = (e) => setExportAnchor(e.currentTarget);
-  const handleExportMenuClose = () => setExportAnchor(null);
-
-  // small loading placeholder for charts
-  if (loading) {
-    return (
-      <Box p={{ xs: 2, md: 3 }}>
-        <Paper className="glass" sx={{ p: { xs: 2, md: 3 }, mb: 4 }}>
-          <Typography variant="subtitle1" fontWeight={700} mb={2}>
-            Filters
-          </Typography>
-          <Skeleton height={44} />
-        </Paper>
-
-        <Box display="grid" gap={2}>
-          <Skeleton variant="rectangular" height={120} />
-          <Skeleton variant="rectangular" height={280} />
-        </Box>
-      </Box>
-    );
-  }
 
   return (
-    <Box p={{ xs: 2, md: 3 }}>
-      {/* Filter Bar (mirrors StaffOverview's look) */}
-      <Paper
-        className="glass"
-        sx={{
-          p: { xs: 2, md: 3 },
-          mb: 4,
-          borderRadius: 0,
-          bgcolor: "background.paper",
-          boxShadow: "0 6px 18px rgba(20,20,30,0.05)",
-        }}
-      >
-        <Typography variant="subtitle1" fontWeight={700} mb={2}>
-          Filters
-        </Typography>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-slate-50 to-blue-50">
+      <div className="max-w-[1400px] mx-auto pt-28 pb-20 px-8">
+        {/* Header */}
+        <PageHeader
+          title="Sales Overview & Analytics"
+          description="Analyze sales, payments, taxes, and order performance across your outlets. Export data easily and view detailed order insights."
+          exportOptions={[
+            { label: "Overview CSV", value: "Overview" },
+            { label: "Print Report", value: "Print", icon: <PrinterIcon size={16} /> },
+          ]}
+          onExport={handleExport}
+        />
 
-        <Box mb={2}>
-          <FilterDateRange
-            value={dateRange}
-            onChange={(r) => setDateRange(r)}
-            calendars={isSm ? 1 : 2}
-          />
-        </Box>
+        <FilterPanel
+          brands={brands}
+          outlets={outlets}
+          filteredOutlets={filteredOutlets}
+          selectedBrand={selectedBrand}
+          setSelectedBrand={setSelectedBrand}
+          selectedOutlet={selectedOutlet}
+          setSelectedOutlet={setSelectedOutlet}
+          dateRange={dateRange}
+          setDateRange={setDateRange}
+          quickRanges={quickRanges}
+        />
 
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2} alignItems="center" mt={2}>
-          <FormControl fullWidth size="small" sx={{ minWidth: 220 }}>
-            <Select
-              value={selectedBrand}
-              onChange={(e) => setSelectedBrand(e.target.value)}
-              displayEmpty
-              sx={{ height: 44 }}
-              renderValue={(value) =>
-                value ? brands.find((b) => b._id === value)?.full_name : "Select Brand"
-              }
-            >
-              <MenuItem value="">
-                <em>Select Brand</em>
-              </MenuItem>
-              {brands.map((b) => (
-                <MenuItem key={b._id} value={b._id}>
-                  {b.full_name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <FormControl fullWidth size="small" sx={{ minWidth: 220 }}>
-            <Select
-              value={selectedOutlet}
-              onChange={(e) => setSelectedOutlet(e.target.value)}
-              displayEmpty
-              sx={{ height: 44 }}
-              renderValue={(value) =>
-                value ? filteredOutlets.find((o) => o._id === value)?.name : "Select Outlet"
-              }
-            >
-              <MenuItem value="">
-                <em>Select Outlet</em>
-              </MenuItem>
-              {filteredOutlets.map((o) => (
-                <MenuItem key={o._id} value={o._id}>
-                  {o.name}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <Box sx={{ ml: "auto", display: "flex", gap: 1 }}>
-            <Tooltip title="Refresh">
-              <IconButton onClick={handleRefresh} disabled={isRefreshing}>
-                <RefreshCw className={isRefreshing ? "animate-spin" : ""} />
-              </IconButton>
-            </Tooltip>
-
-            <Tooltip title="Export">
-              <IconButton onClick={handleExportMenuOpen}>
-                <Download />
-              </IconButton>
-            </Tooltip>
-
-            <Menu anchorEl={exportAnchor} open={Boolean(exportAnchor)} onClose={handleExportMenuClose}>
-              <MUIMenuItem
-                onClick={() => {
-                  handleExportMenuClose();
-                  exportToCSV(`sales_report_${selectedBrand || "brand"}_${dayjs().format("YYYYMMDD")}.csv`);
-                }}
-              >
-                <FileText size={16} style={{ marginRight: 8 }} />
-                Export CSV
-              </MUIMenuItem>
-              <MUIMenuItem
-                onClick={() => {
-                  handleExportMenuClose();
-                  exportToXLSX(`sales_report_${selectedBrand || "brand"}_${dayjs().format("YYYYMMDD")}.xlsx`);
-                }}
-              >
-                <FilePlus size={16} style={{ marginRight: 8 }} />
-                Export XLSX
-              </MUIMenuItem>
-              <MUIDivider />
-              <MUIMenuItem
-                onClick={() => {
-                  handleExportMenuClose();
-                  exportToPDF(`sales_report_${selectedBrand || "brand"}_${dayjs().format("YYYYMMDD")}.pdf`);
-                }}
-              >
-                <Printer size={16} style={{ marginRight: 8 }} />
-                Export PDF
-              </MUIMenuItem>
-            </Menu>
-          </Box>
-        </Stack>
-
-        <Typography variant="caption" color="text.secondary" mt={2} display="block">
-          Showing data for <b>{dateRange[0]?.format("DD/MM/YYYY")}</b> → <b>{dateRange[1]?.format("DD/MM/YYYY")}</b>
-          {selectedBrand && `, Brand: ${brands.find((b) => b._id === selectedBrand)?.full_name}`}
-          {selectedOutlet && `, Outlet: ${filteredOutlets.find((o) => o._id === selectedOutlet)?.name}`}
-        </Typography>
-      </Paper>
-
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Report content that will be exported (wrap ref) */}
-      <div ref={reportRef}>
-        {/* Summary Cards */}
-        <Box
-          sx={{
-            display: "grid",
-            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
-            gap: 2,
-            mb: 4,
-          }}
-        >
+        {/* Tabs */}
+        <div className="flex gap-8 border-b-2 border-slate-200 mb-10">
           {[
-            {
-              title: "Total Sales",
-              value: `$${(summary.withTaxSales ?? 0).toFixed(2)}`,
-              subtitle: `$${(summary.withoutTaxSales ?? 0).toFixed(2)} without tax`,
-              icon: <DollarSign size={18} />,
-              color: "#3B82F6",
-            },
-            {
-              title: "Completed Orders",
-              value: summary.completedOrders ?? 0,
-              subtitle: `${summary.cancelledOrders ?? 0} cancelled`,
-              icon: <ShoppingCart size={18} />,
-              color: "#10B981",
-            },
-            {
-              title: "Payment Methods",
-              value: Object.keys(salesData?.paymentsWithTax || {}).length,
-              subtitle: "Active methods",
-              icon: <CreditCard size={18} />,
-              color: "#8B5CF6",
-            },
-            {
-              title: "Refunds",
-              value: `$${(summary.refundTotal ?? 0).toFixed(2)}`,
-              subtitle: `${summary.refundedOrders ?? 0} orders`,
-              icon: <RefreshCw size={18} />,
-              color: "#F59E0B",
-            },
-            {
-              title: "Tips",
-              value: `$${(summary.totalTips ?? 0).toFixed(2)}`,
-              subtitle: "Total tips earned",
-              icon: <TrendingUp size={18} />,
-              color: "#14B8A6",
-            },
-            {
-              title: "Order Types",
-              value: Object.keys(salesData?.orderTypes || {}).length,
-              subtitle: "Different types",
-              icon: <Users size={18} />,
-              color: "#6366F1",
-            },
-          ].map((stat, i) => (
-            <Card
-              key={i}
-              sx={{
-                borderRadius: 1.5,
-                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                "&:hover": {
-                  transform: "translateY(-3px)",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                },
-              }}
+            "overview",
+            "orders",
+            "customers",
+            "staff performance",
+            "payment summaries",
+            "day-end summaries",
+            "cancellations / refunds",
+          ].map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`pb-4 capitalize text-base font-bold tracking-wide transition-all duration-200 ${tab === t
+                  ? "text-[#DF6229] border-b-3 border-[#DF6229]"
+                  : "text-slate-500 hover:text-slate-700"
+                }`}
             >
-              <CardContent
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  textAlign: "center",
-                  py: 2.5,
-                  gap: 0.5,
-                }}
-              >
-                <Avatar
-                  sx={{
-                    bgcolor: stat.color,
-                    width: 44,
-                    height: 44,
-                    mb: 1,
-                  }}
-                >
-                  {stat.icon}
-                </Avatar>
-                <Typography variant="body2" color="text.secondary">
-                  {stat.title}
-                </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                  {stat.value}
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  {stat.subtitle}
-                </Typography>
-              </CardContent>
-            </Card>
+              {t}
+            </button>
           ))}
-        </Box>
+        </div>
 
-        {/* Sales Trends */}
-        <Card sx={{ mb: 4 }}>
-          <CardContent>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-              <div>
-                <Typography variant="h6">Sales Trends</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Daily sales performance over selected range
-                </Typography>
-              </div>
-              <Box>
-                <Tooltip title="Download chart as PNG (use Export -> PDF/XLSX)"><IconButton><Download /></IconButton></Tooltip>
-              </Box>
-            </Box>
+        {/* Loader */}
+        {loading && (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-8 h-8 border-4 border-[#DF6229]/30 border-t-[#DF6229] rounded-full animate-spin mb-4"></div>
+            <p className="text-slate-600 font-medium tracking-wide">
+              Fetching latest data...
+            </p>
+          </div>
+        )}
 
-            <Divider sx={{ mb: 2 }} />
-            <Box sx={{ height: 320 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={salesTrends || []} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="label" />
-                  <YAxis />
-                  <RechartTooltip formatter={(val) => `$${(Number(val) || 0).toFixed(2)}`} contentStyle={{ color : "#333" }} />
-                  <Line type="monotone" dataKey="total" stroke="#3B82F6" strokeWidth={2} dot />
-                </LineChart>
-              </ResponsiveContainer>
-            </Box>
-          </CardContent>
-        </Card>
+        {/* Error */}
+        {error && !loading && (
+          <div className="text-center text-red-600 py-10 text-lg font-semibold">
+            {error}
+          </div>
+        )}
 
-        {/* Payment & Tax Charts */}
-        <Box display="grid" gridTemplateColumns={{ xs: "1fr", md: "1fr 1fr" }} gap={3} mb={4}>
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Payment Methods</Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Distribution of payment types
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-
-              <Box sx={{ height: 300 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart
-                    layout="vertical"
-                    data={pieData.map((d) => ({
-                      name: d.name,
-                      value: Number(d.value.toFixed(2)),
-                    }))}
-                    margin={{ top: 10, right: 30, left: 60, bottom: 10 }}
-                  >
-                    <CartesianGrid
-                      strokeDasharray="3 3"
-                      stroke={theme.palette.mode === "dark" ? "#444" : "#e0e0e0"}
-                    />
-                    <XAxis
-                      type="number"
-                      tickFormatter={(val) =>
-                        new Intl.NumberFormat("en-US", {
-                          style: "currency",
-                          currency: "USD",
-                          maximumFractionDigits: 0,
-                        }).format(val)
-                      }
-                    />
-                    <YAxis
-                      dataKey="name"
-                      type="category"
-                      tick={{ fill: theme.palette.text.primary }}
-                      width={100}
-                    />
-                    <RechartTooltip
-                      contentStyle={{
-                        backgroundColor: "#fff",
-                        border: `1px solid ${theme.palette.divider}`,
-                        borderRadius: 8,
-                        boxShadow:
-                          theme.palette.mode === "dark"
-                            ? "0 2px 6px rgba(0,0,0,0.5)"
-                            : "0 2px 6px rgba(0,0,0,0.1)",
-                        color: "#333"
-                      }}
-                      formatter={(val) =>
-                        new Intl.NumberFormat("en-US", {
-                          style: "currency",
-                          currency: "USD",
-                          minimumFractionDigits: 2,
-                        }).format(val)
-                      }
-                    />
-                    <Bar dataKey="value" radius={[4, 4, 4, 4]}>
-                      {pieData.map((entry, idx) => (
-                        <Cell key={idx} fill={COLORS[idx % COLORS.length]} />
-                      ))}
-                    </Bar>
-                  </BarChart>
-                </ResponsiveContainer>
-              </Box>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent>
-              <Typography variant="h6">Tax Breakdown</Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Payment amounts with and without tax
-              </Typography>
-              <Divider sx={{ mb: 2 }} />
-              <Box sx={{ height: 300 }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={barData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="method" />
-                    <YAxis />
-                    <RechartTooltip formatter={(val) => `$${(Number(val) || 0).toFixed(2)}`} contentStyle={{ color : "#333" }} />
-                    <Legend />
-                    <Bar dataKey="withTax" fill="#3B82F6" name="With Tax" />
-                    <Bar dataKey="withoutTax" fill="#10B981" name="Without Tax" />
-                  </BarChart>
-                </ResponsiveContainer>
-              </Box>
-            </CardContent>
-          </Card>
-        </Box>
-
-        {/* Order Type breakdown */}
-        <Card sx={{ mb: 4 }}>
-          <CardContent>
-            <Typography variant="h6">Order Types Performance</Typography>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Sales breakdown by order categories
-            </Typography>
-            <Divider sx={{ mb: 2 }} />
-            <Box sx={{ height: 260 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={orderTypeData}
-                  margin={{ top: 10, right: 30, left: 20, bottom: 5 }}
-                >
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="type" />
-                  <YAxis />
-                  <RechartTooltip
-                    contentStyle={{ color : "#333" }}
-                    formatter={(value, name) => {
-                      if (name === "count" || name === "Orders") {
-                        return [Number(value), "Orders"];
-                      }
-                      return [`$${(Number(value) || 0).toFixed(2)}`, name];
-                    }}
-                    labelFormatter={(label) => `Order Type: ${label}`}
-                  />
-                  <Bar dataKey="count" fill="#8B5CF6" name="Orders" />
-                  <Bar dataKey="sales" fill="#3B82F6" name="Sales" />
-                  <Bar dataKey="salesWithoutTax" fill="#10B981" name="Without Tax" />
-                </BarChart>
-              </ResponsiveContainer>
-            </Box>
-
-            {/* Order Type Details Grid */}
-            <Box
-              sx={{
-                mt: 3,
-                display: "grid",
-                gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr 1fr" },
-                gap: 2,
-              }}
-            >
-              {orderTypeData.map((item, index) => (
-                <Box
-                  key={item.type}
-                  sx={{
-                    bgcolor: "background.default",
-                    borderRadius: 1.5,
-                    p: 2,
-                    border: "1px solid",
-                    borderColor: "divider",
-                    transition: "all 0.2s ease",
-                    "&:hover": {
-                      boxShadow: "0 4px 10px rgba(0,0,0,0.08)",
-                      transform: "translateY(-2px)",
-                    },
-                  }}
-                >
-                  <Typography
-                    variant="subtitle2"
-                    sx={{ color: "text.primary", mb: 1, fontWeight: 600 }}
-                  >
-                    {item.type}
-                  </Typography>
-                  <Box sx={{ display: "flex", flexDirection: "column", gap: 0.5 }}>
-                    <Typography variant="caption" color="text.secondary">
-                      Orders:{" "}
-                      <Typography component="span" variant="body2" fontWeight={500}>
-                        {item.count}
-                      </Typography>
-                    </Typography>
-
-                    <Typography variant="caption" color="text.secondary">
-                      Sales:{" "}
-                      <Typography component="span" variant="body2" fontWeight={500}>
-                        ${item.sales.toFixed(2)}
-                      </Typography>
-                    </Typography>
-
-                    <Typography variant="caption" color="text.secondary">
-                      Without tax:{" "}
-                      <Typography component="span" variant="body2" fontWeight={500}>
-                        ${item.salesWithoutTax.toFixed(2)}
-                      </Typography>
-                    </Typography>
-                  </Box>
-                </Box>
+        {/* Overview */}
+        {!loading && !error && tab === "overview" && salesData && (
+          <>
+            {/* Summary */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+              {[
+                { title: "Total Sales", value: `$${summary.withTaxSales || 0}`, icon: <DollarSign size={20} /> },
+                { title: "Orders Completed", value: summary.completedOrders || 0, icon: <ShoppingCart size={20} /> },
+                { title: "Refunds", value: summary.refundedOrders || 0, icon: <XOctagon size={20} /> },
+                { title: "Tips", value: `$${summary.totalTips || 0}`, icon: <TrendingUp size={20} /> },
+              ].map((card, i) => (
+                <div key={i} className="bg-white rounded-2xl border border-slate-200 shadow-md p-6 flex items-center gap-4 hover:shadow-lg transition">
+                  <div className="p-3 bg-gradient-to-br from-[#DF6229] to-[#EFA280] rounded-xl text-white">
+                    {card.icon}
+                  </div>
+                  <div>
+                    <p className="text-slate-500 text-sm">{card.title}</p>
+                    <h3 className="text-2xl font-bold text-slate-900">{card.value}</h3>
+                  </div>
+                </div>
               ))}
-            </Box>
-          </CardContent>
-        </Card>
+            </div>
 
-        {/* Orders table (expandable) */}
-        {saleOrders && saleOrders.length > 0 ? (
-          <Card sx={{ mb: 6 }}>
-            <CardContent>
-              <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                <div>
-                  <Typography variant="h6">Recent Orders</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Showing {saleOrders.length} orders
-                  </Typography>
+            {/* Trends */}
+            <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-8 mb-10">
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">Sales Trends</h3>
+              <p className="text-slate-600 mb-6">Daily sales across the selected range.</p>
+              {trends.length > 0 ? (
+                <div className="w-full h-[350px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={trends}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="label" />
+                      <YAxis />
+                      <RechartTooltip formatter={(v) => `$${v}`} />
+                      <Line type="monotone" dataKey="total" stroke="#DF6229" strokeWidth={3} />
+                    </LineChart>
+                  </ResponsiveContainer>
                 </div>
-                <div>
-                  <Typography variant="caption" color="text.secondary">
-                    {formatDateRange()}
-                  </Typography>
+              ) : (
+                <p className="text-center text-slate-400 italic py-10">
+                  No sales data found for this range.
+                </p>
+              )}
+            </div>
+
+            {/* Payment Methods & Tax */}
+            <div className="grid md:grid-cols-2 gap-6 mb-10">
+              {/* Payment Methods */}
+              <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-8">
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">Payment Methods</h3>
+                <p className="text-slate-600 mb-6">
+                  Breakdown by payment type.
+                </p>
+                {paymentData.length ? (
+                  <div className="w-full h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={paymentData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="name" />
+                        <YAxis />
+                        <RechartTooltip formatter={(v) => `$${v}`} />
+                        <Bar dataKey="value" fill="#DF6229" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <p className="text-center text-slate-400 italic py-10">
+                    No payment data found.
+                  </p>
+                )}
+              </div>
+
+              {/* Tax Breakdown */}
+              <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-8">
+                <h3 className="text-2xl font-bold text-slate-900 mb-2">Tax Breakdown</h3>
+                <p className="text-slate-600 mb-6">Compare with-tax and without-tax sales.</p>
+                {taxData.length ? (
+                  <div className="w-full h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={taxData}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="method" />
+                        <YAxis />
+                        <RechartTooltip formatter={(v) => `$${v}`} />
+                        <Legend />
+                        <Bar dataKey="withTax" fill="#DF6229" name="With Tax" />
+                        <Bar dataKey="withoutTax" fill="#EFA280" name="Without Tax" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <p className="text-center text-slate-400 italic py-10">
+                    No tax data found.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            {/* Order Type Performance */}
+            <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-8 mb-10">
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">Order Types Performance</h3>
+              <p className="text-slate-600 mb-6">
+                Compare sales and order counts by type.
+              </p>
+              {orderTypeData.length ? (
+                <div className="w-full h-[320px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={orderTypeData}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="type" />
+                      <YAxis />
+                      <RechartTooltip />
+                      <Legend />
+                      <Bar dataKey="count" fill="#3B82F6" name="Orders" />
+                      <Bar dataKey="sales" fill="#10B981" name="Sales" />
+                    </BarChart>
+                  </ResponsiveContainer>
                 </div>
-              </Box>
-              <Divider sx={{ mb: 2 }} />
-              <TableContainer>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell />
-                      <TableCell>Order</TableCell>
-                      <TableCell>Customer</TableCell>
-                      <TableCell>Date</TableCell>
-                      <TableCell>Items</TableCell>
-                      <TableCell>Total</TableCell>
-                      <TableCell>Status</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {saleOrders.map((order, i) => {
-                      const id = order._id || order.order_id || i;
-                      return (
-                        <React.Fragment key={id}>
-                          <TableRow hover>
-                            <TableCell>
-                              <IconButton size="small" onClick={() => toggleExpanded(id)}>
-                                {expandedOrder === id ? <ChevronDown /> : <ChevronRight />}
-                              </IconButton>
-                            </TableCell>
+              ) : (
+                <p className="text-center text-slate-400 italic py-10">
+                  No order type data found.
+                </p>
+              )}
+            </div>
 
-                            <TableCell>
-                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                #{order.order_id?.split("_")?.[1] || order._id || id}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {order.order_id || order._id}
-                              </Typography>
-                            </TableCell>
+            {/* Orders */}
+            <div className="bg-white rounded-2xl shadow-md border border-slate-200 p-8">
+              <h3 className="text-2xl font-bold text-slate-900 mb-2">Recent Orders</h3>
+              <p className="text-slate-600 mb-6">
+                Expand any order to view details, items, and payment info.
+              </p>
+              {orders.length === 0 ? (
+                <p className="text-center text-slate-400 italic py-10">
+                  No orders found.
+                </p>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full text-left">
+                    <thead className="border-b-2 border-slate-200 text-sm font-semibold text-slate-700">
+                      <tr>
+                        <th className="py-4 px-3">Order ID</th>
+                        <th className="py-4 px-3">Customer</th>
+                        <th className="py-4 px-3">Status</th>
+                        <th className="py-4 px-3">Total</th>
+                        <th className="py-4 px-3">Date</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {orders.map((o, i) => (
+                        <React.Fragment key={i}>
+                          <tr
+                            className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition"
+                            onClick={() => toggleExpanded(o._id || i)}
+                          >
+                            <td className="py-4 px-3 font-medium text-slate-800">
+                              {o.order_id || o._id}
+                            </td>
+                            <td className="py-4 px-3 text-slate-600">
+                              {o.customer?.name || "N/A"}
+                            </td>
+                            <td className="py-4 px-3 text-slate-600 capitalize">
+                              {o.status || "N/A"}
+                            </td>
+                            <td className="py-4 px-3 text-emerald-600 font-semibold">
+                              ${o.summary?.total?.toFixed(2) || 0}
+                            </td>
+                            <td className="py-4 px-3 text-slate-500">
+                              {dayjs(o.createdAt).format("DD MMM YYYY")}
+                            </td>
+                          </tr>
 
-                            <TableCell>
-                              <Stack direction="row" spacing={1} alignItems="center">
-                                <Avatar sx={{ width: 28, height: 28 }}>{(order.customer?.name || "U").charAt(0)}</Avatar>
-                                <Typography variant="body2">{order.customer?.name || "N/A"}</Typography>
-                              </Stack>
-                            </TableCell>
+                          {expandedOrder === (o._id || i) && (
+                            <tr>
+                              <td colSpan="5" className="bg-slate-50 p-6">
+                                <div className="grid md:grid-cols-2 gap-6">
+                                  <div>
+                                    <h4 className="font-semibold text-slate-800 mb-2">
+                                      Order Items
+                                    </h4>
+                                    {o.items?.map((item, idx) => (
+                                      <div
+                                        key={idx}
+                                        className="flex justify-between border-b border-slate-200 py-2"
+                                      >
+                                        <div>
+                                          <p className="font-medium text-slate-700">
+                                            {item.name}
+                                          </p>
+                                          {item.activeAddons?.length > 0 && (
+                                            <p className="text-xs text-slate-500">
+                                              Add-ons:{" "}
+                                              {item.activeAddons
+                                                .map((a) => a.name)
+                                                .join(", ")}
+                                            </p>
+                                          )}
+                                        </div>
+                                        <div className="text-right">
+                                          <p className="font-semibold text-slate-800">
+                                            ${item.total_price || item.price || 0}
+                                          </p>
+                                          <p className="text-xs text-slate-500">
+                                            Qty: {item.quantity || 1}
+                                          </p>
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
 
-                            <TableCell>
-                              <Typography variant="body2">
-                                {format(new Date(order.createdAt || new Date()), "MMM dd, yyyy")}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                {format(new Date(order.createdAt || new Date()), "HH:mm")}
-                              </Typography>
-                            </TableCell>
-
-                            <TableCell>{order.items?.length || 0}</TableCell>
-
-                            <TableCell>
-                              <Typography variant="body2" sx={{ fontWeight: 700 }}>
-                                ${((order.summary?.total != null) ? order.summary.total : 0).toFixed(2)}
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                ${((order.summary?.subtotal != null) ? order.summary.subtotal : 0).toFixed(2)} + ${((order.summary?.tax != null) ? order.summary.tax : 0).toFixed(2)} tax
-                              </Typography>
-                            </TableCell>
-
-                            <TableCell>
-                              <Box
-                                component="span"
-                                sx={{
-                                  px: 1,
-                                  py: 0.5,
-                                  borderRadius: 1,
-                                  fontSize: "0.75rem",
-                                  ...getStatusColor(order.status),
-                                }}
-                              >
-                                {(order.status || "pending").toString().charAt(0).toUpperCase() +
-                                  (order.status || "pending").toString().slice(1)}
-                              </Box>
-                            </TableCell>
-
-                          </TableRow>
-
-                          {/* Expanded details */}
-                          <TableRow>
-                            <TableCell style={{ paddingBottom: 0, paddingTop: 0 }} colSpan={8}>
-                              <Collapse in={expandedOrder === id} timeout="auto" unmountOnExit>
-                                <Box sx={{ margin: 2 }}>
-                                  <Box
-                                    mb={2}
-                                    display="flex"
-                                    gap={2}
-                                    flexDirection={{ xs: "column", md: "row" }}
-                                  >
-                                    {/* --- Order Items --- */}
-                                    <Card
-                                      sx={{
-                                        flex: 1,
-                                        bgcolor: "background.paper",
-                                        border: "1px solid",
-                                        borderColor: "divider",
-                                        boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
-                                      }}
-                                    >
-                                      <CardContent>
-                                        <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                                          Order Items
-                                        </Typography>
-                                        <Divider sx={{ mb: 1.5 }} />
-
-                                        {order.items?.map((item, idx) => (
-                                          <Box
-                                            key={idx}
-                                            display="flex"
-                                            justifyContent="space-between"
-                                            py={1.2}
-                                            sx={{
-                                              borderBottom: "1px solid",
-                                              borderColor: "divider",
-                                            }}
-                                          >
-                                            <Box>
-                                              <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                                {item.name}
-                                              </Typography>
-                                              <Typography variant="caption" color="text.secondary">
-                                                {item.category_name}
-                                              </Typography>
-
-                                              {item.activeAddons?.length > 0 && (
-                                                <Box mt={0.6}>
-                                                  <Typography
-                                                    variant="caption"
-                                                    color="text.secondary"
-                                                    sx={{ display: "block" }}
-                                                  >
-                                                    Add-ons:
-                                                  </Typography>
-                                                  <Box display="flex" flexWrap="wrap" gap={1} mt={0.5}>
-                                                    {item.activeAddons.map((a, ai) => (
-                                                      <Box
-                                                        key={ai}
-                                                        sx={{
-                                                          px: 1,
-                                                          py: 0.4,
-                                                          borderRadius: 1,
-                                                          fontSize: 12,
-                                                          bgcolor: theme.palette.mode === "dark"
-                                                            ? "grey.800"
-                                                            : "grey.100",
-                                                          color: "text.primary",
-                                                          border: "1px solid",
-                                                          borderColor: "divider",
-                                                        }}
-                                                      >
-                                                        {a.name}
-                                                      </Box>
-                                                    ))}
-                                                  </Box>
-                                                </Box>
-                                              )}
-                                            </Box>
-
-                                            <Box textAlign="right">
-                                              <Typography variant="body2">
-                                                ${(item.total_price ?? item.price ?? 0).toFixed(2)}
-                                              </Typography>
-                                              <Typography variant="caption" color="text.secondary">
-                                                Qty: {item.quantity || 1}
-                                              </Typography>
-                                            </Box>
-                                          </Box>
-                                        ))}
-                                      </CardContent>
-                                    </Card>
-
-                                    {/* --- Payment Info --- */}
-                                    <Card
-                                      sx={{
-                                        width: { xs: "100%", md: 320 },
-                                        bgcolor: "background.paper",
-                                        border: "1px solid",
-                                        borderColor: "divider",
-                                        boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
-                                      }}
-                                    >
-                                      <CardContent>
-                                        <Typography variant="subtitle2">Payment Info</Typography>
-                                        <Divider sx={{ my: 1.5 }} />
-
-                                        <Box display="grid" gap={0.8}>
-                                          <Typography variant="caption" color="text.secondary">
-                                            Total Paid
-                                          </Typography>
-                                          <Typography variant="body2" fontWeight={700}>
-                                            ${(order.paymentInfo?.totalPaid ?? 0).toFixed(2)}
-                                          </Typography>
-
-                                          <Typography variant="caption" color="text.secondary">
-                                            Tip
-                                          </Typography>
-                                          <Typography variant="body2">
-                                            ${(order.paymentInfo?.tip ?? 0).toFixed(2)}
-                                          </Typography>
-
-                                          <Typography variant="caption" color="text.secondary">
-                                            Return
-                                          </Typography>
-                                          <Typography variant="body2">
-                                            ${(order.paymentInfo?.return ?? 0).toFixed(2)}
-                                          </Typography>
-                                        </Box>
-
-                                        <Box mt={2.5}>
-                                          <Typography variant="caption" color="text.secondary">
-                                            Payment Methods
-                                          </Typography>
-                                          <Box mt={1.2} display="flex" flexDirection="column" gap={1}>
-                                            {order.paymentInfo?.payments?.length ? (
-                                              order.paymentInfo.payments.map((p, pi) => (
-                                                <Box
-                                                  key={pi}
-                                                  sx={{
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    gap: 1,
-                                                    p: 1,
-                                                    borderRadius: 1,
-                                                    bgcolor:
-                                                      theme.palette.mode === "dark"
-                                                        ? "grey.800"
-                                                        : "grey.100",
-                                                    border: "1px solid",
-                                                    borderColor: "divider",
-                                                  }}
-                                                >
-                                                  <CreditCard size={14} />
-                                                  <Typography variant="body2">
-                                                    {p.typeName}: ${Number(p.amount || 0).toFixed(2)}
-                                                  </Typography>
-                                                </Box>
-                                              ))
-                                            ) : (
-                                              <Typography variant="caption" color="text.secondary">
-                                                No payment details
-                                              </Typography>
-                                            )}
-                                          </Box>
-                                        </Box>
-                                      </CardContent>
-                                    </Card>
-                                  </Box>
-                                </Box>
-                              </Collapse>
-                            </TableCell>
-                          </TableRow>
-
+                                  <div>
+                                    <h4 className="font-semibold text-slate-800 mb-2">
+                                      Payment Info
+                                    </h4>
+                                    {o.paymentInfo?.payments?.map((p, pi) => (
+                                      <div
+                                        key={pi}
+                                        className="flex justify-between text-sm border-b border-slate-200 py-2"
+                                      >
+                                        <span className="text-slate-700">
+                                          {p.typeName}
+                                        </span>
+                                        <span className="text-slate-800 font-semibold">
+                                          ${p.amount?.toFixed(2) || 0}
+                                        </span>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              </td>
+                            </tr>
+                          )}
                         </React.Fragment>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </CardContent>
-          </Card>
-        ) : (
-          <Typography align="center" color="text.secondary">
-            No sales orders available for the selected filters.
-          </Typography>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+          </>
+        )}
+
+        {tab !== "overview" && !loading && (
+          <p className="text-center text-slate-400 italic py-32">
+            {tab.charAt(0).toUpperCase() + tab.slice(1)} data coming soon.
+          </p>
         )}
       </div>
-
-      {/* Footer */}
-      <Box mt={6}>
-        <Typography variant="caption" color="text.secondary">
-          Tip: You can export this report as CSV / XLSX / PDF using export button in the filter bar.
-        </Typography>
-      </Box>
-    </Box>
+    </div>
   );
-}
+};
+
+export default SalesOverview;

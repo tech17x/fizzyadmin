@@ -68,7 +68,7 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
 
     const handleDelete = async (id) => {
         try {
-            await axios.delete(`https://api.techseventeen.com/api/items/delete/${id}`, {
+            await axios.delete(`http://localhost:5002/api/items/delete/${id}`, {
                 withCredentials: true
             });
             setItems(items.filter((item) => item._id !== id));
@@ -237,7 +237,7 @@ const EditMenu = ({ menuId, brandOutletIds, closeMenuDetails }) => {
 
         // Handle API request for saving changed and new items
         try {
-            const response = await axios.post("https://api.techseventeen.com/api/items/upsert", payload, {
+            const response = await axios.post("http://localhost:5002/api/items/upsert", payload, {
                 withCredentials: true
             });
             if (response.data.successCount > 0) {

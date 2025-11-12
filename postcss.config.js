@@ -1,6 +1,7 @@
+// postcss.config.js
 module.exports = {
   plugins: {
-    tailwindcss: {},
+    tailwindcss: {}, // ✅ works with CRA and Tailwind v3
     autoprefixer: {},
   },
-}
+};

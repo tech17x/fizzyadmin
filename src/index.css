@@ -1,24 +1,3 @@
-/* src/index.css */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-* { box-sizing: border-box; margin: 0; padding: 0; }
-html, body, #root { height: 100%; }
-body {
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
-  background: var(--bg-body);
-  color: var(--text-primary);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* subtle scrollbar */
-::-webkit-scrollbar { width: 8px; height: 8px; }
-::-webkit-scrollbar-thumb { background: rgba(100,100,100,0.2); border-radius: 8px; }
-::-webkit-scrollbar-track { background: transparent; }
-
-/* small helper classes */
-.container {
-  max-width: 1220px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

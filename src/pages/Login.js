@@ -1,240 +1,136 @@
-// src/pages/Login.js
 import React, { useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import AuthContext from "../context/AuthContext";
-import {
-    Box,
-    Card,
-    CardContent,
-    Typography,
-    TextField,
-    Button,
-    CircularProgress,
-    Alert,
-    Link as MuiLink
-} from "@mui/material";
-import { styled } from "@mui/material/styles";
-import BgImage from "../assets/login-bg.jpg"; // 👉 add an image in src/assets
 import FizzyLogo from "../components/FizzyLogo";
 
-const GradientButton = styled(Button)(({ theme }) => ({
-    background: "linear-gradient(135deg, #6366f1, #4338ca)",
-    color: "#fff",
-    fontWeight: 600,
-    borderRadius: 10,
-    padding: "10px 20px",
-    "&:hover": {
-        background: "linear-gradient(135deg, #4338ca, #3730a3)"
-    }
-}));
-
 const Login = () => {
-    const [username, setUsername] = useState("");
-    const [password, setPassword] = useState("");
-    const [message, setMessage] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const { setStaff } = useContext(AuthContext);
-    const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const { setStaff } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-    const handleLogin = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setMessage(null);
+  const handleLogin = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
 
-        try {
-            const response = await axios.post(
-                "https://api.techseventeen.com/api/staff/login",
-                { email: username, password },
-                { withCredentials: true }
-            );
+    try {
+      const response = await axios.post(
+        "http://localhost:5002/api/staff/login",
+        { email, password },
+        { withCredentials: true }
+      );
 
-            if (response.data?.staff) {
-                setStaff(response.data.staff);
-                setMessage({ type: "success", text: "Login successful! Redirecting..." });
+      if (response.data?.staff) {
+        setStaff(response.data.staff);
+        setMessage("Login successful. Redirecting...");
+        setTimeout(() => navigate("/profile"), 800);
+      } else {
+        setMessage("Invalid credentials.");
+      }
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Login failed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
-                setTimeout(() => {
-                    navigate("/staff-overview");
-                    setLoading(false);
-                }, 1200);
-            } else {
-                throw new Error("Invalid response from server");
-            }
-        } catch (error) {
-            setMessage({
-                type: "error",
-                text: error.response?.data?.message || "Login failed! Please try again."
-            });
-            setLoading(false);
-        }
-    };
+  return (
+    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      {/* Soft glowing circles (background accents) */}
+      <div className="absolute -top-32 -left-32 w-96 h-96 bg-[#DF6229]/20 blur-[120px] rounded-full"></div>
+      <div className="absolute bottom-0 right-0 w-[450px] h-[450px] bg-[#EFA280]/15 blur-[100px] rounded-full"></div>
 
-    return (
-        <Box display="flex" minHeight="100vh">
-            {/* Left side (image/branding) */}
-            <Box
-                flex={1}
-                display={{ xs: "none", md: "flex" }}
-                alignItems="center"
-                justifyContent="center"
-                sx={{
-                    // background: `url(${BgImage}) center/cover no-repeat`,
-                    background: `url(https://images.unsplash.com/photo-1647427017067-8f33ccbae493?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D) no-repeat center center/cover`,
-                    position: "relative",
-                    p: 4,
-                    color: "#fff"
-                }}
-            >
-                <Box
-                    sx={{
-                        position: "absolute",
-                        inset: 0,
-                        background: "rgba(15, 23, 42, 0.65)", // deeper navy overlay
-                        // backdropFilter: "blur(2px)"
-                    }}
-                />
+      {/* Login Card */}
+      <div className="relative z-10 w-full max-w-sm bg-white/95 backdrop-blur-md rounded-2xl shadow-2xl border border-slate-200/50 px-8 py-10 sm:px-10 sm:py-12">
+        {/* Logo */}
+        <div className="text-center mb-10">
+          <div className="flex justify-center mb-3">
+            <FizzyLogo dark={true}/>
+          </div>
+          <p className="text-gray-500 text-sm tracking-wide">
+            Your business. Simplified.
+          </p>
+        </div>
 
-                <Box sx={{ position: "relative", zIndex: 2, maxWidth: 400 }}>
-                    <Typography
-                        variant="h4"
-                        fontWeight={700}
-                        gutterBottom
-                        sx={{
-                            color: "#fff",
-                            textShadow: "0 2px 6px rgba(0,0,0,0.6)" // makes text pop
-                        }}
-                    >
-                        Fizzy Admin
-                    </Typography>
-                    <Typography
-                        variant="h6"
-                        sx={{
-                            opacity: 0.9,
-                            color: "#f3f4f6",
-                            textShadow: "0 1px 3px rgba(0,0,0,0.5)"
-                        }}
-                    >
-                        Your Business. One Dashboard.
-                    </Typography>
-                </Box>
+        {/* Message */}
+        {message && (
+          <p
+            className={`text-center text-sm mb-5 font-medium ${
+              message.toLowerCase().includes("success")
+                ? "text-emerald-600"
+                : "text-red-600"
+            }`}
+          >
+            {message}
+          </p>
+        )}
 
-            </Box>
+        {/* Login Form */}
+        <form onSubmit={handleLogin} className="space-y-6">
+          {/* Email */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              Email Address
+            </label>
+            <input
+              type="email"
+              placeholder="you@example.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full px-4 py-3 text-sm rounded-xl border border-slate-300 bg-slate-50 focus:bg-white 
+              focus:border-[#DF6229] focus:ring-2 focus:ring-[#EFA280]/30 outline-none transition-all duration-200"
+            />
+          </div>
 
-            {/* Right side (login form) */}
-            <Box
-                flex={1}
-                display="flex"
-                alignItems="center"
-                justifyContent="center"
-                bgcolor="background.default"
-                px={2}
-            >
-                <Card
-                    sx={{
-                        maxWidth: 400,
-                        width: "100%",
-                        borderRadius: 3,
-                        boxShadow: 6
-                    }}
-                >
-                    <CardContent sx={{ p: 4 }}>
-                        {/* <Typography
-                            variant="h5"
-                            fontWeight={700}
-                            textAlign="center"
-                            gutterBottom
-                        >
-                            FIZZY ADMIN
-                        </Typography> */}
+          {/* Password */}
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">
+              Password
+            </label>
+            <input
+              type="password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+              className="w-full px-4 py-3 text-sm rounded-xl border border-slate-300 bg-slate-50 focus:bg-white 
+              focus:border-[#DF6229] focus:ring-2 focus:ring-[#EFA280]/30 outline-none transition-all duration-200"
+            />
+          </div>
 
-                        <FizzyLogo letters={["F", "I", "Z", "Z", "Y"]} animateText={false} style={{marginBottom: '16px'}}/>
+          {/* Submit */}
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full mt-4 py-3.5 text-sm font-semibold tracking-wide text-white rounded-xl shadow-lg transition-all duration-200
+            hover:opacity-95 disabled:opacity-60 focus:outline-none focus:ring-4 focus:ring-[#DF6229]/30"
+            style={{
+              background: "linear-gradient(90deg, #DF6229 0%, #EFA280 100%)",
+            }}
+          >
+            {loading ? "Signing in..." : "Login"}
+          </button>
 
-                        {message && (
-                            <Alert
-                                severity={message.type}
-                                sx={{ mb: 2 }}
-                                onClose={() => setMessage(null)}
-                            >
-                                {message.text}
-                            </Alert>
-                        )}
+          <p className="text-center text-sm text-gray-500 mt-6">
+            Forgot password?{" "}
+            <span className="font-semibold text-[#DF6229] hover:text-[#EFA280] transition">
+              Contact your administrator
+            </span>
+          </p>
+        </form>
 
-                        <form onSubmit={handleLogin}>
-                            <TextField
-                                label="Email/Username"
-                                type="text"
-                                value={username}
-                                onChange={(e) => setUsername(e.target.value)}
-                                placeholder="Enter email/username"
-                                required
-                                fullWidth
-                                margin="normal"
-                            />
-
-                            <TextField
-                                label="Password"
-                                type="password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                placeholder="Enter password"
-                                required
-                                fullWidth
-                                margin="normal"
-                            />
-
-                            <Box display="flex" justifyContent="flex-end" mt={1}>
-                                <MuiLink
-                                    component="button"
-                                    variant="body2"
-                                    underline="hover"
-                                    sx={{ color: "primary.main", fontSize: 14 }}
-                                >
-                                    Forgot Password?
-                                </MuiLink>
-                            </Box>
-
-                            <Box mt={3} position="relative">
-                                <GradientButton
-                                    type="submit"
-                                    fullWidth
-                                    disabled={loading}
-                                >
-                                    {loading ? "Logging in..." : "Login"}
-                                </GradientButton>
-                                {loading && (
-                                    <CircularProgress
-                                        size={26}
-                                        sx={{
-                                            color: "primary.light",
-                                            position: "absolute",
-                                            top: "50%",
-                                            left: "50%",
-                                            marginTop: "-13px",
-                                            marginLeft: "-13px"
-                                        }}
-                                    />
-                                )}
-                            </Box>
-                        </form>
-
-                        <Box mt={3} textAlign="center">
-                            <Button
-                                variant="outlined"
-                                color="secondary"
-                                sx={{
-                                    textTransform: "none",
-                                    borderRadius: 10,
-                                    px: 3
-                                }}
-                            >
-                                Contact Us
-                            </Button>
-                        </Box>
-                    </CardContent>
-                </Card>
-            </Box>
-        </Box>
-    );
+        {/* Footer */}
+        <div className="text-center mt-10 text-xs text-gray-400">
+          © {new Date().getFullYear()} <span className="font-semibold text-slate-500">Fizzy Admin</span> — All Rights Reserved.
+        </div>
+      </div>
+    </div>
+  );
 };
 
 export default Login;

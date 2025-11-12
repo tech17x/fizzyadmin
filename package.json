@@ -24,6 +24,7 @@
     "react-date-range": "^2.0.1",
     "react-day-picker": "^9.11.0",
     "react-dom": "^18.3.1",
+    "react-input-mask": "^2.0.4",
     "react-router-dom": "^6.27.0",
     "react-scripts": "5.0.1",
     "react-toastify": "^11.0.5",
@@ -56,5 +57,10 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^3.4.14"
   }
 }
